@@ -1,0 +1,48 @@
+{
+    "name": "czim/laravel-pxlcms",
+    "description": "Laravel adapter for the PXL CMS",
+    "keywords": [
+        "laravel",
+        "eloquent",
+        "database",
+        "cms"
+    ],
+    "homepage": "https://github.com/czim/laravel-pxlcms",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Coen Zimmerman",
+            "email": "coen@pixelindustries.com",
+            "homepage": "http://www.pixelindustries.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php" : ">=5.4.0",
+        "illuminate/support": "5.*",
+        "illuminate/database": "5.*",
+        "watson/rememberable": "dev-master",
+        "dimsav/laravel-translatable": "~5.0",
+        "lookitsatravis/listify": "^1.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit" : "4.*",
+        "scrutinizer/ocular": "~1.1",
+        "orchestra/testbench": "~3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Czim\\PxlCms\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Czim\\PxlCms\\Test\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "phpunit"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
