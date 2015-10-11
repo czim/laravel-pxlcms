@@ -17,18 +17,23 @@ $ composer require czim/laravel-pxlcms
 
 ### CmsModel
 
-- timestamp columns (optional) -> test 'U' format 
-- relations
-  - hasmany / hasone
-  - belongs to many
 - e_active global scope by default
 - listify + e_position by default
-- images
-- files (?)
-- categories
+
+- categories ?
+
 
 ### Generator
 
+- relationship handling
+    - negative reference ?
+    
+- checkboxes handling
+    - multi-checkboxes references handling
+
+- images
+- files (?)
+- checkboxes
 
 ## Credits
 
