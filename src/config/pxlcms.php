@@ -108,6 +108,9 @@ return [
         // relationship name gets this postfixed to prevent duplicate names
         'relationship_reverse_postfix'  => 'Reverse',
 
+        // postfix for translation model
+        'translation_model_postfix' => 'Translation',
+
         /*
          * Which CMS content to ignore when generating
          */

@@ -1,0 +1,26 @@
+<?php
+namespace {{NAMESPACE}};
+
+use Czim\PxlCms\Models\CmsModel;
+use Czim\PxlCms\Models\ListifyConstructorTrait;
+use Czim\PxlCms\Translatable\Translatable;
+use Lookitsatravis\Listify\Listify;
+
+class {{MODEL_CLASSNAME}} extends CmsModel
+{
+    {{USETRAITS}}
+    protected $cmsModule = {{MODULE_NUMBER}};
+    {{TABLE}}
+
+    {{FILLABLE}}
+    {{TRANSLATED}}
+    {{CASTS}}
+    {{DATES}}
+    {{RELATIONSCONFIG}}
+    /*
+     * Relationships
+     */
+
+    {{RELATIONSHIPS}}
+
+}
