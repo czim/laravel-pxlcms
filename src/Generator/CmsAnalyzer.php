@@ -87,7 +87,7 @@ class CmsAnalyzer
                 'name'                   => $moduleData['name'],
                 'table'                  => null,   // default
                 'is_translated'          => false,
-                'is_listified'           => true,
+                'is_listified'           => ($moduleData['max_entries'] != 1), // makes no sense for single-entry only
                 'normal_fillable'        => [],
                 'translated_fillable'    => [],
                 'hidden'                 => [],
@@ -277,11 +277,16 @@ class CmsAnalyzer
                     case GENERATOR::RELATIONSHIP_HAS_ONE:
                     case GENERATOR::RELATIONSHIP_HAS_MANY:
                         $reverseType  = GENERATOR::RELATIONSHIP_BELONGS_TO;
-                        $reverseCount = 0;
                         break;
 
                     case GENERATOR::RELATIONSHIP_BELONGS_TO:
-                        $reverseType = GENERATOR::RELATIONSHIP_HAS_MANY;
+                        // for single-entry modules, a hasOne will do
+                        if ($this->rawData['modules'][ $modelFromKey ]['max_entries'] == 1) {
+                            $reverseType = GENERATOR::RELATIONSHIP_HAS_ONE;
+                            $reverseCount = 1;
+                        } else {
+                            $reverseType = GENERATOR::RELATIONSHIP_HAS_MANY;
+                        }
                         break;
 
                     case GENERATOR::RELATIONSHIP_BELONGS_TO_MANY:
@@ -397,7 +402,7 @@ class CmsAnalyzer
 
             foreach ([  'name', 'max_entries', 'is_custom',
                         'allow_create', 'allow_update', 'allow_delete',
-                        'override_table_name',
+                        'override_table_name', 'simulate_categories_for',
                      ] as $key
             ) {
                 $this->rawData['modules'][ $moduleArray['id'] ][ $key ] = $moduleArray[ $key ];
