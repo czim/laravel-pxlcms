@@ -46,6 +46,7 @@ return [
         'files'      => 'cms_m_files',
         'images'     => 'cms_m_images',
         'references' => 'cms_m_references',
+        'checkboxes' => 'cms_m_checkboxes',
         'slugs'      => 'cms_slugs',
 
     ],
@@ -99,6 +100,14 @@ return [
             'requests' => 'App\\Http\\Requests',
         ],
 
+        // if a (reverse) relationship's name is already taken by an attribute
+        // in the model, add this to prevent duplicate names
+        'relationship_fallback_postfix' => 'Reference',
+
+        // if a (reverse) relationship is self-referencing (on the model), the
+        // relationship name gets this postfixed to prevent duplicate names
+        'relationship_reverse_postfix'  => 'Reverse',
+
         /*
          * Which CMS content to ignore when generating
          */
@@ -113,13 +122,14 @@ return [
 
         'custom' => [
 
-            // indicate table names that should be treated as modules
-            // but without translations, of course
-            // (does nothing yet)
-            'modules' => [
+            // custom field names (set this per app)
+            // to override poorly chosen (singular vs. plural f.i.) references,
+            // etc.
+            'fields' => [
 
             ],
-        ]
+        ],
+
     ],
 
 ];
