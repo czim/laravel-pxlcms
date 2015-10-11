@@ -27,12 +27,13 @@ return [
         // meta-data for cms, used for CMS section grouping, etc
         'meta' => [
 
-            'modules'  => 'cms_modules',
-            'groups'   => 'cms_groups',
-            'sections' => 'cms_sections',
-            'fields'   => 'cms_fields',
-            'tabs'     => 'cms_tabs',
-            'users'    => 'cms_users',
+            'modules'     => 'cms_modules',
+            'groups'      => 'cms_groups',
+            'sections'    => 'cms_sections',
+            'fields'      => 'cms_fields',
+            'field_types' => 'cms_field_types',
+            'tabs'        => 'cms_tabs',
+            'users'       => 'cms_users',
 
             'field_options_choices' => 'cms_field_options_choices',
             'field_options_resizes' => 'cms_field_options_resizes',
@@ -47,6 +48,24 @@ return [
         'references' => 'cms_m_references',
         'slugs'      => 'cms_slugs',
 
+    ],
+
+
+    // ------------------------------------------------------------------------------
+    //      Relationships / references
+    // ------------------------------------------------------------------------------
+
+    'relations' => [
+
+        // cms_m_references columns
+        'references' => [
+            'keys' => [
+                'field'    => 'from_field_id',
+                'from'     => 'from_entry_id',
+                'to'       => 'to_entry_id',
+                'position' => 'position',
+            ]
+        ],
     ],
 
     // ------------------------------------------------------------------------------
@@ -74,6 +93,12 @@ return [
     
     'generator' => [
 
+        // which namespace to prepend for generated content
+        'namespace' => [
+            'models'   => 'App\\Models\\Generated\\',   // todo reset to without Generated
+            'requests' => 'App\\Http\\Requests',
+        ],
+
         /*
          * Which CMS content to ignore when generating
          */
@@ -96,4 +121,5 @@ return [
             ],
         ]
     ],
+
 ];
