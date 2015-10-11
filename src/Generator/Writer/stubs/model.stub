@@ -17,10 +17,5 @@ class {{MODEL_CLASSNAME}} extends CmsModel
     {{CASTS}}
     {{DATES}}
     {{RELATIONSCONFIG}}
-    /*
-     * Relationships
-     */
-
     {{RELATIONSHIPS}}
-
 }

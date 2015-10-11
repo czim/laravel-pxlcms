@@ -68,7 +68,7 @@ class CmsModelWriter
      */
     public function write(array $data)
     {
-        $name = config('pxlcms.generator.namespace.models') . studly_case(array_get($data, 'name'));
+        $name = $this->makeFqnForModelName( array_get($data, 'name') );
 
         $this->data    = $data;
         $this->fqnName = $name;
@@ -89,6 +89,16 @@ class CmsModelWriter
         $this->files->put($path, $this->buildClass());
     }
 
+    /**
+     * Build Fully Qualified Namespace for a model name
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function makeFqnForModelName($name)
+    {
+        return config('pxlcms.generator.namespace.models') . studly_case($name);
+    }
 
     /**
      * Get the destination class path.
@@ -210,6 +220,8 @@ class CmsModelWriter
         $stub = preg_replace('# *{{CASTS}}\n?#i', $this->getCastsStubReplace(), $stub);
         $stub = preg_replace('# *{{DATES}}\n?#i', $this->getDatesStubReplace(), $stub);
         $stub = preg_replace('# *{{RELATIONSCONFIG}}\n?#i', $this->getRelationsConfigStubReplace(), $stub);
+
+        $stub = preg_replace('# *{{RELATIONSHIPS}}\n?#i', $this->getRelationshipsStubReplace(), $stub);
 
 
         return $stub;
@@ -382,13 +394,51 @@ class CmsModelWriter
         $replace = str_repeat(' ', 4) . "protected \$relationsConfig = [\n";
 
         foreach ($relationships as $name => $relationship) {
-            $replace .= str_repeat(' ', 8) . "'" . $name . "' => [\n";
-            $replace .= str_repeat(' ', 12) . "'field'  => " . $relationship['field'] . ",\n";
-            $replace .= str_repeat(' ', 12) . "'parent' => " . ($relationship['reverse'] ? 'false' : 'true') . ",\n";
-            $replace .= str_repeat(' ', 8) . "],\n";
+            $replace .= str_repeat(' ', 8) . "'" . $name . "' => [\n"
+                      . str_repeat(' ', 12) . "'field'  => " . $relationship['field'] . ",\n"
+                      . str_repeat(' ', 12) . "'parent' => " . ($relationship['reverse'] ? 'false' : 'true') . ",\n"
+                      . str_repeat(' ', 8) . "],\n";
         }
 
         $replace .= str_repeat(' ', 4) . "];\n\n";
+
+        return $replace;
+    }
+
+    /**
+     * Returns the replacement for the relationships placeholder
+     *
+     * @return string
+     */
+    protected function getRelationshipsStubReplace()
+    {
+        $relationships = array_merge(
+            array_get($this->data, 'relationships.normal'),
+            array_get($this->data, 'relationships.reverse')
+        );
+
+        $totalCount = count($relationships)
+                    + count( array_get($this->data, 'relationships.image') )
+                    + count( array_get($this->data, 'relationships.file') )
+                    + count( array_get($this->data, 'relationships.checkbox') );
+
+        if ( ! $totalCount) return '';
+
+        $replace = "\n" . str_repeat(' ', 4) . "/*\n"
+                 . str_repeat(' ', 4) . " * Relationships\n"
+                 . str_repeat(' ', 4) . " */\n\n";
+
+        foreach ($relationships as $name => $relationship) {
+
+            $relatedClassName = studly_case($this->data['related_models'][ $relationship['model'] ]['name']);
+
+
+            $replace .= str_repeat(' ', 4) . "public function {$name}()\n"
+                      . str_repeat(' ', 4) . "{\n"
+                      . str_repeat(' ', 8) . "return \$this->{$relationship['type']}({$relatedClassName}::class);\n"
+                      . str_repeat(' ', 4) . "}\n"
+                      . "\n";
+        }
 
         return $replace;
     }

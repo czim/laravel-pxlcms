@@ -67,6 +67,8 @@ class ModelWriter
 
             try {
 
+                $model = $this->appendRelatedModelsToModelData($model);
+
                 $modelWriter->write($model);
 
             } catch (ModelFileAlreadyExistsException $e) {
@@ -91,6 +93,40 @@ class ModelWriter
         }
     }
 
+    /**
+     * Append 'related' model data for related models
+     *
+     * @param array $model
+     * @return array
+     */
+    protected function appendRelatedModelsToModelData(array $model)
+    {
+        $relationships = array_merge(
+            array_get($model, 'relationships.normal'),
+            array_get($model, 'relationships.reverse')
+        );
+
+        $model['related_models'] = [];
+
+        foreach ($relationships as $name => $relationship) {
+
+            $relatedModelId = $relationship['model'];
+
+            if (isset($model['related_models'][ $relatedModelId ])) continue;
+
+            $model['related_models'][ $relatedModelId ] = $this->data['models'][ $relatedModelId ];
+        }
+
+        return $model;
+    }
+
+
+    /**
+     * Make model data array for translation model
+     *
+     * @param array $model
+     * @return array
+     */
     protected function makeTranslatedDataFromModelData(array $model)
     {
         $translatedModel = [
