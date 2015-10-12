@@ -133,14 +133,30 @@ class CmsAnalyzer
 
                     case FieldType::TYPE_REFERENCE:
                     case FieldType::TYPE_REFERENCE_NEGATIVE:
+
+                        // add foreign key if it is different than the targeted model name
+                        // (would break the convention) -- this is NOT necessary, since the convention
+                        // for the CmsModel class is to use the relation name anyway!
+                        //
+                        // this only needs to be set if the relation name ends up being different
+                        // from the relation name
+                        //
+                        // todo: so keep a close eye on the reversed relationships!
+                        $keyName = null;
+
                         $model['relationships']['normal'][$relationName] = [
                             'type'     => Generator::RELATIONSHIP_BELONGS_TO,    // reverse of hasOne
                             'model'    => $fieldData['refers_to_module'],
                             'single'   => ($fieldData['value_count'] == 1),
                             'count'    => $fieldData['value_count'],  // should always be 1 for single ref
                             'field'    => $fieldId,
+                            'key'      => $keyName,
                             'negative' => ($fieldData['field_type_id'] == FieldType::TYPE_REFERENCE_NEGATIVE),
                         ];
+
+                        if (config('pxlcms.generator.hide_foreign_key_attributes')) {
+                            $model['hidden'][] = $attributeName;
+                        }
                         break;
 
                     case FieldType::TYPE_REFERENCE_MANY:
@@ -258,6 +274,13 @@ class CmsAnalyzer
                 }
             }
 
+            if (count($model['hidden'])) {
+                $model['hidden'] = array_merge(
+                    $model['hidden'],
+                    config('pxlcms.generator.default_hidden_fields', [])
+                );
+            }
+
             $this->output['models'][ $moduleId ] = $model;
         }
 
@@ -280,10 +303,32 @@ class CmsAnalyzer
                 }
 
                 // special case, referencing model is itself
-                $selfReference = ($modelFromKey == $relationship['model']);
-                $reverseType   = null;
-                $reverseCount  = 0;
+                $selfReference     = ($modelFromKey == $relationship['model']);
+                $reverseType       = null;
+                $reverseCount      = 0;
+                $reverseForeignKey = null;
 
+                // For non-cms_m_references relations, we need to be careful about
+                // foreign keys not following the expected laravel convention
+                // since they expect the name to be based on the model names, whereas
+                // it is actually defined by the field name in the CMS module,
+                // which conforms to the relation name of the OPPOSITE relation.
+                //
+                // Too tricky to determine automatically, so force a foreign key parameter
+                // if required.
+                if ($relationship['type'] !== GENERATOR::RELATIONSHIP_BELONGS_TO_MANY) {
+
+                    if (array_get($relationship, 'key')) {
+
+                        $reverseForeignKey = $relationship['key'];
+
+                    } elseif ($relationName !== camel_case($this->output['models'][ $relationship['model'] ]['name'])) {
+
+                        $reverseForeignKey = snake_case($relationName);
+                    }
+                }
+
+                // determine type and one/many (count) for reverse relationship
                 switch ($relationship['type']) {
 
                     case GENERATOR::RELATIONSHIP_HAS_ONE:
@@ -337,6 +382,7 @@ class CmsAnalyzer
                     'single'   => ($reverseCount == 1),
                     'count'    => $reverseCount,
                     'field'    => $relationship['field'],
+                    'key'      => $reverseForeignKey,
                     'negative' => false,
                 ];
             }
@@ -472,7 +518,7 @@ class CmsAnalyzer
      */
     protected function fieldNameToDatabaseColumn($field)
     {
-        return strtolower(snake_case($field));
+        return str_replace(' ', '_', trim(strtolower($field)));
     }
 
     /**

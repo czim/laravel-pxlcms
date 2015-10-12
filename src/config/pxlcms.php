@@ -121,6 +121,17 @@ return [
         // not used, since it would break the database dependency!
         //'singularize_single_relationships' => true,
 
+        // whether to add foreign key attribute names to the $hidden property
+        'hide_foreign_key_attributes' => true,
+
+        // if adding hidden attributes for a model, always add these attributes to hide aswell
+        'default_hidden_fields' => [
+            'e_active',
+            'e_position',
+            'e_category_id',
+            'e_user_id',
+        ],
+
         /*
          * Which CMS content to ignore when generating
          */
