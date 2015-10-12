@@ -414,10 +414,22 @@ class CmsModelWriter
 
         if ( ! count($attributes)) return '';
 
+        // align assignment signs by longest attribute
+        $longestLength = 0;
+        foreach ($attributes as $attribute => $type) {
+            if (strlen($attribute) > $longestLength) {
+                $longestLength = strlen($attribute);
+            }
+        }
+
         $replace = str_repeat(' ', 4) . "protected \$casts = [\n";
 
         foreach ($attributes as $attribute => $type) {
-            $replace .= str_repeat(' ', 8) . "'" . $attribute . "' => '" . $type . "',\n";
+
+            $replace .= str_repeat(' ', 8)
+                       . "'" . $attribute . "'"
+                       . str_repeat(' ', $longestLength - strlen($attribute))
+                       . " => '" . $type . "',\n";
         }
 
         $replace .= str_repeat(' ', 4) . "];\n\n";
