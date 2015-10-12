@@ -211,7 +211,12 @@ class CmsModelWriter
         //$stub = str_replace('DummyRootNamespace', $this->laravel->getNamespace(), $stub);
 
         $table = array_get($this->data, 'table');
-        $stub = preg_replace('# *{{TABLE}}\n?#i', $table ? str_repeat(' ', 4) . "protected \$table = '" . $table . "';\n" : '' , $stub);
+        $stub = preg_replace(
+            '# *{{TABLE}}\n?#i',
+            $table ? "\n" . str_repeat(' ', 4) . "protected \$table = '" . $table . "';\n" : '',
+            $stub
+        );
+
         $stub = preg_replace('# *{{USETRAITS}}\n?#i', $this->getTraitsStubReplace(), $stub);
         $stub = str_replace('{{MODULE_NUMBER}}', array_get($this->data, 'module'), $stub);
 

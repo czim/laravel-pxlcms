@@ -24,6 +24,9 @@ return [
         // prefix for module tables
         'prefix' => 'cms_',
 
+        // postfix for multilingual tables
+        'translation_postfix' => '_ml',
+
         // meta-data for cms, used for CMS section grouping, etc
         'meta' => [
 
@@ -110,6 +113,13 @@ return [
 
         // postfix for translation model
         'translation_model_postfix' => 'Translation',
+
+        // singularize the names of models (using str_singular)
+        'singularize_model_names' => true,
+
+        // singularize relationship names for hasOne and belongsTo relationships that have only 1 possible match
+        // not used, since it would break the database dependency!
+        //'singularize_single_relationships' => true,
 
         /*
          * Which CMS content to ignore when generating

@@ -82,10 +82,22 @@ class CmsAnalyzer
                 continue;
             }
 
+            $name = $moduleData['name'];
+
+            if (config('pxlcms.generator.singularize_model_names')) {
+                $name = str_singular($name);
+            }
+
+            // make sure we force set a table name if it does not follow convention
+            $tableOverride = null;
+            if (str_plural(snake_case($name)) != snake_case($moduleData['name'])) {
+                $tableOverride = $this->getModuleTablePrefix($moduleId) . snake_case($moduleData['name']);
+            }
+
             $model = [
                 'module'                 => $moduleId,
-                'name'                   => $moduleData['name'],
-                'table'                  => null,   // default
+                'name'                   => $name,
+                'table'                  => $tableOverride,   // default
                 'is_translated'          => false,
                 'is_listified'           => ($moduleData['max_entries'] != 1), // makes no sense for single-entry only
                 'normal_fillable'        => [],
@@ -461,6 +473,19 @@ class CmsAnalyzer
     protected function fieldNameToDatabaseColumn($field)
     {
         return strtolower(snake_case($field));
+    }
+
+    /**
+     * Returns the table prefix (cms_m#_ ...) for a module CMS table
+     *
+     * @param $moduleId
+     * @return string
+     */
+    protected function getModuleTablePrefix($moduleId)
+    {
+        $moduleId = (int) $moduleId;
+
+        return config('pxlcms.tables.prefix', 'cms_') . 'm' . $moduleId . '_';
     }
 
 
