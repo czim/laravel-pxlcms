@@ -1,11 +1,6 @@
 <?php
 namespace {{NAMESPACE}};
-
-use Czim\PxlCms\Models\CmsModel;
-use Czim\PxlCms\Models\ListifyConstructorTrait;
-use Czim\PxlCms\Translatable\Translatable;
-use Lookitsatravis\Listify\Listify;
-
+{{USEIMPORTS}}
 class {{MODEL_CLASSNAME}} extends CmsModel
 {
     {{USETRAITS}}
@@ -14,6 +9,7 @@ class {{MODEL_CLASSNAME}} extends CmsModel
 
     {{FILLABLE}}
     {{TRANSLATED}}
+    {{HIDDEN}}
     {{CASTS}}
     {{DATES}}
     {{RELATIONSCONFIG}}

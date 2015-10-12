@@ -10,6 +10,8 @@ use InvalidArgumentException;
 
 class CmsModelWriter
 {
+    const IMPORT_TRAIT_TRANSLATABLE = 'translatable';
+    const IMPORT_TRAIT_LISTIFY      = 'listify';
 
     /**
      * The Laravel application instance.
@@ -26,13 +28,6 @@ class CmsModelWriter
     protected $files;
 
     /**
-     * The type of class being generated.
-     *
-     * @var string
-     */
-    protected $type;
-
-    /**
      * Analyzer output data for generating the model
      *
      * @var array
@@ -45,6 +40,13 @@ class CmsModelWriter
      * @var string
      */
     protected $fqnName;
+
+    /**
+     * List of imports that aren't required for the model
+     *
+     * @var array
+     */
+    protected $importsNotUsed = [];
 
     /**
      * Create a new controller creator command instance.
@@ -68,6 +70,8 @@ class CmsModelWriter
      */
     public function write(array $data)
     {
+        $this->reset();
+
         $name = $this->makeFqnForModelName( array_get($data, 'name') );
 
         $this->data    = $data;
@@ -87,6 +91,16 @@ class CmsModelWriter
         $this->makeDirectory($path);
 
         $this->files->put($path, $this->buildClass());
+    }
+
+    /**
+     * Resets the class memory for a new writing action
+     */
+    protected function reset()
+    {
+        $this->data = null;
+
+        $this->importsNotUsed = [];
     }
 
     /**
@@ -218,10 +232,13 @@ class CmsModelWriter
         );
 
         $stub = preg_replace('# *{{USETRAITS}}\n?#i', $this->getTraitsStubReplace(), $stub);
+        $stub = preg_replace('#{{USEIMPORTS}}\n?#i', $this->getImportsStubReplace(), $stub);
+
         $stub = str_replace('{{MODULE_NUMBER}}', array_get($this->data, 'module'), $stub);
 
         $stub = preg_replace('# *{{FILLABLE}}\n?#i', $this->getFillableStubReplace(), $stub);
         $stub = preg_replace('# *{{TRANSLATED}}\n?#i', $this->getTranslatedStubReplace(), $stub);
+        $stub = preg_replace('# *{{HIDDEN}}\n?#i', $this->getHiddenStubReplace(), $stub);
         $stub = preg_replace('# *{{CASTS}}\n?#i', $this->getCastsStubReplace(), $stub);
         $stub = preg_replace('# *{{DATES}}\n?#i', $this->getDatesStubReplace(), $stub);
         $stub = preg_replace('# *{{RELATIONSCONFIG}}\n?#i', $this->getRelationsConfigStubReplace(), $stub);
@@ -255,11 +272,15 @@ class CmsModelWriter
 
         if (array_get($this->data, 'is_translated')) {
             $traits[] = 'Translatable';
+        } else {
+            $this->importsNotUsed[] = static::IMPORT_TRAIT_TRANSLATABLE;
         }
 
         if (array_get($this->data, 'is_listified')) {
             $traits[] = 'Listify';
             $traits[] = 'ListifyConstructorTrait';
+        } else {
+            $this->importsNotUsed[] = static::IMPORT_TRAIT_LISTIFY;
         }
 
         if ( ! count($traits)) return '';
@@ -275,6 +296,40 @@ class CmsModelWriter
                       . ($index == $lastIndex ? ";\n" : ',')
                       . "\n";
         }
+
+        return $replace;
+    }
+
+    /**
+     * Returns the replacement for the use use-imports placeholder
+     *
+     * @return string
+     */
+    protected function getImportsStubReplace()
+    {
+        $imports = array_diff(
+            [
+                static::IMPORT_TRAIT_LISTIFY,
+                static::IMPORT_TRAIT_TRANSLATABLE
+            ],
+            $this->importsNotUsed
+        );
+
+        $replace = "\nuse Czim\\PxlCms\\Models\\CmsModel;\n";
+
+        if (in_array(static::IMPORT_TRAIT_LISTIFY, $imports)) {
+            $replace .= "use Czim\\PxlCms\\Models\\ListifyConstructorTrait;\n";
+        }
+
+        if (in_array(static::IMPORT_TRAIT_TRANSLATABLE, $imports)) {
+            $replace .= "use Czim\\PxlCms\\Translatable\\Translatable;\n";
+        }
+
+        if (in_array(static::IMPORT_TRAIT_LISTIFY, $imports)) {
+            $replace .= "use Lookitsatravis\\Listify\\Listify;\n";
+        }
+
+        $replace .= "\n";
 
         return $replace;
     }
@@ -316,6 +371,28 @@ class CmsModelWriter
         if ( ! count($attributes)) return '';
 
         $replace = str_repeat(' ', 4) . "protected \$translatedAttributes = [\n";
+
+        foreach ($attributes as $attribute) {
+            $replace .= str_repeat(' ', 8) . "'" . $attribute . "',\n";
+        }
+
+        $replace .= str_repeat(' ', 4) . "];\n\n";
+
+        return $replace;
+    }
+
+    /**
+     * Returns the replacement for the hidden placeholder
+     *
+     * @return string
+     */
+    protected function getHiddenStubReplace()
+    {
+        $attributes = array_get($this->data, 'hidden') ?: [];
+
+        if ( ! count($attributes)) return '';
+
+        $replace = str_repeat(' ', 4) . "protected \$hidden = [\n";
 
         foreach ($attributes as $attribute) {
             $replace .= str_repeat(' ', 8) . "'" . $attribute . "',\n";
@@ -437,14 +514,23 @@ class CmsModelWriter
 
             $relatedClassName = studly_case($this->data['related_models'][ $relationship['model'] ]['name']);
 
+            $relationParameters = '';
+
+            if ($relationKey = array_get($relationship, 'key')) {
+                $relationParameters = ", '{$relationKey}'";
+            }
 
             $replace .= str_repeat(' ', 4) . "public function {$name}()\n"
                       . str_repeat(' ', 4) . "{\n"
-                      . str_repeat(' ', 8) . "return \$this->{$relationship['type']}({$relatedClassName}::class);\n"
+                      . str_repeat(' ', 8) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
+                      . $relationParameters
+                      . ");\n"
                       . str_repeat(' ', 4) . "}\n"
                       . "\n";
         }
 
         return $replace;
     }
+
+
 }
