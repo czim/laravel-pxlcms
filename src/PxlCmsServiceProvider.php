@@ -17,8 +17,36 @@ class PxlCmsServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        $this->registerConsoleCommands();
+
         $this->mergeConfigFrom(
             __DIR__.'/config/pxlcms.php', 'pxlcms'
         );
+    }
+
+    /**
+     * Register the package console commands.
+     *
+     * @return void
+     */
+    protected function registerConsoleCommands()
+    {
+        $this->registerPxlCmsGenerate();
+        $this->commands([
+            'pxlcms.generate'
+        ]);
+    }
+
+    /**
+     * Register the generate command with the container.
+     *
+     * @return void
+     */
+    protected function registerPxlCmsGenerate()
+    {
+        $this->app->bindShared('pxlcms.generate', function($app)
+        {
+            return new Commands\GenerateCommand;
+        });
     }
 }

@@ -80,11 +80,21 @@ class Generator
     }
 
 
+    /**
+     * Output for debugging
+     *
+     * @param mixed $data
+     */
     protected function debugOutput($data)
     {
         dd($data);
     }
 
+    /**
+     * Output the log
+     *
+     * @param array $log
+     */
     protected function logOutput(array $log)
     {
         foreach ($log as $logLine) {

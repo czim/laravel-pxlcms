@@ -71,6 +71,8 @@ class ModelWriter
 
                 $modelWriter->write($model);
 
+                $this->log("Wrote model {$model['name']}.");
+
             } catch (ModelFileAlreadyExistsException $e) {
 
                 $this->log("File for model {$model['name']} already exists, did not write.");
@@ -84,6 +86,8 @@ class ModelWriter
                 try {
 
                     $modelWriter->write($translatedModel);
+
+                    $this->log("Wrote translation for model {$model['name']}.");
 
                 } catch (ModelFileAlreadyExistsException $e) {
 
