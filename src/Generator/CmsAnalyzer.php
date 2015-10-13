@@ -140,6 +140,7 @@ class CmsAnalyzer
                 'relations_config'      => [],
                 'normal_attributes'     => [],
                 'translated_attributes' => [],
+                'timestamps'            => null,
 
                 'relationships'         => [
                     'normal'   => [],
@@ -354,6 +355,13 @@ class CmsAnalyzer
             }
 
 
+            // enable timestamps?
+            if (    config('pxlcms.generator.enable_timestamps_on_models_with_suitable_attributes')
+                &&  in_array('created_at', $model['dates'])
+                &&  in_array('updated_at', $model['dates'])
+            ) {
+                $model['timestamps'] = true;
+            }
 
             $this->output['models'][ $moduleId ] = $model;
         }

@@ -148,6 +148,9 @@ return [
             'e_user_id',
         ],
 
+        // whether to enable laravel timestamps for models with created_at and update_at
+        "enable_timestamps_on_models_with_suitable_attributes" => true,
+
         /*
          * Which CMS content to ignore when generating
          */

@@ -139,6 +139,7 @@ class ModelWriter
             'table'                  => ! empty($model['table'])
                 ? $model['table'] . snake_case(config('pxlcms.tables.translation_postfix', '_ml'))
                 : null,
+            'cached'                 => $model['cached'],
             'is_translated'          => false,
             'is_listified'           => false,
             'normal_fillable'        => $model['translated_attributes'],
@@ -149,6 +150,8 @@ class ModelWriter
             'relations_config'       => [],
             'normal_attributes'      => [],
             'translated_attributes'  => [],
+            'timestamps'             => null,
+
             'relationships'          => [
                 'normal'   => [],
                 'reverse'  => [],

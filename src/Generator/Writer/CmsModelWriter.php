@@ -272,6 +272,7 @@ class CmsModelWriter
         $stub = preg_replace('# *{{USETRAITS}}\n?#i', $this->getTraitsStubReplace(), $stub);
 
         $stub = str_replace('{{MODULE_NUMBER}}', array_get($this->data, 'module'), $stub);
+        $stub = preg_replace('# *{{TIMESTAMPS}}\n?#i', $this->getTimestampStubReplace(), $stub);
 
         $stub = preg_replace('# *{{FILLABLE}}\n?#i', $this->getFillableStubReplace(), $stub);
         $stub = preg_replace('# *{{TRANSLATED}}\n?#i', $this->getTranslatedStubReplace(), $stub);
@@ -421,6 +422,21 @@ class CmsModelWriter
         $replace .= "\n";
 
         return $replace;
+    }
+
+    /**
+     * Returns the replacement for the timestamp placeholder
+     *
+     * @return string
+     */
+    protected function getTimestampStubReplace()
+    {
+        if (is_null(array_get($this->data, 'timestamps'))) return '';
+
+        return "\n"
+                 . str_repeat(' ', 4) ."public \$timestamps = "
+                 . (array_get($this->data, 'timestamps') ? 'true' : 'false')
+                 .";\n";
     }
 
     /**
