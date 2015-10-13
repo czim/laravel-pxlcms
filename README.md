@@ -20,26 +20,21 @@ $ composer require czim/laravel-pxlcms
 - e_active global scope by default
 - listify + e_position by default
 
-- categories ?
-
-
 - relationships with the same name as the attribute ('category' in product f.i.)
     $product->category then returns the id, not the related model .. how to (selectively) override this?
 
+- categories ?
+
+
 ### Generator
 
-- relationship handling
-    - negative reference ?
-    
+- relationship handling: negative reference
 - checkboxes handling
     - multi-checkboxes references handling
 
 - images
 - files (?)
 - checkboxes
-
-- auto-add hidden fields (+ configurable overrides)
-    - foreign keys
 
 ## Credits
 
