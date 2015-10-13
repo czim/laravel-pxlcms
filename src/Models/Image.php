@@ -26,6 +26,11 @@ class Image extends CmsModel
         'uploaded',
     ];
 
+    protected $hidden = [
+        'field_id',
+        'entry_id',
+    ];
+
     public function __construct(array $attributes = array(), $exists = false) {
 
         parent::__construct($attributes, $exists);
