@@ -160,12 +160,66 @@ return [
 
         ],
 
-        'custom' => [
+        'override' => [
 
-            // custom field names (set this per app)
-            // to override poorly chosen (singular vs. plural f.i.) references,
-            // etc.
-            'fields' => [
+            // force some values for models generated to overrule the data analysis
+            'models' => [
+
+                // key by the module ID that the model is based on
+
+                // example:
+                // you can use any or all of these settings per model
+                "0" => [
+
+                    // force a custom name for the model
+                    "name" => "CustomName",
+
+                    // force listify trait on or off
+                    "listify" => true,
+
+                    // configuration for model attributes
+                    "attributes" => [
+
+                        // set specific attribute names (snake_case notation) to not be fillable
+                        // this amends the normal fillable list, so anything not listed here (and normally
+                        // made fillable) will be fillable.
+                        "fillable-remove" => [],
+                        // set specific attribute names (snake_case notation) to be fillable (full list)
+                        // this overrides "remove-fillable"
+                        "fillable" => [],
+                        // set to true to make no attribute fillable
+                        "fillable-empty" => false,
+
+                        // add attribute names (snake_case notation) to overrule hidden fields with
+                        // don't forget e_position, e_active, etc, if you use this
+                        "hidden" => [],
+                        // set this to true if you don't want to hide any fields for the model
+                        "hidden-empty" => false,
+
+                        // add attribute names (snake_case notation) with the type to cast to
+                        "casts" => [
+                            // "some_attribute" => "boolean",
+                        ],
+                        // add attribute names (snake_case notation) for which NOT to add casts
+                        "casts-remove" => [],
+                    ],
+
+
+
+                    // configuration per relationship of the model (references)
+                    "relationships" => [
+
+                        // (use camelCase notation)
+                        "yourRelationName" => [
+                            // force a different name for the relation
+                            // use camelCase notation, do not use existing attribute name
+                            'name' => "overrideName",
+                            // do not create reverse relationships for this relation
+                            "prevent_reverse" => true,
+                        ]
+
+                    ]
+                ],
 
             ],
         ],

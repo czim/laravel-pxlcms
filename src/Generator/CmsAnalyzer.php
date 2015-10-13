@@ -82,10 +82,19 @@ class CmsAnalyzer
                 continue;
             }
 
-            $name = $moduleData['name'];
+            $overrides = $this->getOverrideConfigForModel($moduleId);
 
-            if (config('pxlcms.generator.singularize_model_names')) {
-                $name = str_singular($name);
+            if (array_key_exists('name', $overrides)) {
+
+                $name = $overrides['name'];
+
+            } else {
+
+                $name = $moduleData['name'];
+
+                if (config('pxlcms.generator.singularize_model_names')) {
+                    $name = str_singular($name);
+                }
             }
 
             // make sure we force set a table name if it does not follow convention
@@ -94,17 +103,39 @@ class CmsAnalyzer
                 $tableOverride = $this->getModuleTablePrefix($moduleId) . snake_case($moduleData['name']);
             }
 
+            // force listified?
+            $listified = array_key_exists('listify', $overrides)
+                ? (bool) $overrides['listify']
+                : ($moduleData['max_entries'] != 1);
+
+
+            // override hidden attributes?
+            $overrideHidden = [];
+
+            if ( ! is_null(array_get($overrides, 'attributes.hidden'))
+                && ! array_get($overrides, 'attributes.hidden-empty')
+            ) {
+                $overrideHidden = array_get($overrides, 'attributes.hidden');
+
+                if ( ! is_array($overrideHidden)) $overrideHidden = [(string) $overrideHidden];
+            }
+
+            // override casts?
+            $overrideCasts = array_get($overrides, 'attributes.casts', []);
+            $removeCasts   = array_get($overrides, 'attributes.casts-remove', []);
+
+
             $model = [
                 'module'                => $moduleId,
                 'name'                  => $name,
                 'table'                 => $tableOverride,   // default
                 'cached'                => config('pxlcms.generator.enable_rememberable_cache'),
                 'is_translated'         => false,
-                'is_listified'          => ($moduleData['max_entries'] != 1), // makes no sense for single-entry only
+                'is_listified'          => $listified, // makes no sense for single-entry only
                 'normal_fillable'       => [],
                 'translated_fillable'   => [],
-                'hidden'                => [],
-                'casts'                 => [],
+                'hidden'                => $overrideHidden,
+                'casts'                 => $overrideCasts,
                 'dates'                 => [],
                 'relations_config'      => [],
                 'normal_attributes'     => [],
@@ -146,8 +177,11 @@ class CmsAnalyzer
                         //
                         // todo: so keep a close eye on the reversed relationships!
                         $keyName = null;
+                        //if ($relationName !== studly_case($this->rawData['modules'][ $fieldData['refers_to_module'] ]['name'])) {
+                        //    $keyName = $attributeName;
+                        //}
 
-                        $model['relationships']['normal'][$relationName] = [
+                        $model['relationships']['normal'][ $relationName ] = [
                             'type'     => Generator::RELATIONSHIP_BELONGS_TO,    // reverse of hasOne
                             'model'    => $fieldData['refers_to_module'],
                             'single'   => ($fieldData['value_count'] == 1),
@@ -165,7 +199,7 @@ class CmsAnalyzer
                     case FieldType::TYPE_REFERENCE_MANY:
                     case FieldType::TYPE_REFERENCE_AUTOSORT:
                     case FieldType::TYPE_REFERENCE_CHECKBOXES:
-                        $model['relationships']['normal'][$relationName] = [
+                        $model['relationships']['normal'][ $relationName ] = [
                             'type'     => Generator::RELATIONSHIP_BELONGS_TO_MANY,
                             'model'    => $fieldData['refers_to_module'],
                             'single'   => false,
@@ -180,10 +214,10 @@ class CmsAnalyzer
 
                     case FieldType::TYPE_IMAGE:
                     case FieldType::TYPE_IMAGE_MULTI:
-                        $model['relationships']['image'][$relationName] = [
+                        $model['relationships']['image'][ $relationName ] = [
                             'type'       => ($fieldData['value_count'] == 1)
-                                            ?   Generator::RELATIONSHIP_HAS_ONE
-                                            :   Generator::RELATIONSHIP_HAS_MANY,
+                                ? Generator::RELATIONSHIP_HAS_ONE
+                                : Generator::RELATIONSHIP_HAS_MANY,
                             'single'     => ($fieldData['value_count'] == 1),
                             'count'      => $fieldData['value_count'],
                             'field'      => $fieldId,
@@ -192,10 +226,10 @@ class CmsAnalyzer
                         break;
 
                     case FieldType::TYPE_FILE:
-                        $model['relationships']['file'][$relationName] = [
+                        $model['relationships']['file'][ $relationName ] = [
                             'type'       => ($fieldData['value_count'] == 1)
-                                            ?   Generator::RELATIONSHIP_HAS_ONE
-                                            :   Generator::RELATIONSHIP_HAS_MANY,
+                                ? Generator::RELATIONSHIP_HAS_ONE
+                                : Generator::RELATIONSHIP_HAS_MANY,
                             'single'     => ($fieldData['value_count'] == 1),
                             'count'      => $fieldData['value_count'],
                             'field'      => $fieldId,
@@ -204,11 +238,11 @@ class CmsAnalyzer
                         break;
 
                     case FieldType::TYPE_CHECKBOX:
-                        $model['relationships']['checkbox'][$relationName] = [
-                            'type'       => Generator::RELATIONSHIP_HAS_MANY,
-                            'single'     => false,
-                            'count'      => $fieldData['value_count'],
-                            'field'      => $fieldId,
+                        $model['relationships']['checkbox'][ $relationName ] = [
+                            'type'   => Generator::RELATIONSHIP_HAS_MANY,
+                            'single' => false,
+                            'count'  => $fieldData['value_count'],
+                            'field'  => $fieldId,
                         ];
                         break;
 
@@ -249,19 +283,21 @@ class CmsAnalyzer
                                 break;
 
                             case FieldType::TYPE_DATE:
-                                $model['dates'][] = $attributeName;
+                                if ( ! array_key_exists($attributeName, $overrideCasts)) {
+                                    $model['dates'][] = $attributeName;
+                                }
                                 break;
 
                             // default omitted on purpose
                         }
 
                         if ($fieldData['multilingual']) {
-                            $model['is_translated'] = true;
+                            $model['is_translated']           = true;
                             $model['translated_attributes'][] = $attributeName;
-                            $model['translated_fillable'][] = $attributeName;
+                            $model['translated_fillable'][]   = $attributeName;
                         } else {
                             $model['normal_attributes'][] = $attributeName;
-                            $model['normal_fillable'][] = $attributeName;
+                            $model['normal_fillable'][]   = $attributeName;
                         }
                         break;
 
@@ -277,12 +313,47 @@ class CmsAnalyzer
                 }
             }
 
-            if (count($model['hidden'])) {
+            // force hidden override
+            if (count($model['hidden']) && ! count($overrideHidden)) {
                 $model['hidden'] = array_merge(
                     $model['hidden'],
                     config('pxlcms.generator.default_hidden_fields', [])
                 );
             }
+
+
+            // clear, set or remove fillable attributes by override
+            if (array_get($overrides, 'attributes.fillable-empty')) {
+
+                $model['normal_fillable']     = [];
+                $model['translated_fillable'] = [];
+
+            } elseif ($overrideFillable = array_get($overrides, 'attributes.fillable', [])) {
+
+                $model['normal_fillable']     = $overrideFillable;
+                $model['translated_fillable'] = [];
+
+            } elseif ($removeFillable = array_get($overrides, 'attributes.fillable-remove', [])) {
+
+                $model['normal_fillable']     = array_diff($model['normal_fillable'], $removeFillable);
+                $model['translated_fillable'] = array_diff($model['translated_fillable'], $removeFillable);
+            }
+
+
+            // force casts as overridden
+            foreach ($overrideCasts as $attributeName => $type) {
+                if (array_key_exists($attributeName, $model['casts'])) {
+                    $model['casts'][$attributeName] = $type;
+                }
+            }
+
+            foreach ($removeCasts as $attributeName) {
+                if (array_key_exists($attributeName, $model['casts'])) {
+                    unset ($model['casts'][$attributeName]);
+                }
+            }
+
+
 
             $this->output['models'][ $moduleId ] = $model;
         }
@@ -552,5 +623,16 @@ class CmsAnalyzer
     public function getLog()
     {
         return $this->log;
+    }
+
+    /**
+     * Get override configuration for a given model/module id
+     *
+     * @param int $moduleId
+     * @return mixed
+     */
+    protected function getOverrideConfigForModel($moduleId)
+    {
+        return config('pxlcms.generator.override.models.' . (int) $moduleId, []);
     }
 }
