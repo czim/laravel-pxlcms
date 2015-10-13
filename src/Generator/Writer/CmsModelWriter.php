@@ -361,42 +361,61 @@ class CmsModelWriter
             $this->importsNotUsed
         );
 
-        $replace = "\n";
+
+        // build up import lines
+        $importLines = [
+            "Czim\\PxlCms\\Models\\CmsModel"
+        ];
 
         if (    in_array(static::STANDARD_MODEL_CHECKBOX, $this->standardModelsUsed)
             &&  config('pxlcms.generator.include_namespace_of_standard_models')
         ) {
-            $replace .= "use " . config('pxlcms.generator.standard_models.checkbox') . ";\n";
+            $importLines[] = config('pxlcms.generator.standard_models.checkbox');
         }
 
-        $replace .= "use Czim\\PxlCms\\Models\\CmsModel;\n";
 
         if (    in_array(static::STANDARD_MODEL_IMAGE, $this->standardModelsUsed)
             &&  config('pxlcms.generator.include_namespace_of_standard_models')
         ) {
-            $replace .= "use " . config('pxlcms.generator.standard_models.image') . ";\n";
+            $importLines[] = config('pxlcms.generator.standard_models.image');
         }
 
         if (    in_array(static::STANDARD_MODEL_FILE, $this->standardModelsUsed)
             &&  config('pxlcms.generator.include_namespace_of_standard_models')
         ) {
-            $replace .= "use " . config('pxlcms.generator.standard_models.file') . ";\n";
+            $importLines[] = config('pxlcms.generator.standard_models.file');
         }
 
         if (in_array(static::IMPORT_TRAIT_LISTIFY, $imports)) {
-            $replace .= "use Czim\\PxlCms\\Models\\ListifyConstructorTrait;\n";
+            $importLines[] = "Czim\\PxlCms\\Models\\ListifyConstructorTrait";
+            $importLines[] = "Lookitsatravis\\Listify\\Listify";
         }
 
         if (in_array(static::IMPORT_TRAIT_TRANSLATABLE, $imports)) {
-            $replace .= "use Czim\\PxlCms\\Translatable\\Translatable;\n";
-        }
-
-        if (in_array(static::IMPORT_TRAIT_LISTIFY, $imports)) {
-            $replace .= "use Lookitsatravis\\Listify\\Listify;\n";
+            $importLines[] = "Czim\\PxlCms\\Translatable\\Translatable";
         }
 
         if (in_array(static::IMPORT_TRAIT_REMEMBERABLE, $imports)) {
-            $replace .= "use Watson\\Rememberable\\Rememberable;\n";
+            $importLines[] =  "Watson\\Rememberable\\Rememberable";
+        }
+
+        // set them in the right order
+        if (config('pxlcms.generator.sort_imports_by_string_length')) {
+
+            // sort from shortest to longest
+            usort($importLines, function ($a, $b) {
+                return strlen($a) - strlen($b);
+            });
+
+        } else {
+            sort($importLines);
+        }
+
+        // build the actual replacement string
+        $replace = "\n";
+
+        foreach ($importLines as $line) {
+            $replace .= "use " . $line . ";\n";
         }
 
         $replace .= "\n";

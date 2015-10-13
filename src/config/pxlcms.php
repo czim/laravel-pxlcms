@@ -103,6 +103,9 @@ return [
             'requests' => 'App\\Http\\Requests',
         ],
 
+        // whether to sort use import statements by their length (false sorts them alphabetically)
+        'sort_imports_by_string_length' => true,
+
         // the FQN's for the standard CMS models for special relationships
         'standard_models' => [
             'image'    => 'Czim\\PxlCms\\Models\\Image',
