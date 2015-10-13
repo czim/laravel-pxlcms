@@ -26,6 +26,7 @@ class CmsAnalyzer
     protected $rawData = [
         'modules' => [],
         'fields'  => [],
+        'resizes' => [],
     ];
 
     /**
@@ -223,6 +224,7 @@ class CmsAnalyzer
                             'count'      => $fieldData['value_count'],
                             'field'      => $fieldId,
                             'translated' => (bool) $fieldData['multilingual'],
+                            'resizes'    => $this->getImageResizesForField($fieldId),
                         ];
                         break;
 
@@ -471,6 +473,41 @@ class CmsAnalyzer
         }
     }
 
+    /**
+     * Returns data about resizes for an image field
+     *
+     * @param int $fieldId
+     * @return array
+     */
+    protected function getImageResizesForField($fieldId)
+    {
+        if (    ! array_key_exists('resizes', $this->rawData['fields'][ $fieldId ])
+            ||  ! count($this->rawData['fields'][ $fieldId ]['resizes'])
+        ) {
+            return [];
+        }
+
+        $resizes = [];
+
+        foreach ($this->rawData['fields'][ $fieldId ]['resizes'] as $resizeId => $resize) {
+
+            $resizes[] = [
+                'resize' => $resizeId,
+                'prefix' => $resize['prefix'],
+                'width'  => (int) $resize['width'],
+                'height' => (int) $resize['height'],
+            ];
+        }
+
+        // sort resizes.. by prefix name, or by image size?
+        uasort($resizes, function ($a, $b) {
+            //return $a['width'] * $a['height'] - $b['width'] * $b['height'];
+            return strcmp($a['prefix'], $b['prefix']);
+        });
+
+        return $resizes;
+    }
+
 
     /**
      * Checks whether all required tables exist
@@ -586,9 +623,41 @@ class CmsAnalyzer
                 $this->rawData['fields'][ $fieldId ]['field_type_id']
             );
 
+            $this->rawData['fields'][ $fieldId ]['resizes'] = [];
+
             // also save in modules
             $this->rawData['modules'][ $moduleId ]['fields'][ $fieldId ] = $this->rawData['fields'][ $fieldId ];
         }
+
+        unset($fieldData, $fieldObject);
+
+
+        // ------------------------------------------------------------------------------
+        //      Resizes
+        // ------------------------------------------------------------------------------
+
+        $resizeData = DB::table(config('pxlcms.tables.meta.field_options_resizes'))->get();
+
+        foreach ($resizeData as $resizeObject) {
+
+            $resizeArray = (array) $resizeObject;
+            $resizeId = $resizeArray['id'];
+            $fieldId  = $resizeArray['field_id'];
+
+            $this->rawData['resizes'][ $resizeId ] = [];
+
+            foreach ([  'field_id', 'prefix',
+                         'width', 'height',
+                     ] as $key
+            ) {
+                $this->rawData['resizes'][ $resizeId ][ $key ] = $resizeArray[ $key ];
+            }
+
+            // also save in fields
+            $this->rawData['fields'][ $fieldId ]['resizes'][ $resizeId ] = $this->rawData['resizes'][ $resizeId ];
+        }
+
+        unset($resizeData, $resizeObject);
     }
 
 
