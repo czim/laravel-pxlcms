@@ -10,8 +10,9 @@ use InvalidArgumentException;
 
 class CmsModelWriter
 {
-    const IMPORT_TRAIT_TRANSLATABLE = 'translatable';
     const IMPORT_TRAIT_LISTIFY      = 'listify';
+    const IMPORT_TRAIT_REMEMBERABLE = 'rememberable';
+    const IMPORT_TRAIT_TRANSLATABLE = 'translatable';
 
     /**
      * The Laravel application instance.
@@ -49,6 +50,13 @@ class CmsModelWriter
     protected $importsNotUsed = [];
 
     /**
+     * Whether the rememberable trait is set on the model
+     *
+     * @var bool
+     */
+    protected $blockRememberableTrait = false;
+
+    /**
      * Create a new controller creator command instance.
      *
      * @param Filesystem  $files
@@ -77,6 +85,10 @@ class CmsModelWriter
         $this->data    = $data;
         $this->fqnName = $name;
 
+        if (array_get($data, 'cached') === false) {
+            $this->blockRememberableTrait = true;
+        }
+
 
         if (empty($name)) {
             throw new InvalidArgumentException("Empty name for module, check the data parameter");
@@ -99,8 +111,8 @@ class CmsModelWriter
     protected function reset()
     {
         $this->data = null;
-
         $this->importsNotUsed = [];
+        $this->blockRememberableTrait = false;
     }
 
     /**
@@ -283,6 +295,12 @@ class CmsModelWriter
             $this->importsNotUsed[] = static::IMPORT_TRAIT_LISTIFY;
         }
 
+        if ( ! $this->blockRememberableTrait) {
+            $traits[] = 'Rememberable';
+        } else {
+            $this->importsNotUsed[] = static::IMPORT_TRAIT_REMEMBERABLE;
+        }
+
         if ( ! count($traits)) return '';
 
         $lastIndex = count($traits) - 1;
@@ -310,7 +328,8 @@ class CmsModelWriter
         $imports = array_diff(
             [
                 static::IMPORT_TRAIT_LISTIFY,
-                static::IMPORT_TRAIT_TRANSLATABLE
+                static::IMPORT_TRAIT_TRANSLATABLE,
+                static::IMPORT_TRAIT_REMEMBERABLE,
             ],
             $this->importsNotUsed
         );
@@ -327,6 +346,10 @@ class CmsModelWriter
 
         if (in_array(static::IMPORT_TRAIT_LISTIFY, $imports)) {
             $replace .= "use Lookitsatravis\\Listify\\Listify;\n";
+        }
+
+        if (in_array(static::IMPORT_TRAIT_REMEMBERABLE, $imports)) {
+            $replace .= "use Watson\\Rememberable\\Rememberable\n";
         }
 
         $replace .= "\n";

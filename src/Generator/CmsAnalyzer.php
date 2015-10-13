@@ -95,26 +95,29 @@ class CmsAnalyzer
             }
 
             $model = [
-                'module'                 => $moduleId,
-                'name'                   => $name,
-                'table'                  => $tableOverride,   // default
-                'is_translated'          => false,
-                'is_listified'           => ($moduleData['max_entries'] != 1), // makes no sense for single-entry only
-                'normal_fillable'        => [],
-                'translated_fillable'    => [],
-                'hidden'                 => [],
-                'casts'                  => [],
-                'dates'                  => [],
-                'relations_config'       => [],
-                'normal_attributes'      => [],
-                'translated_attributes'  => [],
-                'relationships'          => [
+                'module'                => $moduleId,
+                'name'                  => $name,
+                'table'                 => $tableOverride,   // default
+                'cached'                => config('pxlcms.generator.enable_rememberable_cache'),
+                'is_translated'         => false,
+                'is_listified'          => ($moduleData['max_entries'] != 1), // makes no sense for single-entry only
+                'normal_fillable'       => [],
+                'translated_fillable'   => [],
+                'hidden'                => [],
+                'casts'                 => [],
+                'dates'                 => [],
+                'relations_config'      => [],
+                'normal_attributes'     => [],
+                'translated_attributes' => [],
+
+                'relationships'         => [
                     'normal'   => [],
                     'reverse'  => [],
                     'image'    => [],
                     'file'     => [],
                     'checkbox' => [],
                 ],
+
             ];
 
 

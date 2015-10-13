@@ -124,6 +124,9 @@ return [
         // whether to add foreign key attribute names to the $hidden property
         'hide_foreign_key_attributes' => true,
 
+        // whether to use rememberable trait on models generated
+        'enable_rememberable_cache' => true,
+
         // if adding hidden attributes for a model, always add these attributes to hide aswell
         'default_hidden_fields' => [
             'e_active',
