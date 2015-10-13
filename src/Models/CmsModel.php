@@ -164,8 +164,8 @@ class CmsModel extends Model
         }
 
         return $isParent
-                ?   config('pxlcms.relations.references.keys.from', 'from_entry_id')
-                :   config('pxlcms.relations.references.keys.to', 'to_entry_id');
+                ?   config('pxlcms.relations.references.keys.to', 'to_entry_id')
+                :   config('pxlcms.relations.references.keys.from', 'from_entry_id');
     }
 
     /**
