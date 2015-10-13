@@ -23,6 +23,9 @@ $ composer require czim/laravel-pxlcms
 - categories ?
 
 
+- relationships with the same name as the attribute ('category' in product f.i.)
+    $product->category then returns the id, not the related model .. how to (selectively) override this?
+
 ### Generator
 
 - relationship handling
@@ -34,6 +37,9 @@ $ composer require czim/laravel-pxlcms
 - images
 - files (?)
 - checkboxes
+
+- auto-add hidden fields (+ configurable overrides)
+    - foreign keys
 
 ## Credits
 
