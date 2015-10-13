@@ -103,6 +103,16 @@ return [
             'requests' => 'App\\Http\\Requests',
         ],
 
+        // the FQN's for the standard CMS models for special relationships
+        'standard_models' => [
+            'image'    => 'Czim\\PxlCms\\Models\\Image',
+            'checkbox' => 'Czim\\PxlCms\\Models\\Checkbox',
+            'file'     => 'Czim\\PxlCms\\Models\\File',
+        ],
+
+        // if used, simplify namespaces of standard models through use statements
+        'include_namespace_of_standard_models' => true,
+
         // if a (reverse) relationship's name is already taken by an attribute
         // in the model, add this to prevent duplicate names
         'relationship_fallback_postfix' => 'Reference',

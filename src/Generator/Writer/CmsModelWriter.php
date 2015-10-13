@@ -14,6 +14,10 @@ class CmsModelWriter
     const IMPORT_TRAIT_REMEMBERABLE = 'rememberable';
     const IMPORT_TRAIT_TRANSLATABLE = 'translatable';
 
+    const STANDARD_MODEL_FILE     = 'file';
+    const STANDARD_MODEL_IMAGE    = 'image';
+    const STANDARD_MODEL_CHECKBOX = 'checkbox';
+
     /**
      * The Laravel application instance.
      *
@@ -55,6 +59,14 @@ class CmsModelWriter
      * @var bool
      */
     protected $blockRememberableTrait = false;
+
+    /**
+     * Which of the standard special relationships models were used
+     * in this model's context
+     *
+     * @var array
+     */
+    protected $standardModelsUsed = [];
 
     /**
      * Create a new controller creator command instance.
@@ -112,6 +124,7 @@ class CmsModelWriter
     {
         $this->data = null;
         $this->importsNotUsed = [];
+        $this->standardModelsUsed = [];
         $this->blockRememberableTrait = false;
     }
 
@@ -221,6 +234,19 @@ class CmsModelWriter
     }
 
     /**
+     * Get the model name from a FQN
+     *
+     * @param string $namespace
+     * @return string
+     */
+    protected function getModelNameFromNamespace($namespace)
+    {
+        $parts = explode('\\', $namespace);
+
+        return trim($parts[ count($parts) - 1 ]);
+    }
+
+    /**
      * Performs all replaces in the stub content
      *
      * @param  string  $stub
@@ -244,7 +270,6 @@ class CmsModelWriter
         );
 
         $stub = preg_replace('# *{{USETRAITS}}\n?#i', $this->getTraitsStubReplace(), $stub);
-        $stub = preg_replace('#{{USEIMPORTS}}\n?#i', $this->getImportsStubReplace(), $stub);
 
         $stub = str_replace('{{MODULE_NUMBER}}', array_get($this->data, 'module'), $stub);
 
@@ -257,6 +282,8 @@ class CmsModelWriter
 
         $stub = preg_replace('# *{{RELATIONSHIPS}}\n?#i', $this->getRelationshipsStubReplace(), $stub);
 
+        // has to be last, because only then do we know what to include
+        $stub = preg_replace('#{{USEIMPORTS}}\n?#i', $this->getImportsStubReplace(), $stub);
 
         return $stub;
     }
@@ -334,7 +361,27 @@ class CmsModelWriter
             $this->importsNotUsed
         );
 
-        $replace = "\nuse Czim\\PxlCms\\Models\\CmsModel;\n";
+        $replace = "\n";
+
+        if (    in_array(static::STANDARD_MODEL_CHECKBOX, $this->standardModelsUsed)
+            &&  config('pxlcms.generator.include_namespace_of_standard_models')
+        ) {
+            $replace .= "use " . config('pxlcms.generator.standard_models.checkbox') . ";\n";
+        }
+
+        $replace .= "use Czim\\PxlCms\\Models\\CmsModel;\n";
+
+        if (    in_array(static::STANDARD_MODEL_IMAGE, $this->standardModelsUsed)
+            &&  config('pxlcms.generator.include_namespace_of_standard_models')
+        ) {
+            $replace .= "use " . config('pxlcms.generator.standard_models.image') . ";\n";
+        }
+
+        if (    in_array(static::STANDARD_MODEL_FILE, $this->standardModelsUsed)
+            &&  config('pxlcms.generator.include_namespace_of_standard_models')
+        ) {
+            $replace .= "use " . config('pxlcms.generator.standard_models.file') . ";\n";
+        }
 
         if (in_array(static::IMPORT_TRAIT_LISTIFY, $imports)) {
             $replace .= "use Czim\\PxlCms\\Models\\ListifyConstructorTrait;\n";
@@ -349,7 +396,7 @@ class CmsModelWriter
         }
 
         if (in_array(static::IMPORT_TRAIT_REMEMBERABLE, $imports)) {
-            $replace .= "use Watson\\Rememberable\\Rememberable\n";
+            $replace .= "use Watson\\Rememberable\\Rememberable;\n";
         }
 
         $replace .= "\n";
@@ -545,6 +592,11 @@ class CmsModelWriter
                  . str_repeat(' ', 4) . " * Relationships\n"
                  . str_repeat(' ', 4) . " */\n\n";
 
+
+        /*
+         * Normal and Reversed relationships
+         */
+
         foreach ($relationships as $name => $relationship) {
 
             $relatedClassName = studly_case($this->data['related_models'][ $relationship['model'] ]['name']);
@@ -562,6 +614,105 @@ class CmsModelWriter
                       . ");\n"
                       . str_repeat(' ', 4) . "}\n"
                       . "\n";
+        }
+
+        /*
+         * Images
+         */
+
+        $imageRelationships = array_get($this->data, 'relationships.image');
+
+        if (count($imageRelationships)) {
+            $this->standardModelsUsed[] = static::STANDARD_MODEL_IMAGE;
+        }
+
+        foreach ($imageRelationships as $name => $relationship) {
+
+            if (config('pxlcms.generator.include_namespace_of_standard_models')) {
+                $relatedClassName = $this->getModelNameFromNamespace(config('pxlcms.generator.standard_models.image'));
+            } else {
+                $relatedClassName = '\\' . config('pxlcms.generator.standard_models.image');
+            }
+
+            $relationParameters = '';
+
+            if ($relationKey = array_get($relationship, 'key')) {
+                $relationParameters = ", '{$relationKey}'";
+            }
+
+            $replace .= str_repeat(' ', 4) . "public function {$name}()\n"
+                      . str_repeat(' ', 4) . "{\n"
+                      . str_repeat(' ', 8) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
+                      . $relationParameters
+                      . ");\n"
+                      . str_repeat(' ', 4) . "}\n"
+                      . "\n";
+        }
+
+        /*
+         * Files
+         */
+
+        $fileRelationships = array_get($this->data, 'relationships.file');
+
+        if (count($fileRelationships)) {
+            $this->standardModelsUsed[] = static::STANDARD_MODEL_FILE;
+        }
+
+        foreach ($fileRelationships as $name => $relationship) {
+
+            if (config('pxlcms.generator.include_namespace_of_standard_models')) {
+                $relatedClassName = $this->getModelNameFromNamespace(config('pxlcms.generator.standard_models.file'));
+            } else {
+                $relatedClassName = '\\' . config('pxlcms.generator.standard_models.file');
+            }
+
+            $relationParameters = '';
+
+            if ($relationKey = array_get($relationship, 'key')) {
+                $relationParameters = ", '{$relationKey}'";
+            }
+
+            $replace .= str_repeat(' ', 4) . "public function {$name}()\n"
+                . str_repeat(' ', 4) . "{\n"
+                . str_repeat(' ', 8) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
+                . $relationParameters
+                . ");\n"
+                . str_repeat(' ', 4) . "}\n"
+                . "\n";
+        }
+
+        /*
+         * Checkboxes
+         */
+
+        $checkboxRelationships = array_get($this->data, 'relationships.checkbox');
+
+        if (count($checkboxRelationships)) {
+            $this->standardModelsUsed[] = static::STANDARD_MODEL_CHECKBOX;
+        }
+
+        foreach ($checkboxRelationships as $name => $relationship) {
+
+            if (config('pxlcms.generator.include_namespace_of_standard_models')) {
+                $relatedClassName = $this->getModelNameFromNamespace(config('pxlcms.generator.standard_models.checkbox'));
+            } else {
+                $relatedClassName = '\\' . config('pxlcms.generator.standard_models.checkbox');
+            }
+
+            $relationParameters = '';
+
+            if ($relationKey = array_get($relationship, 'key')) {
+                $relationParameters = ", '{$relationKey}'";
+            }
+
+            $replace .= str_repeat(' ', 4) . "public function {$name}()\n"
+                . str_repeat(' ', 4) . "{\n"
+                . str_repeat(' ', 8) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
+                . $relationParameters
+                . ");\n"
+                . str_repeat(' ', 4) . "}\n"
+                . "\n";
         }
 
         return $replace;
