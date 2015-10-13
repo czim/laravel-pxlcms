@@ -5,20 +5,19 @@ use Lookitsatravis\Listify\Listify;
 use Watson\Rememberable\Rememberable;
 
 /**
- * Can use Listify out of the box because images uses 'position' column
+ * Can use Listify out of the box because files uses 'position' column
  */
-class Image extends CmsModel
+class File extends CmsModel
 {
     use Listify,
         Rememberable;
 
-    protected $table = 'cms_m_images';
+    protected $table = 'cms_m_files';
 
     public $timestamps = false;
 
     protected $fillable = [
         'file',
-        'caption',
         'extension',
     ];
 
@@ -29,6 +28,7 @@ class Image extends CmsModel
     protected $hidden = [
         'field_id',
         'entry_id',
+        'language_id',
     ];
 
     public function __construct(array $attributes = [])
