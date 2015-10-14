@@ -14,6 +14,19 @@ return [
         // time to live for cache, in minutes for locales/languages model
         'languages-ttl' => 60,
     ],
+
+    // ------------------------------------------------------------------------------
+    //      CMS Paths
+    // ------------------------------------------------------------------------------
+
+    'paths' => [
+
+        // relative path to images from laravel/server root
+        'images' => 'public/cms_images',
+
+        // relative path to file uploads from laravel/server root
+        'files'  => 'public/cms_files',
+    ],
     
     // ------------------------------------------------------------------------------
     //      CMS-specific table names
