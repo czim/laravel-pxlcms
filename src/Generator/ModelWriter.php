@@ -63,6 +63,11 @@ class ModelWriter
         /** @var CmsModelWriter $modelWriter */
         $modelWriter = app()->make(CmsModelWriter::class);
 
+        $totalToWrite             = count($this->data['models']);
+        $countWritten             = 0;
+        $countTranslationsWritten = 0;
+        $countAlreadyExist        = 0;
+
         foreach ($this->data['models'] as $model) {
 
             try {
@@ -72,10 +77,12 @@ class ModelWriter
                 $modelWriter->write($model);
 
                 $this->log("Wrote model {$model['name']}.");
+                $countWritten++;
 
             } catch (ModelFileAlreadyExistsException $e) {
 
                 $this->log("File for model {$model['name']} already exists, did not write.");
+                $countAlreadyExist++;
             }
 
             // also write translation?
@@ -88,13 +95,29 @@ class ModelWriter
                     $modelWriter->write($translatedModel);
 
                     $this->log("Wrote translation for model {$model['name']}.");
+                    $countTranslationsWritten++;
 
                 } catch (ModelFileAlreadyExistsException $e) {
 
                     $this->log("File for translation of model {$model['name']} already exists, did not write.");
+                    $countAlreadyExist++;
                 }
             }
         }
+
+        $this->log(
+            "Models written: {$countWritten} of {$totalToWrite}"
+            . ($countTranslationsWritten ? " (and {$countTranslationsWritten} translation models)" : null),
+            Generator::LOG_LEVEL_INFO
+        );
+
+        if ($countAlreadyExist) {
+            $this->log(
+                "{$countAlreadyExist} models already had files and were not (over)written",
+                Generator::LOG_LEVEL_WARNING
+            );
+        }
+
     }
 
     /**
@@ -167,10 +190,13 @@ class ModelWriter
 
     /**
      * @param string $message
+     * @param string $level
      */
-    protected function log($message)
+    protected function log($message, $level = Generator::LOG_LEVEL_DEBUG)
     {
         $this->log[] = $message;
+
+        event('pxlcms.logmessage', [ 'message' => $message, 'level' => $level ]);
     }
 
     /**

@@ -53,12 +53,16 @@ class GenerateCommand extends Command
 
     protected function listenForLogEvents()
     {
-        Event::listen('pxlcms.logmessage', function($message, $level) {
+        $verbose = $this->option('verbose');
+
+        Event::listen('pxlcms.logmessage', function($message, $level) use ($verbose) {
 
             switch ($level) {
 
                 case Generator::LOG_LEVEL_DEBUG:
-                    $this->line($message);
+                    if ($verbose) {
+                        $this->line($message);
+                    }
                     break;
 
                 case Generator::LOG_LEVEL_WARNING:

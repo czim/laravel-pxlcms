@@ -73,7 +73,7 @@ class Generator
         $this->writer->setData($data);
         $this->writer->writeFiles();
 
-        $this->logOutput( $this->writer->getLog() );
+        //$this->logOutput( $this->writer->getLog() );
 
         return true;
     }
