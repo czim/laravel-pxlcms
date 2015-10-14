@@ -265,7 +265,7 @@ class CmsModelWriter
         $table = array_get($this->data, 'table');
         $stub = preg_replace(
             '# *{{TABLE}}\n?#i',
-            $table ? "\n" . str_repeat(' ', 4) . "protected \$table = '" . $table . "';\n" : '',
+            $table ? "\n" . $this->tab() . "protected \$table = '" . $table . "';\n" : '',
             $stub
         );
 
@@ -333,11 +333,11 @@ class CmsModelWriter
 
         $lastIndex = count($traits) - 1;
 
-        $replace = str_repeat(' ', 4) . 'use ';
+        $replace = $this->tab() . 'use ';
 
         foreach ($traits as $index => $trait) {
 
-            $replace .= ($index > 0 ? str_repeat(' ', 8) : null)
+            $replace .= ($index > 0 ? $this->tab(2) : null)
                       . $trait
                       . ($index == $lastIndex ? ";\n" : ',')
                       . "\n";
@@ -434,7 +434,7 @@ class CmsModelWriter
         if (is_null(array_get($this->data, 'timestamps'))) return '';
 
         return "\n"
-                 . str_repeat(' ', 4) ."public \$timestamps = "
+                 . $this->tab() ."public \$timestamps = "
                  . (array_get($this->data, 'timestamps') ? 'true' : 'false')
                  .";\n";
     }
@@ -503,17 +503,16 @@ class CmsModelWriter
             }
         }
 
-        $replace = str_repeat(' ', 4) . "protected \$casts = [\n";
+        $replace = $this->tab() . "protected \$casts = [\n";
 
         foreach ($attributes as $attribute => $type) {
 
-            $replace .= str_repeat(' ', 8)
-                       . "'" . $attribute . "'"
-                       . str_repeat(' ', $longestLength - strlen($attribute))
+            $replace .= $this->tab(2)
+                       . "'" . str_pad($attribute . "'", $longestLength + 1)
                        . " => '" . $type . "',\n";
         }
 
-        $replace .= str_repeat(' ', 4) . "];\n\n";
+        $replace .= $this->tab() . "];\n\n";
 
         return $replace;
     }
@@ -558,16 +557,16 @@ class CmsModelWriter
 
         if ( ! count($relationships)) return '';
 
-        $replace = str_repeat(' ', 4) . "protected \$relationsConfig = [\n";
+        $replace = $this->tab() . "protected \$relationsConfig = [\n";
 
         foreach ($relationships as $name => $relationship) {
-            $replace .= str_repeat(' ', 8) . "'" . $name . "' => [\n"
-                      . str_repeat(' ', 12) . "'field'  => " . $relationship['field'] . ",\n"
-                      . str_repeat(' ', 12) . "'parent' => " . ($relationship['reverse'] ? 'false' : 'true') . ",\n"
-                      . str_repeat(' ', 8) . "],\n";
+            $replace .= $this->tab(2) . "'" . $name . "' => [\n"
+                      . $this->tab(3) . "'field'  => " . $relationship['field'] . ",\n"
+                      . $this->tab(3) . "'parent' => " . ($relationship['reverse'] ? 'false' : 'true') . ",\n"
+                      . $this->tab(2) . "],\n";
         }
 
-        $replace .= str_repeat(' ', 4) . "];\n\n";
+        $replace .= $this->tab() . "];\n\n";
 
         return $replace;
     }
@@ -591,9 +590,9 @@ class CmsModelWriter
 
         if ( ! $totalCount) return '';
 
-        $replace = "\n" . str_repeat(' ', 4) . "/*\n"
-                 . str_repeat(' ', 4) . " * Relationships\n"
-                 . str_repeat(' ', 4) . " */\n\n";
+        $replace = "\n" . $this->tab() . "/*\n"
+                 . $this->tab() . " * Relationships\n"
+                 . $this->tab() . " */\n\n";
 
 
         /*
@@ -610,12 +609,12 @@ class CmsModelWriter
                 $relationParameters = ", '{$relationKey}'";
             }
 
-            $replace .= str_repeat(' ', 4) . "public function {$name}()\n"
-                      . str_repeat(' ', 4) . "{\n"
-                      . str_repeat(' ', 8) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
+            $replace .= $this->tab() . "public function {$name}()\n"
+                      . $this->tab() . "{\n"
+                      . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
                       . $relationParameters
                       . ");\n"
-                      . str_repeat(' ', 4) . "}\n"
+                      . $this->tab() . "}\n"
                       . "\n";
         }
 
@@ -643,12 +642,12 @@ class CmsModelWriter
                 $relationParameters = ", '{$relationKey}'";
             }
 
-            $replace .= str_repeat(' ', 4) . "public function {$name}()\n"
-                      . str_repeat(' ', 4) . "{\n"
-                      . str_repeat(' ', 8) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
+            $replace .= $this->tab() . "public function {$name}()\n"
+                      . $this->tab() . "{\n"
+                      . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
                       . $relationParameters
                       . ");\n"
-                      . str_repeat(' ', 4) . "}\n"
+                      . $this->tab() . "}\n"
                       . "\n";
         }
 
@@ -676,13 +675,13 @@ class CmsModelWriter
                 $relationParameters = ", '{$relationKey}'";
             }
 
-            $replace .= str_repeat(' ', 4) . "public function {$name}()\n"
-                . str_repeat(' ', 4) . "{\n"
-                . str_repeat(' ', 8) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
-                . $relationParameters
-                . ");\n"
-                . str_repeat(' ', 4) . "}\n"
-                . "\n";
+            $replace .= $this->tab() . "public function {$name}()\n"
+                      . $this->tab() . "{\n"
+                      . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
+                      . $relationParameters
+                      . ");\n"
+                      . $this->tab() . "}\n"
+                      . "\n";
         }
 
         /*
@@ -709,13 +708,13 @@ class CmsModelWriter
                 $relationParameters = ", '{$relationKey}'";
             }
 
-            $replace .= str_repeat(' ', 4) . "public function {$name}()\n"
-                . str_repeat(' ', 4) . "{\n"
-                . str_repeat(' ', 8) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
-                . $relationParameters
-                . ");\n"
-                . str_repeat(' ', 4) . "}\n"
-                . "\n";
+            $replace .= $this->tab() . "public function {$name}()\n"
+                      . $this->tab() . "{\n"
+                      . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
+                      . $relationParameters
+                      . ");\n"
+                      . $this->tab() . "}\n"
+                      . "\n";
         }
 
         return $replace;
@@ -728,14 +727,25 @@ class CmsModelWriter
      */
     protected function getAttributePropertySection($variable, array $attributes)
     {
-        $replace = str_repeat(' ', 4) . "protected \${$variable} = [\n";
+        $replace = $this->tab() . "protected \${$variable} = [\n";
 
         foreach ($attributes as $attribute) {
-            $replace .= str_repeat(' ', 8) . "'" . $attribute . "',\n";
+            $replace .= $this->tab(2) . "'" . $attribute . "',\n";
         }
 
-        $replace .= str_repeat(' ', 4) . "];\n\n";
+        $replace .= $this->tab() . "];\n\n";
 
         return $replace;
+    }
+
+    /**
+     * Returns a number of 'tabs' in the form of 4 spaces each
+     *
+     * @param int $count
+     * @return string
+     */
+    protected function tab($count = 1)
+    {
+        return str_repeat(' ', 4 * $count);
     }
 }
