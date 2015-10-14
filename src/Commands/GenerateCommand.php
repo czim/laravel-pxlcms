@@ -3,6 +3,7 @@ namespace Czim\PxlCms\Commands;
 
 use Czim\PxlCms\Generator\Generator;
 use Illuminate\Console\Command;
+use Event;
 
 class GenerateCommand extends Command
 {
@@ -39,6 +40,8 @@ class GenerateCommand extends Command
         $modelsOnly = (bool) $this->option('models-only');
         $dryRun     = (bool) $this->option('dry-run');
 
+        $this->listenForLogEvents();
+
         $generator = new Generator( ! $dryRun);
 
         $generator->generate();
@@ -46,5 +49,30 @@ class GenerateCommand extends Command
         // todo: handle logging output for cli
 
         $this->info('Done.');
+    }
+
+    protected function listenForLogEvents()
+    {
+        Event::listen('pxlcms.logmessage', function($message, $level) {
+
+            switch ($level) {
+
+                case Generator::LOG_LEVEL_DEBUG:
+                    $this->line($message);
+                    break;
+
+                case Generator::LOG_LEVEL_WARNING:
+                    $this->comment($message);
+                    break;
+
+                case Generator::LOG_LEVEL_ERROR:
+                    $this->error($message);
+                    break;
+
+                case Generator::LOG_LEVEL_INFO:
+                default:
+                    $this->info($message);
+            }
+        });
     }
 }

@@ -688,10 +688,13 @@ class CmsAnalyzer
 
     /**
      * @param string $message
+     * @param string $level
      */
-    protected function log($message)
+    protected function log($message, $level = Generator::LOG_LEVEL_DEBUG)
     {
         $this->log[] = $message;
+
+        event('pxlcms.logmessage', [ 'message' => $message, 'level' => $level ]);
     }
 
     /**

@@ -26,6 +26,11 @@ class Generator
     const RELATIONSHIP_BELONGS_TO      = 'belongsTo';
     const RELATIONSHIP_BELONGS_TO_MANY = 'belongsToMany';
 
+    const LOG_LEVEL_DEBUG   = 'debug';
+    const LOG_LEVEL_ERROR   = 'error';
+    const LOG_LEVEL_INFO    = 'info';
+    const LOG_LEVEL_WARNING = 'warning';
+
     /**
      * @var CmsAnalyzer
      */
@@ -59,12 +64,6 @@ class Generator
     public function generate()
     {
         $data = $this->analyzer->analyze();
-
-        $log = $this->analyzer->getLog();
-
-        if ( ! empty($log)) {
-            $this->logOutput($log);
-        }
 
         if ( ! $this->write) {
             $this->debugOutput($data);

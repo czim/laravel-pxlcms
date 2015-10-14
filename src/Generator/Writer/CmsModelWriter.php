@@ -453,15 +453,7 @@ class CmsModelWriter
 
         if ( ! count($attributes)) return '';
 
-        $replace = str_repeat(' ', 4) ."protected \$fillable = [\n";
-
-        foreach ($attributes as $fillable) {
-            $replace .= str_repeat(' ', 8) . "'" . $fillable . "',\n";
-        }
-
-        $replace .= str_repeat(' ', 4) . "];\n\n";
-
-        return $replace;
+        return $this->getAttributePropertySection('fillable', $attributes);
     }
 
     /**
@@ -475,15 +467,7 @@ class CmsModelWriter
 
         if ( ! count($attributes)) return '';
 
-        $replace = str_repeat(' ', 4) . "protected \$translatedAttributes = [\n";
-
-        foreach ($attributes as $attribute) {
-            $replace .= str_repeat(' ', 8) . "'" . $attribute . "',\n";
-        }
-
-        $replace .= str_repeat(' ', 4) . "];\n\n";
-
-        return $replace;
+        return $this->getAttributePropertySection('translatedAttributes', $attributes);
     }
 
     /**
@@ -497,15 +481,7 @@ class CmsModelWriter
 
         if ( ! count($attributes)) return '';
 
-        $replace = str_repeat(' ', 4) . "protected \$hidden = [\n";
-
-        foreach ($attributes as $attribute) {
-            $replace .= str_repeat(' ', 8) . "'" . $attribute . "',\n";
-        }
-
-        $replace .= str_repeat(' ', 4) . "];\n\n";
-
-        return $replace;
+        return $this->getAttributePropertySection('hidden', $attributes);
     }
 
     /**
@@ -553,15 +529,7 @@ class CmsModelWriter
 
         if ( ! count($attributes)) return '';
 
-        $replace = str_repeat(' ', 4) . "protected \$dates = [\n";
-
-        foreach ($attributes as $attribute) {
-            $replace .= str_repeat(' ', 8) . "'" . $attribute . "',\n";
-        }
-
-        $replace .= str_repeat(' ', 4) . "];\n\n";
-
-        return $replace;
+        return $this->getAttributePropertySection('dates', $attributes);
     }
 
     /**
@@ -753,5 +721,21 @@ class CmsModelWriter
         return $replace;
     }
 
+    /**
+     * @param string $variable
+     * @param array  $attributes
+     * @return string
+     */
+    protected function getAttributePropertySection($variable, array $attributes)
+    {
+        $replace = str_repeat(' ', 4) . "protected \${$variable} = [\n";
 
+        foreach ($attributes as $attribute) {
+            $replace .= str_repeat(' ', 8) . "'" . $attribute . "',\n";
+        }
+
+        $replace .= str_repeat(' ', 4) . "];\n\n";
+
+        return $replace;
+    }
 }
