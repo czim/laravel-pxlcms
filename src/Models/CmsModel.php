@@ -1,7 +1,12 @@
 <?php
 namespace Czim\PxlCms\Models;
 
+use Czim\PxlCms\Relations\HasManyImage;
+use Czim\PxlCms\Relations\HasOneImage;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -12,6 +17,14 @@ class CmsModel extends Model
     const RELATION_TYPE_IMAGE    = 1;
     const RELATION_TYPE_FILE     = 2;
     const RELATION_TYPE_CHECKBOX = 3;
+
+    /**
+     * The has relationship methods.
+     *
+     * @var array
+     */
+    public static $hasRelationMethods = ['hasOne', 'hasMany', 'hasManyThrough'];
+
 
     public $timestamps = false;
 
@@ -294,6 +307,155 @@ class CmsModel extends Model
     public function belongsToManyNormal($related, $table = null, $foreignKey = null, $otherKey = null, $relation = null)
     {
         return parent::belongsToMany($related, $table, $foreignKey, $otherKey, $relation);
+    }
+
+    /**
+     * Overridden to catch special relationships to standard CMS models
+     *
+     * @param  string  $related
+     * @param  string  $foreignKey
+     * @param  string  $localKey
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function hasMany($related, $foreignKey = null, $localKey = null)
+    {
+        $relation = $this->getHasOneOrManyCaller();
+
+        if ( ! ($specialType = $this->getCmsSpecialRelationType($relation))) {
+            return parent::hasMany($related, $foreignKey, $localKey);
+        }
+
+        list($foreignKey, $fieldKey) = $this->getKeysForSpecialRelation($specialType, $foreignKey);
+
+        $fieldId = $this->getCmsReferenceFieldId($relation);
+
+
+        return parent::hasMany($related, $foreignKey, $localKey)
+            ->where($fieldKey, $fieldId);
+    }
+
+    /**
+     * Overridden to catch special relationships to standard CMS models
+     *
+     * @param  string  $related
+     * @param  string  $foreignKey
+     * @param  string  $localKey
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function hasOne($related, $foreignKey = null, $localKey = null)
+    {
+        $relation = $this->getHasOneOrManyCaller();
+
+        if ( ! ($specialType = $this->getCmsSpecialRelationType($relation))) {
+            return parent::hasOne($related, $foreignKey, $localKey);
+        }
+
+        list($foreignKey, $fieldKey) = $this->getKeysForSpecialRelation($specialType, $foreignKey);
+
+        $fieldId = $this->getCmsReferenceFieldId($relation);
+
+        return parent::hasOne($related, $foreignKey, $localKey)
+            ->where($fieldKey, $fieldId);
+    }
+
+    /**
+     * Get the relationship name of the has one/many
+     *
+     * @return string
+     */
+    protected function getHasOneOrManyCaller()
+    {
+        $self = __FUNCTION__;
+
+        $caller = Arr::first(debug_backtrace(false), function ($key, $trace) use ($self) {
+            $caller = $trace['function'];
+
+            return ! in_array($caller, CmsModel::$hasRelationMethods) && $caller != $self;
+        });
+
+        return ! is_null($caller) ? $caller['function'] : null;
+    }
+
+    /**
+     * Get the foreign and field keys for the special relation's standard CMS model
+     *
+     * @param int    $specialType
+     * @param string $foreignKey
+     * @return array    [ foreignKey, fieldKey ]
+     */
+    protected function getKeysForSpecialRelation($specialType, $foreignKey = null)
+    {
+        switch ($specialType) {
+
+            case static::RELATION_TYPE_FILE:
+                $foreignKey = $foreignKey ?: config('pxlcms.relations.files.keys.entry');
+                $fieldKey   = config('pxlcms.relations.files.keys.field');
+                break;
+
+            case static::RELATION_TYPE_CHECKBOX:
+                $foreignKey = $foreignKey ?: config('pxlcms.relations.checkboxes.keys.entry');
+                $fieldKey   = config('pxlcms.relations.checkboxes.keys.field');
+                break;
+
+            case static::RELATION_TYPE_IMAGE:
+            default:
+                $foreignKey = $foreignKey ?: config('pxlcms.relations.images.keys.entry');
+                $fieldKey   = config('pxlcms.relations.images.keys.field');
+        }
+
+        return [ $foreignKey, $fieldKey ];
+    }
+
+
+    // ------------------------------------------------------------------------------
+    //      Images
+    // ------------------------------------------------------------------------------
+
+    /**
+     * @param Collection $images
+     * @param string     $relation
+     * @return Collection
+     */
+    protected function enrichImagesWithResizeVersions($images, $relation)
+    {
+        if (empty($images)) return $images;
+
+        $fieldId = $this->getCmsReferenceFieldId($relation);
+        $resizes = $this->getResizesForFieldId($fieldId);
+
+        if (empty($resizes)) return $images;
+
+        // decorate with resizes
+        foreach ($images as $image) {
+
+            $fileName = $image->file;
+            $imageResizes = [];
+
+            foreach ($resizes as $resize) {
+
+                $imageResizes[ $resize->prefix ] = [
+                    'id'     => $resize->id,
+                    'prefix' => $resize->prefix,
+                    'file'   => $resize->prefix . $fileName,
+                    'width'  => $resize->width,
+                    'height' => $resize->height,
+                ];
+            }
+
+            $image->resizes = $imageResizes;
+        }
+
+        return $images;
+    }
+
+    /**
+     * @param int $fieldId
+     */
+    protected function getResizesForFieldId($fieldId)
+    {
+        return DB::table(config('pxlcms.tables.meta.field_options_resizes'))
+            ->where('field_id', (int) $fieldId)
+            ->get();
     }
 
 
