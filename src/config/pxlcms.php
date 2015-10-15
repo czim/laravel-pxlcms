@@ -83,6 +83,27 @@ return [
                 'position' => 'position',
             ]
         ],
+        // cms_m_images
+        'images' => [
+            'keys' => [
+                'field' => 'field_id',
+                'entry' => 'entry_id',
+            ]
+        ],
+        // cms_m_files
+        'files' => [
+            'keys' => [
+                'field' => 'field_id',
+                'entry' => 'entry_id',
+            ]
+        ],
+        // cms_m_checkboxes
+        'checkboxes' => [
+            'keys' => [
+                'field' => 'field_id',
+                'entry' => 'entry_id',
+            ]
+        ],
     ],
 
     // ------------------------------------------------------------------------------

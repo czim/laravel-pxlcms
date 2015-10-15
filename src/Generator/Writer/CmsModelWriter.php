@@ -3,6 +3,7 @@ namespace Czim\PxlCms\Generator\Writer;
 
 use Czim\PxlCms\Generator\Exceptions\ModelFileAlreadyExistsException;
 use Czim\PxlCms\Generator\Generator;
+use Czim\PxlCms\Models\CmsModel;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
@@ -555,15 +556,40 @@ class CmsModelWriter
             $relationships[ $name ]  = $relationship;
         }
 
+        foreach (array_get($this->data, 'relationships.image') as $name => $relationship) {
+            $relationship['special']       = CmsModel::RELATION_TYPE_IMAGE;
+            $relationship['specialString'] = "self::RELATION_TYPE_IMAGE";
+            $relationships[ $name ]  = $relationship;
+        }
+
+        foreach (array_get($this->data, 'relationships.file') as $name => $relationship) {
+            $relationship['special']       = CmsModel::RELATION_TYPE_FILE;
+            $relationship['specialString'] = "self::RELATION_TYPE_FILE";
+            $relationships[ $name ]  = $relationship;
+        }
+
+        foreach (array_get($this->data, 'relationships.checkbox') as $name => $relationship) {
+            $relationship['special']       = CmsModel::RELATION_TYPE_CHECKBOX;
+            $relationship['specialString'] = "self::RELATION_TYPE_CHECKBOX";
+            $relationships[ $name ]  = $relationship;
+        }
+
         if ( ! count($relationships)) return '';
 
         $replace = $this->tab() . "protected \$relationsConfig = [\n";
 
         foreach ($relationships as $name => $relationship) {
+
             $replace .= $this->tab(2) . "'" . $name . "' => [\n"
-                      . $this->tab(3) . "'field'  => " . $relationship['field'] . ",\n"
-                      . $this->tab(3) . "'parent' => " . ($relationship['reverse'] ? 'false' : 'true') . ",\n"
-                      . $this->tab(2) . "],\n";
+                      . $this->tab(3) . "'field'  => " . $relationship['field'] . ",\n";
+
+            if (isset($relationship['special'])) {
+                $replace .= $this->tab(3) . "'type'   => " . $relationship['specialString'] . ",\n";
+            } else {
+                $replace .= $this->tab(3) . "'parent' => " . ($relationship['reverse'] ? 'false' : 'true') . ",\n";
+            }
+
+            $replace .= $this->tab(2) . "],\n";
         }
 
         $replace .= $this->tab() . "];\n\n";
