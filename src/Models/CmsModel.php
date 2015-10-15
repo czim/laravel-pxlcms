@@ -221,6 +221,24 @@ class CmsModel extends Model
         return $this->relationsConfig[$relation]['type'];
     }
 
+    /**
+     * Returns whether the special standard model relation is translated
+     * (locale-dependent)
+     *
+     * @param string $relation
+     * @return string|null
+     */
+    public function getCmsSpecialRelationTranslated($relation)
+    {
+        if (    ! array_key_exists($relation, $this->relationsConfig)
+            ||  ! array_key_exists('translated', $this->relationsConfig[$relation])
+        ) {
+            return false;
+        }
+
+        return (bool) $this->relationsConfig[$relation]['translated'];
+    }
+
 
     /**
      * Override for different naming convention
@@ -312,12 +330,13 @@ class CmsModel extends Model
     /**
      * Overridden to catch special relationships to standard CMS models
      *
-     * @param  string  $related
-     * @param  string  $foreignKey
-     * @param  string  $localKey
+     * @param string $related
+     * @param string $foreignKey
+     * @param string $localKey
+     * @param string $locale        only used as an override, and only for ML images
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
-    public function hasMany($related, $foreignKey = null, $localKey = null)
+    public function hasMany($related, $foreignKey = null, $localKey = null, $locale = null)
     {
         $relation = $this->getHasOneOrManyCaller();
 
@@ -329,20 +348,33 @@ class CmsModel extends Model
 
         $fieldId = $this->getCmsReferenceFieldId($relation);
 
-
-        return parent::hasMany($related, $foreignKey, $localKey)
+        $hasMany = parent::hasMany($related, $foreignKey, $localKey)
             ->where($fieldKey, $fieldId);
+
+        // limit to selected locale, if translated
+        if ($this->getCmsSpecialRelationTranslated($relation)) {
+
+            if (is_null($locale)) $locale = app()->getLocale();
+
+            $hasMany->where(
+                config('pxlcms.translatable.locale_key'),
+                $this->lookUpLanguageIdForLocale($locale)
+            );
+        }
+
+        return $hasMany;
     }
 
     /**
      * Overridden to catch special relationships to standard CMS models
      *
-     * @param  string  $related
-     * @param  string  $foreignKey
-     * @param  string  $localKey
+     * @param string $related
+     * @param string $foreignKey
+     * @param string $localKey
+     * @param string $locale        only used as an override, and only for ML images
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
-    public function hasOne($related, $foreignKey = null, $localKey = null)
+    public function hasOne($related, $foreignKey = null, $localKey = null, $locale = null)
     {
         $relation = $this->getHasOneOrManyCaller();
 
@@ -354,8 +386,21 @@ class CmsModel extends Model
 
         $fieldId = $this->getCmsReferenceFieldId($relation);
 
-        return parent::hasOne($related, $foreignKey, $localKey)
+        $hasOne = parent::hasOne($related, $foreignKey, $localKey)
             ->where($fieldKey, $fieldId);
+
+        // limit to selected locale, if translated
+        if ($this->getCmsSpecialRelationTranslated($relation)) {
+
+            if (is_null($locale)) $locale = app()->getLocale();
+
+            $hasOne->where(
+                config('pxlcms.translatable.locale_key'),
+                $this->lookUpLanguageIdForLocale($locale)
+            );
+        }
+
+        return $hasOne;
     }
 
     /**
@@ -412,20 +457,30 @@ class CmsModel extends Model
     // ------------------------------------------------------------------------------
 
     /**
-     * @param Collection $images
-     * @param string     $relation
+     * Returns resize-enriched images for a special CMS model image relation
+     *
+     * To be called from an accessor, so it can return images based on its name,
+     * which should be get<relationname>Attribute().
+     *
      * @return Collection
      */
-    protected function enrichImagesWithResizeVersions($images, $relation)
+    protected function getImagesWithResizes()
     {
+        // first get the images through the relation
+        $relation = $this->getRelationForImagesWithResizesCaller();
+
+        $images = $this->{$relation}()->get();
+
         if (empty($images)) return $images;
 
+        // then get extra info and retrieve the resizes for it
         $fieldId = $this->getCmsReferenceFieldId($relation);
+
         $resizes = $this->getResizesForFieldId($fieldId);
 
         if (empty($resizes)) return $images;
 
-        // decorate with resizes
+        // decorate the images with resizes
         foreach ($images as $image) {
 
             $fileName = $image->file;
@@ -456,6 +511,27 @@ class CmsModel extends Model
         return DB::table(config('pxlcms.tables.meta.field_options_resizes'))
             ->where('field_id', (int) $fieldId)
             ->get();
+    }
+
+    /**
+     * Get the relationship name of the image accessor for which images are enriched
+     *
+     * @return string
+     */
+    protected function getRelationForImagesWithResizesCaller()
+    {
+        $self = __FUNCTION__;
+
+        $caller = Arr::first(debug_backtrace(false), function ($key, $trace) use ($self) {
+            $caller = $trace['function'];
+
+            return ! in_array($caller, ['getImagesWithResizes']) && $caller != $self;
+        });
+
+        if  (is_null($caller)) return null;
+
+        // strip 'get' from front and 'attribute' from rear
+        return Str::camel( substr($caller['function'], 3, -9) );
     }
 
 

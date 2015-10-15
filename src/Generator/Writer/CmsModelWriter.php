@@ -584,9 +584,13 @@ class CmsModelWriter
                       . $this->tab(3) . "'field'  => " . $relationship['field'] . ",\n";
 
             if (isset($relationship['special'])) {
-                $replace .= $this->tab(3) . "'type'   => " . $relationship['specialString'] . ",\n";
+                $replace .= $this->tab(3) . "'type' => " . $relationship['specialString'] . ",\n";
             } else {
                 $replace .= $this->tab(3) . "'parent' => " . ($relationship['reverse'] ? 'false' : 'true') . ",\n";
+            }
+
+            if (isset($relationship['translated']) && $relationship['translated']) {
+                $replace .= $this->tab(3) . "'translated' => true,\n";
             }
 
             $replace .= $this->tab(2) . "],\n";
@@ -673,6 +677,14 @@ class CmsModelWriter
                       . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
                       . $relationParameters
                       . ");\n"
+                      . $this->tab() . "}\n"
+                      . "\n";
+
+            // since images require special attention for resize enrichment,
+            // add an accessor method that will take care of it (through some magic)
+            $replace .= $this->tab() . "public function get" . studly_case($name) . "Attribute()\n"
+                      . $this->tab() . "{\n"
+                      . $this->tab(2) . "return \$this->getImagesWithResizes();\n"
                       . $this->tab() . "}\n"
                       . "\n";
         }
