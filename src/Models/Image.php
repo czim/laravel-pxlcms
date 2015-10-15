@@ -16,6 +16,12 @@ class Image extends CmsModel
 
     public $timestamps = false;
 
+    /**
+     * @var int|null    which field this is associated with, if any
+     */
+    public $associatedFieldId;
+
+
     protected $fillable = [
         'file',
         'caption',
@@ -31,11 +37,35 @@ class Image extends CmsModel
         'entry_id',
     ];
 
+    public function toArray()
+    {
+        $array = parent::toArray();
+
+        $array['field_id'] = $this->associatedFieldId;
+
+        return $array;
+    }
+
+    /**
+     * @param array $attributes
+     */
     public function __construct(array $attributes = [])
     {
         parent::__construct($attributes);
 
         $this->initListify();
+    }
+
+    /**
+     * Associate this image with a given fieldId
+     * This makes sense when the image is retrieved for a field/relation of a module/model
+     * that may have resizes associated with it, for instance.
+     *
+     * @param int $fieldId
+     */
+    public function associateWithFieldId($fieldId)
+    {
+        $this->associatedFieldId = $fieldId;
     }
 
 }
