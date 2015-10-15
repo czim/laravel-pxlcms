@@ -7,6 +7,12 @@ use InvalidArgumentException;
 
 class CmsModel extends Model
 {
+    // realtionsConfig special / standard model types
+    const RELATION_TYPE_MODEL    = 0;
+    const RELATION_TYPE_IMAGE    = 1;
+    const RELATION_TYPE_FILE     = 2;
+    const RELATION_TYPE_CHECKBOX = 3;
+
     public $timestamps = false;
 
     /**
@@ -183,6 +189,23 @@ class CmsModel extends Model
         }
 
         return (int) $this->relationsConfig[$relation]['field'];
+    }
+
+    /**
+     * Returns the configured special standard model type for the reference relation
+     *
+     * @param string $relation
+     * @return string|null
+     */
+    public function getCmsSpecialRelationType($relation)
+    {
+        if (    ! array_key_exists($relation, $this->relationsConfig)
+            ||  ! array_key_exists('type', $this->relationsConfig[$relation])
+        ) {
+            return null;
+        }
+
+        return $this->relationsConfig[$relation]['type'];
     }
 
 
