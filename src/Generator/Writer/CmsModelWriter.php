@@ -580,18 +580,31 @@ class CmsModelWriter
 
         foreach ($relationships as $name => $relationship) {
 
-            $replace .= $this->tab(2) . "'" . $name . "' => [\n"
-                      . $this->tab(3) . "'field'  => " . $relationship['field'] . ",\n";
+            $replace .= $this->tab(2) . "'" . $name . "' => [\n";
+
+            $rows = [
+                'field' => $relationship['field'],
+            ];
 
             if (isset($relationship['special'])) {
-                $replace .= $this->tab(3) . "'type' => " . $relationship['specialString'] . ",\n";
+                $rows['type'] = $relationship['specialString'];
             } else {
-                $replace .= $this->tab(3) . "'parent' => " . ($relationship['reverse'] ? 'false' : 'true') . ",\n";
+                $rows['parent'] = ($relationship['reverse'] ? 'false' : 'true');
             }
 
             if (isset($relationship['translated']) && $relationship['translated']) {
-                $replace .= $this->tab(3) . "'translated' => true,\n";
+                $rows['translated'] = 'true';
             }
+
+            $longestPropertyLength = $this->getLongestKey($rows);
+
+            foreach ($rows as $property => $value) {
+
+                $replace .= $this->tab(3) . "'"
+                          . str_pad($property . "'", $longestPropertyLength + 1)
+                          . " => {$value},\n";
+            }
+
 
             $replace .= $this->tab(2) . "],\n";
         }
@@ -785,5 +798,25 @@ class CmsModelWriter
     protected function tab($count = 1)
     {
         return str_repeat(' ', 4 * $count);
+    }
+
+
+    /**
+     * Returns length of longest key in key-value pair array
+     *
+     * @param array $array
+     * @return int
+     */
+    protected function getLongestKey(array $array)
+    {
+        $longest = 0;
+
+        foreach ($array as $key => $value) {
+            if ($longest > strlen($key)) continue;
+
+            $longest = strlen($key);
+        }
+
+        return $longest;
     }
 }
