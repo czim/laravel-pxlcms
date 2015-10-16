@@ -133,8 +133,9 @@ return [
 
         // which namespace to prepend for generated content
         'namespace' => [
-            'models'   => 'App\\Models\\Generated\\',   // todo reset to without Generated
-            'requests' => 'App\\Http\\Requests',
+            'models'       => 'App\\Models\\Generated',   // todo reset to without Generated
+            'requests'     => 'App\\Http\\Requests',
+            'repositories' => 'App\\Repositories',
         ],
 
         // whether to sort use import statements by their length (false sorts them alphabetically)

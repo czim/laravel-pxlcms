@@ -137,7 +137,7 @@ class CmsModelWriter
      */
     protected function makeFqnForModelName($name)
     {
-        return config('pxlcms.generator.namespace.models') . studly_case($name);
+        return config('pxlcms.generator.namespace.models') . "\\" . studly_case($name);
     }
 
     /**
@@ -150,7 +150,7 @@ class CmsModelWriter
     {
         $name = str_replace($this->laravel->getNamespace(), '', $name);
 
-        return $this->laravel['path'].'/'.str_replace('\\', '/', $name).'.php';
+        return $this->laravel['path'] . '/' . str_replace('\\', '/', $name) . '.php';
     }
 
     /**
