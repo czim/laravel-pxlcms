@@ -669,37 +669,7 @@ class CmsModelWriter
 
         if (count($imageRelationships)) {
             $this->standardModelsUsed[] = static::STANDARD_MODEL_IMAGE;
-        }
-
-        foreach ($imageRelationships as $name => $relationship) {
-
-            if (config('pxlcms.generator.include_namespace_of_standard_models')) {
-                $relatedClassName = $this->getModelNameFromNamespace(config('pxlcms.generator.standard_models.image'));
-            } else {
-                $relatedClassName = '\\' . config('pxlcms.generator.standard_models.image');
-            }
-
-            $relationParameters = '';
-
-            if ($relationKey = array_get($relationship, 'key')) {
-                $relationParameters = ", '{$relationKey}'";
-            }
-
-            $replace .= $this->tab() . "public function {$name}()\n"
-                      . $this->tab() . "{\n"
-                      . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
-                      . $relationParameters
-                      . ");\n"
-                      . $this->tab() . "}\n"
-                      . "\n";
-
-            // since images require special attention for resize enrichment,
-            // add an accessor method that will take care of it (through some magic)
-            $replace .= $this->tab() . "public function get" . studly_case($name) . "Attribute()\n"
-                      . $this->tab() . "{\n"
-                      . $this->tab(2) . "return \$this->getImagesWithResizes();\n"
-                      . $this->tab() . "}\n"
-                      . "\n";
+            $replace .= $this->getRelationMethodSection($imageRelationships, CmsModel::RELATION_TYPE_IMAGE);
         }
 
         /*
@@ -710,29 +680,7 @@ class CmsModelWriter
 
         if (count($fileRelationships)) {
             $this->standardModelsUsed[] = static::STANDARD_MODEL_FILE;
-        }
-
-        foreach ($fileRelationships as $name => $relationship) {
-
-            if (config('pxlcms.generator.include_namespace_of_standard_models')) {
-                $relatedClassName = $this->getModelNameFromNamespace(config('pxlcms.generator.standard_models.file'));
-            } else {
-                $relatedClassName = '\\' . config('pxlcms.generator.standard_models.file');
-            }
-
-            $relationParameters = '';
-
-            if ($relationKey = array_get($relationship, 'key')) {
-                $relationParameters = ", '{$relationKey}'";
-            }
-
-            $replace .= $this->tab() . "public function {$name}()\n"
-                      . $this->tab() . "{\n"
-                      . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
-                      . $relationParameters
-                      . ");\n"
-                      . $this->tab() . "}\n"
-                      . "\n";
+            $replace .= $this->getRelationMethodSection($fileRelationships, CmsModel::RELATION_TYPE_FILE);
         }
 
         /*
@@ -743,33 +691,89 @@ class CmsModelWriter
 
         if (count($checkboxRelationships)) {
             $this->standardModelsUsed[] = static::STANDARD_MODEL_CHECKBOX;
+            $replace .= $this->getRelationMethodSection($checkboxRelationships, CmsModel::RELATION_TYPE_CHECKBOX);
         }
 
-        foreach ($checkboxRelationships as $name => $relationship) {
+
+        return $replace;
+    }
+
+    /**
+     * Returns stub section for relation method
+     *
+     * @param array    $relationships
+     * @param int|null $type            CmsModel::RELATION_TYPE_...
+     * @return string
+     */
+    protected function getRelationMethodSection(array $relationships, $type = CmsModel::RELATION_TYPE_MODEL)
+    {
+        $replace = '';
+
+        switch ($type) {
+
+            case CmsModel::RELATION_TYPE_IMAGE:
+                $typeName = 'image';
+                break;
+
+            case CmsModel::RELATION_TYPE_FILE:
+                $typeName = 'file';
+                break;
+
+            case CmsModel::RELATION_TYPE_CHECKBOX:
+                $typeName = 'checkbox';
+                break;
+
+            default:
+                $typeName = null;
+        }
+
+        foreach ($relationships as $name => $relationship) {
 
             if (config('pxlcms.generator.include_namespace_of_standard_models')) {
-                $relatedClassName = $this->getModelNameFromNamespace(config('pxlcms.generator.standard_models.checkbox'));
+                $relatedClassName = $this->getModelNameFromNamespace(config('pxlcms.generator.standard_models.' . $typeName));
             } else {
-                $relatedClassName = '\\' . config('pxlcms.generator.standard_models.checkbox');
+                $relatedClassName = '\\' . config('pxlcms.generator.standard_models.' . $typeName);
             }
 
-            $relationParameters = '';
+            $relationParameters       = '';
+            $relationMethodParameters = '';
 
             if ($relationKey = array_get($relationship, 'key')) {
                 $relationParameters = ", '{$relationKey}'";
             }
 
-            $replace .= $this->tab() . "public function {$name}()\n"
+            if (array_get($relationship, 'translated') && $type !== CmsModel::RELATION_TYPE_MODEL) {
+                $relationMethodParameters = '$locale = null';
+
+                // skip parameters not entered, pass on the optional locale key
+                $relationParameters = (substr_count($relationParameters, ',') ? null : ', null')
+                    . ', null'
+                    . ', $locale';
+            }
+
+            $replace .= $this->tab() . "public function {$name}({$relationMethodParameters})\n"
                       . $this->tab() . "{\n"
                       . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
                       . $relationParameters
                       . ");\n"
                       . $this->tab() . "}\n"
                       . "\n";
-        }
 
-        return $replace;
+
+            if ($type == CmsModel::RELATION_TYPE_IMAGE) {
+                // since images require special attention for resize enrichment,
+                // add an accessor method that will take care of it (through some magic)
+                $replace .= $this->tab() . "public function get" . studly_case($name) . "Attribute()\n"
+                          . $this->tab() . "{\n"
+                          . $this->tab(2) . "return \$this->getImagesWithResizes();\n"
+                          . $this->tab() . "}\n"
+                          . "\n";
+            }
+
+            return $replace;
+        }
     }
+
 
     /**
      * @param string $variable

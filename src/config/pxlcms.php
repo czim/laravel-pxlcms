@@ -175,6 +175,10 @@ return [
         // postfix for translation model
         'translation_model_postfix' => 'Translation',
 
+        // whether to allow overriding the current locale for a translated standard model
+        // relation (such as images/files) through a parameter on the relations method
+        'allow_locale_override_on_translated_model_relation' => false,
+
         // singularize the names of models (using str_singular)
         'singularize_model_names' => true,
 
