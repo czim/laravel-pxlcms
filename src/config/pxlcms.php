@@ -124,7 +124,20 @@ return [
         // the postfix for the translation table -- what to add to a module table to get the translation table
         'translation_table_postfix' => '_ml',
     ],
-    
+
+
+    // ------------------------------------------------------------------------------
+    //      Caching
+    // ------------------------------------------------------------------------------
+
+    // cache configuration for standard model / cms relations -- time in minutes (Rememberable)
+    // set to 0 to disable caching
+    'cache' => [
+
+        // resizes (looked up for images by fieldId)
+        'resizes' => 60,
+    ],
+
     // ------------------------------------------------------------------------------
     //      Automatic code generation from CMS db content
     // ------------------------------------------------------------------------------

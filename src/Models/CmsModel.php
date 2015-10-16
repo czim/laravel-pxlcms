@@ -1,12 +1,9 @@
 <?php
 namespace Czim\PxlCms\Models;
 
-use Czim\PxlCms\Relations\HasManyImage;
-use Czim\PxlCms\Relations\HasOneImage;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
@@ -76,6 +73,14 @@ class CmsModel extends Model
      * @var string
      */
     protected $imageModel = Image::class;
+
+    /**
+     * The model class which represents the resizes in the cms
+     *
+     * @var string
+     */
+    protected $resizeModel = Resize::class;
+
 
     /**
      * The default CMS model listify config
@@ -508,9 +513,15 @@ class CmsModel extends Model
      */
     protected function getResizesForFieldId($fieldId)
     {
-        return DB::table(config('pxlcms.tables.meta.field_options_resizes'))
-            ->where('field_id', (int) $fieldId)
-            ->get();
+        $resizeModel = $this->resizeModel;
+
+        $resizes = $resizeModel::where('field_id', (int) $fieldId);
+
+        if ($cacheTime = config('pxlcms.cache.resizes')) {
+            $resizes->remember($cacheTime);
+        }
+
+        return $resizes->get();
     }
 
     /**
