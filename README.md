@@ -13,6 +13,14 @@ Via Composer
 $ composer require czim/laravel-pxlcms
 ```
 
+## Workflow
+
+1. Generate CMS content
+2. Install and set up new Laravel project
+3. Require and configure this package
+4. Run `artisan pxlcms:generate`
+
+
 ## To Do
 
 ### CmsModel
@@ -29,13 +37,16 @@ $ composer require czim/laravel-pxlcms
 ### Generator
 
 - relationship handling: negative reference
-- checkboxes handling
-    - multi-checkboxes references handling
+    - autosort relation?
 
 - images
-- files (?)
-- checkboxes
+    - multilingual: keep simple for now, optionally pass in locale,
+        but only deal with app()->getLocale() for now.
+        - but do allow injecting it through the relation
 
+- models:
+    also generate ide-helper docblock!
+    
 ## Credits
 
 - [Coen Zimmerman][link-author]
