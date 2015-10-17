@@ -370,20 +370,20 @@ class CmsModelWriter
         ];
 
         if (    in_array(static::STANDARD_MODEL_CHECKBOX, $this->standardModelsUsed)
-            &&  config('pxlcms.generator.include_namespace_of_standard_models')
+            &&  config('pxlcms.generator.models.include_namespace_of_standard_models')
         ) {
             $importLines[] = config('pxlcms.generator.standard_models.checkbox');
         }
 
 
         if (    in_array(static::STANDARD_MODEL_IMAGE, $this->standardModelsUsed)
-            &&  config('pxlcms.generator.include_namespace_of_standard_models')
+            &&  config('pxlcms.generator.models.include_namespace_of_standard_models')
         ) {
             $importLines[] = config('pxlcms.generator.standard_models.image');
         }
 
         if (    in_array(static::STANDARD_MODEL_FILE, $this->standardModelsUsed)
-            &&  config('pxlcms.generator.include_namespace_of_standard_models')
+            &&  config('pxlcms.generator.models.include_namespace_of_standard_models')
         ) {
             $importLines[] = config('pxlcms.generator.standard_models.file');
         }
@@ -402,7 +402,7 @@ class CmsModelWriter
         }
 
         // set them in the right order
-        if (config('pxlcms.generator.sort_imports_by_string_length')) {
+        if (config('pxlcms.generator.aesthetics.sort_imports_by_string_length')) {
 
             // sort from shortest to longest
             usort($importLines, function ($a, $b) {
@@ -729,7 +729,7 @@ class CmsModelWriter
 
         foreach ($relationships as $name => $relationship) {
 
-            if (config('pxlcms.generator.include_namespace_of_standard_models')) {
+            if (config('pxlcms.generator.models.include_namespace_of_standard_models')) {
                 $relatedClassName = $this->getModelNameFromNamespace(config('pxlcms.generator.standard_models.' . $typeName));
             } else {
                 $relatedClassName = '\\' . config('pxlcms.generator.standard_models.' . $typeName);
@@ -742,7 +742,10 @@ class CmsModelWriter
                 $relationParameters = ", '{$relationKey}'";
             }
 
-            if (array_get($relationship, 'translated') && $type !== CmsModel::RELATION_TYPE_MODEL) {
+            if (    array_get($relationship, 'translated')
+                &&  $type !== CmsModel::RELATION_TYPE_MODEL
+                &&  config('pxlcms.generator.models.allow_locale_override_on_translated_model_relation')
+            ) {
                 $relationMethodParameters = '$locale = null';
 
                 // skip parameters not entered, pass on the optional locale key

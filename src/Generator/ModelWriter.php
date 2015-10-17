@@ -158,7 +158,7 @@ class ModelWriter
     {
         $translatedModel = [
             'module'                 => $model['module'],
-            'name'                   => $model['name'] . config('pxlcms.generator.translation_model_postfix'),
+            'name'                   => $model['name'] . config('pxlcms.generator.models.translation_model_postfix'),
             'table'                  => ! empty($model['table'])
                 ? $model['table'] . snake_case(config('pxlcms.tables.translation_postfix', '_ml'))
                 : null,

@@ -93,7 +93,7 @@ class CmsAnalyzer
 
                 $name = $moduleData['name'];
 
-                if (config('pxlcms.generator.singularize_model_names')) {
+                if (config('pxlcms.generator.models.singularize_model_names')) {
                     $name = str_singular($name);
                 }
             }
@@ -130,7 +130,7 @@ class CmsAnalyzer
                 'module'                => $moduleId,
                 'name'                  => $name,
                 'table'                 => $tableOverride,   // default
-                'cached'                => config('pxlcms.generator.enable_rememberable_cache'),
+                'cached'                => config('pxlcms.generator.models.enable_rememberable_cache'),
                 'is_translated'         => false,
                 'is_listified'          => $listified, // makes no sense for single-entry only
                 'normal_fillable'       => [],
@@ -193,7 +193,7 @@ class CmsAnalyzer
                             'negative' => ($fieldData['field_type_id'] == FieldType::TYPE_REFERENCE_NEGATIVE),
                         ];
 
-                        if (config('pxlcms.generator.hide_foreign_key_attributes')) {
+                        if (config('pxlcms.generator.models.hide_foreign_key_attributes')) {
                             $model['hidden'][] = $attributeName;
                         }
                         break;
@@ -358,7 +358,7 @@ class CmsAnalyzer
 
 
             // enable timestamps?
-            if (    config('pxlcms.generator.enable_timestamps_on_models_with_suitable_attributes')
+            if (    config('pxlcms.generator.models.enable_timestamps_on_models_with_suitable_attributes')
                 &&  in_array('created_at', $model['dates'])
                 &&  in_array('updated_at', $model['dates'])
             ) {
@@ -441,7 +441,7 @@ class CmsAnalyzer
                 // default is name of the model referred to
                 // self-referencing is an exception, since using the model name won't be useful
                 if ($selfReference) {
-                    $reverseName = $relationName . config('pxlcms.generator.relationship_reverse_postfix', 'Reverse');
+                    $reverseName = $relationName . config('pxlcms.generator.models.relationship_reverse_postfix', 'Reverse');
                 } else {
                     $reverseName = camel_case($modelFrom['name']);
                 }
@@ -456,7 +456,7 @@ class CmsAnalyzer
                     ||  in_array($reverseName, $this->output['models'][ $relationship['model'] ]['relationships']['file'])
                     ||  in_array($reverseName, $this->output['models'][ $relationship['model'] ]['relationships']['checkbox'])
                 ) {
-                    $reverseName .= config('pxlcms.generator.relationship_fallback_postfix', 'Reference');
+                    $reverseName .= config('pxlcms.generator.models.relationship_fallback_postfix', 'Reference');
                 }
 
 

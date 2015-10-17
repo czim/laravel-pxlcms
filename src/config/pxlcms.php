@@ -151,8 +151,11 @@ return [
             'repositories' => 'App\\Repositories',
         ],
 
-        // whether to sort use import statements by their length (false sorts them alphabetically)
-        'sort_imports_by_string_length' => true,
+        'aesthetics' => [
+            // whether to sort use import statements by their length (false sorts them alphabetically)
+            'sort_imports_by_string_length' => true,
+        ],
+
 
         // the FQN's for the standard CMS models for special relationships
         'standard_models' => [
@@ -161,36 +164,43 @@ return [
             'file'     => 'Czim\\PxlCms\\Models\\File',
         ],
 
-        // if used, simplify namespaces of standard models through use statements
-        'include_namespace_of_standard_models' => true,
+        // model-generation-specific settings
+        'models' => [
 
-        // if a (reverse) relationship's name is already taken by an attribute
-        // in the model, add this to prevent duplicate names
-        'relationship_fallback_postfix' => 'Reference',
+            // singularize the names of models (using str_singular)
+            'singularize_model_names' => true,
 
-        // if a (reverse) relationship is self-referencing (on the model), the
-        // relationship name gets this postfixed to prevent duplicate names
-        'relationship_reverse_postfix'  => 'Reverse',
+            // if used, simplify namespaces of standard models through use statements
+            'include_namespace_of_standard_models' => true,
 
-        // postfix for translation model
-        'translation_model_postfix' => 'Translation',
+            // if a (reverse) relationship's name is already taken by an attribute
+            // in the model, add this to prevent duplicate names
+            'relationship_fallback_postfix' => 'Reference',
 
-        // whether to allow overriding the current locale for a translated standard model
-        // relation (such as images/files) through a parameter on the relations method
-        'allow_locale_override_on_translated_model_relation' => false,
+            // if a (reverse) relationship is self-referencing (on the model), the
+            // relationship name gets this postfixed to prevent duplicate names
+            'relationship_reverse_postfix'  => 'Reverse',
 
-        // singularize the names of models (using str_singular)
-        'singularize_model_names' => true,
+            // postfix for translation model
+            'translation_model_postfix' => 'Translation',
 
-        // singularize relationship names for hasOne and belongsTo relationships that have only 1 possible match
-        // not used, since it would break the database dependency!
-        //'singularize_single_relationships' => true,
+            // whether to allow overriding the current locale for a translated standard model
+            // relation (such as images/files) through a parameter on the relations method
+            'allow_locale_override_on_translated_model_relation' => false,
+            
+            // singularize relationship names for hasOne and belongsTo relationships that have only 1 possible match
+            // not used, since it would break the database dependency!
+            //'singularize_single_relationships' => true,
 
-        // whether to add foreign key attribute names to the $hidden property
-        'hide_foreign_key_attributes' => true,
+            // whether to add foreign key attribute names to the $hidden property
+            'hide_foreign_key_attributes' => true,
 
-        // whether to use rememberable trait on models generated
-        'enable_rememberable_cache' => true,
+            // whether to use rememberable trait on models generated
+            'enable_rememberable_cache' => true,
+
+            // whether to enable laravel timestamps for models with created_at and update_at
+            "enable_timestamps_on_models_with_suitable_attributes" => true,
+        ],
 
         // if adding hidden attributes for a model, always add these attributes to hide aswell
         'default_hidden_fields' => [
@@ -200,8 +210,7 @@ return [
             'e_user_id',
         ],
 
-        // whether to enable laravel timestamps for models with created_at and update_at
-        "enable_timestamps_on_models_with_suitable_attributes" => true,
+
 
         /*
          * Which CMS content to ignore when generating
