@@ -33,17 +33,29 @@ $ composer require czim/laravel-pxlcms
 
 - categories ?
 
+- path helper methods?
+    - cms / file upload paths, from configuration?
+
+- images:
+    - add full internal and/or external path as appended property on image
+    - same for (enriched) resizes
 
 ### Generator
 
 - relationship handling:
     - negative reference
     - autosort relation?
-    - (optionally) adjust the relation name to plural for count > 1 reverse relationships
 
 - models:   
     - store general attribute information (including type) for all attributes, not just for fillables
         for more complete ide-helper generation 
+
+- slugs? look at the 'standardized' slug setup by Erik
+
+- handle dutch naming schemes, plural/singular.. (producten => productens :])
+    - model names
+    - relation names
+    x do not mess with eloquent's table conventions!
 
 ## Credits
 
