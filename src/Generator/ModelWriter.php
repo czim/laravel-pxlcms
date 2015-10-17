@@ -3,6 +3,7 @@ namespace Czim\PxlCms\Generator;
 
 use Czim\PxlCms\Generator\Exceptions\ModelFileAlreadyExistsException;
 use Czim\PxlCms\Generator\Writer\CmsModelWriter;
+use Czim\PxlCms\Generator\Writer\WriterModelData;
 use InvalidArgumentException;
 
 /**
@@ -61,7 +62,6 @@ class ModelWriter
         // warn about models not written or refernced but not updated on the other end
 
         /** @var CmsModelWriter $modelWriter */
-        $modelWriter = app()->make(CmsModelWriter::class);
 
         $totalToWrite             = count($this->data['models']);
         $countWritten             = 0;
@@ -74,7 +74,8 @@ class ModelWriter
 
                 $model = $this->appendRelatedModelsToModelData($model);
 
-                $modelWriter->write($model);
+                $modelWriter = app( CmsModelWriter::class );
+                $modelWriter->process( app(WriterModelData::class, [ $model ]) );
 
                 $this->log("Wrote model {$model['name']}.");
                 $countWritten++;
@@ -92,7 +93,8 @@ class ModelWriter
 
                 try {
 
-                    $modelWriter->write($translatedModel);
+                    $modelWriter = app( CmsModelWriter::class );
+                    $modelWriter->process( app(WriterModelData::class, [ $translatedModel ]) );
 
                     $this->log("Wrote translation for model {$model['name']}.");
                     $countTranslationsWritten++;

@@ -198,6 +198,17 @@ return [
         // model-generation-specific settings
         'models' => [
 
+            // fqn for base adapter model for generated models to extend
+            'extend_model' => "Czim\\PxlCms\\Models\\CmsModel",
+
+            // fqn for (optional) traits to import/use (whether they are used is not determined by this)
+            'traits' => [
+                'listify_fqn'             => "Lookitsatravis\\Listify\\Listify",
+                'listify_constructor_fqn' => "Czim\\PxlCms\\Models\\ListifyConstructorTrait",
+                'translatable_fqn'        => "Czim\\PxlCms\\Translatable\\Translatable",
+                'rememberable_fqn'        => "Watson\\Rememberable\\Rememberable"
+            ],
+
             // singularize the names of models (using str_singular)
             'singularize_model_names' => true,
 
