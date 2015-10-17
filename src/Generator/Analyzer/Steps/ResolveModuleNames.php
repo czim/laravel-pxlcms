@@ -1,6 +1,7 @@
 <?php
 namespace Czim\PxlCms\Generator\Analyzer\Steps;
 
+use Czim\PxlCms\Generator\Generator;
 use Exception;
 
 /**
@@ -86,6 +87,10 @@ class ResolveModuleNames extends AbstractProcessStep
         if ($safeguard < 1) {
             throw new Exception("Failed to resolve duplicate names for modules: " . print_r($duplicates));
         }
+
+
+        // log any name changes
+        $this->reportModuleNamePrefixing();
     }
 
     /**
@@ -390,4 +395,21 @@ class ResolveModuleNames extends AbstractProcessStep
     {
         return trim(preg_replace('#\s+#', ' ', $prefix . ' ' . $name));
     }
+
+    /**
+     * Fire log events for any module name that was prefixed / altered
+     */
+    protected function reportModuleNamePrefixing()
+    {
+        foreach ($this->data->rawData['modules'] as $moduleId => $module) {
+            if ( ! array_get($module, 'prefixed_name')) continue;
+
+            $this->context->log(
+                "Prefixed or altered module name to avoid duplicates: #{$moduleId} ("
+                . "{$module['name']}) is now known as {$module['prefixed_name']}",
+                Generator::LOG_LEVEL_WARNING
+            );
+        }
+    }
+
 }
