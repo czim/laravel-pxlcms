@@ -26,6 +26,7 @@ class CmsAnalyzer extends PipelineProcessor
         return [
             Steps\CheckTables::class,
             Steps\LoadRawData::class,
+            Steps\ResolveModuleNames::class,
             Steps\AnalyzeModels::class,
         ];
     }

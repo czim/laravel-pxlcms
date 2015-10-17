@@ -30,7 +30,7 @@ class AnalyzeModels extends AbstractProcessStep
 
             } else {
 
-                $name = $moduleData['name'];
+                $name = array_get($moduleData, 'prefixed_name') ?: $moduleData['name'];
 
                 if (config('pxlcms.generator.models.model_name.singularize_model_names')) {
                     $name = str_singular($name);
