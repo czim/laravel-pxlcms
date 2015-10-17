@@ -1,23 +1,16 @@
 <?php
 
 return [
-
-    // ------------------------------------------------------------------------------
-    //      Caching
-    // ------------------------------------------------------------------------------
-
-    'rememberable' => [
-
-        // time to live for cache, in minutes
-        'default-ttl'   => 10,
-
-        // time to live for cache, in minutes for locales/languages model
-        'languages-ttl' => 60,
-    ],
-
-    // ------------------------------------------------------------------------------
-    //      CMS Paths
-    // ------------------------------------------------------------------------------
+    
+    /*
+    |--------------------------------------------------------------------------
+    | File / Webserver Paths for CMS Content
+    |--------------------------------------------------------------------------
+    |
+    | Paths to, for instance, CMS file and image uploads, relative to the
+    | Laravel application root directory.
+    |
+    */
 
     'paths' => [
 
@@ -27,10 +20,16 @@ return [
         // relative path to file uploads from laravel/server root
         'files'  => 'public/cms_files',
     ],
-    
-    // ------------------------------------------------------------------------------
-    //      CMS-specific table names
-    // ------------------------------------------------------------------------------
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | CMS-specific Table Names
+    |--------------------------------------------------------------------------
+    |
+    | CMS Content database table names for commonly used CMS entities.
+    |
+    */
 
     'tables' => [
 
@@ -68,9 +67,15 @@ return [
     ],
 
 
-    // ------------------------------------------------------------------------------
-    //      Relationships / references
-    // ------------------------------------------------------------------------------
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships and References
+    |--------------------------------------------------------------------------
+    |
+    | Configuration of how the CmsModel should handle relationships and what
+    | data structure it may expect to find in the CMS database.
+    |
+    */
 
     'relations' => [
 
@@ -106,9 +111,14 @@ return [
         ],
     ],
 
-    // ------------------------------------------------------------------------------
-    //      Translatable / ML
-    // ------------------------------------------------------------------------------
+    /*
+    |--------------------------------------------------------------------------
+    | Translatable / Multilingual Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration of translatable models and other 'ML' CMS database content.
+    |
+    */
 
     'translatable' => [
 
@@ -126,9 +136,15 @@ return [
     ],
 
 
-    // ------------------------------------------------------------------------------
-    //      Caching
-    // ------------------------------------------------------------------------------
+    /*
+    |--------------------------------------------------------------------------
+    | Caching
+    |--------------------------------------------------------------------------
+    |
+    | Configuration of caching as applied to standard CMS models and relations.
+    | By default, the Rememberable Eloquent trait is used for caching.
+    |
+    */
 
     // cache configuration for standard model / cms relations -- time in minutes (Rememberable)
     // set to 0 to disable caching
@@ -138,9 +154,15 @@ return [
         'resizes' => 60,
     ],
 
-    // ------------------------------------------------------------------------------
-    //      Automatic code generation from CMS db content
-    // ------------------------------------------------------------------------------
+
+    /*
+    |--------------------------------------------------------------------------
+    | Automatic Code Generation
+    |--------------------------------------------------------------------------
+    |
+    | Configuration of generator for models and other code files
+    |
+    */
     
     'generator' => [
 
@@ -163,6 +185,15 @@ return [
             'checkbox' => 'Czim\\PxlCms\\Models\\Checkbox',
             'file'     => 'Czim\\PxlCms\\Models\\File',
         ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Model Generation
+        |--------------------------------------------------------------------------
+        |
+        | Settings affecting automatic generation of Eloquent-based Model files.
+        |
+        */
 
         // model-generation-specific settings
         'models' => [
@@ -187,7 +218,7 @@ return [
             // whether to allow overriding the current locale for a translated standard model
             // relation (such as images/files) through a parameter on the relations method
             'allow_locale_override_on_translated_model_relation' => false,
-            
+
             // singularize relationship names for hasOne and belongsTo relationships that have only 1 possible match
             // not used, since it would break the database dependency!
             //'singularize_single_relationships' => true,
@@ -200,21 +231,26 @@ return [
 
             // whether to enable laravel timestamps for models with created_at and update_at
             "enable_timestamps_on_models_with_suitable_attributes" => true,
-        ],
 
-        // if adding hidden attributes for a model, always add these attributes to hide aswell
-        'default_hidden_fields' => [
-            'e_active',
-            'e_position',
-            'e_category_id',
-            'e_user_id',
+            // if adding hidden attributes for a model, always add these attributes to hide aswell
+            'default_hidden_fields' => [
+                'e_active',
+                'e_position',
+                'e_category_id',
+                'e_user_id',
+            ],
         ],
-
 
 
         /*
-         * Which CMS content to ignore when generating
-         */
+        |--------------------------------------------------------------------------
+        | Ignoring CMS content while analyzing generating
+        |--------------------------------------------------------------------------
+        |
+        | ** This is not currently supported **
+        | Just a placeholder here as a reminder that this might be a good idea.
+        |
+        */
 
         'ignore' => [
 
@@ -223,6 +259,16 @@ return [
             ],
 
         ],
+
+        /*
+        |--------------------------------------------------------------------------
+        | Overriding Automatically Generated Content
+        |--------------------------------------------------------------------------
+        |
+        | If you want to override specific properties or output generated by
+        | this package for a given model, you can define the specifics here.
+        |
+        */
 
         'override' => [
 

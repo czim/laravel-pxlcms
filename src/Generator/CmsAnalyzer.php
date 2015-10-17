@@ -320,7 +320,7 @@ class CmsAnalyzer
             if (count($model['hidden']) && ! count($overrideHidden)) {
                 $model['hidden'] = array_merge(
                     $model['hidden'],
-                    config('pxlcms.generator.default_hidden_fields', [])
+                    config('pxlcms.generator.models.default_hidden_fields', [])
                 );
             }
 
