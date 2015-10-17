@@ -300,7 +300,9 @@ class ResolveModuleNames extends AbstractProcessStep
      */
     protected function normalizeName($name)
     {
-        return snake_case(trim(preg_replace('#\s+#', ' ', $name)));
+        return snake_case(
+            $this->context->normalizeCmsDatabaseString($name)
+        );
     }
 
     /**

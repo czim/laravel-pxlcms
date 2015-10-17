@@ -39,8 +39,8 @@ class AnalyzeModels extends AbstractProcessStep
 
             // make sure we force set a table name if it does not follow convention
             $tableOverride = null;
-            if (str_plural(snake_case($name)) != snake_case($moduleData['name'])) {
-                $tableOverride = $this->getModuleTablePrefix($moduleId) . snake_case($moduleData['name']);
+            if (str_plural($this->normalizeDb($name)) != $this->normalizeDb($moduleData['name'])) {
+                $tableOverride = $this->getModuleTablePrefix($moduleId) . $this->normalizeDb($moduleData['name']);
             }
 
             // force listified?
@@ -99,7 +99,7 @@ class AnalyzeModels extends AbstractProcessStep
 
             foreach ($moduleData['fields'] as $fieldId => $fieldData) {
 
-                $attributeName = $this->fieldNameToDatabaseColumn($fieldData['name']);
+                $attributeName = $this->normalizeDb($fieldData['name']);
                 $relationName  = camel_case($attributeName);
 
                 switch ($fieldData['field_type_id']) {
@@ -462,5 +462,16 @@ class AnalyzeModels extends AbstractProcessStep
         });
 
         return $resizes;
+    }
+
+    /**
+     * Standard database field normalization
+     *
+     * @param string $string
+     * @return string
+     */
+    protected function normalizeDb($string)
+    {
+        return $this->context->normalizeNameForDatabase($string);
     }
 }

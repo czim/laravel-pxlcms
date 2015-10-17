@@ -45,4 +45,64 @@ class AnalyzerContext extends AbstractProcessContext
     {
         event('pxlcms.logmessage', [ 'message' => $message, 'level' => $level ]);
     }
+
+
+    /**
+     * Normalizes a name to use as a database table or field reference
+     *
+     * @param string $name
+     * @return string
+     */
+    public function normalizeNameForDatabase($name)
+    {
+        return snake_case(preg_replace('#\s+#', '_', $name));
+    }
+
+    /**
+     * Normalizes a string (name) to a database field or table name in the
+     * same way the PXL CMS does this.
+     *
+     * @param string $string
+     * @param string $spaceSubstitute   what to replace spaces with
+     * @return string
+     */
+    public function normalizeCmsDatabaseString($string, $spaceSubstitute = '_')
+    {
+        $string = html_entity_decode($string);
+
+        $string = mb_convert_encoding($string, "ISO-8859-1", 'UTF-8');
+
+        $string = preg_replace('#\s+#', $spaceSubstitute, $string);
+
+        $string = $this->normalizeCmsAccents($string);
+
+        $string = preg_replace('#[^0-9a-z' . preg_quote($spaceSubstitute) . ']#i', '', $string);
+        $string = preg_replace('#[' . preg_quote($spaceSubstitute) . ']+#', $spaceSubstitute, $string);
+
+        $string = preg_replace('#\s+#', $spaceSubstitute, $string);
+
+        return $string;
+    }
+
+    /**
+     * Normalize accents just like the CMS does
+     *
+     * @param string $string
+     * @return string
+     */
+    public function normalizeCmsAccents($string)
+    {
+        $string = htmlentities($string, ENT_COMPAT | (defined('ENT_HTML401') ? ENT_HTML401 : 0), 'ISO-8859-1');
+
+        $string = preg_replace('#&([a-zA-Z])(uml|acute|grave|circ|tilde|slash|cedil|ring|caron);#','$1',$string);
+
+        $string = preg_replace('#&(ae|AE)lig;#','$1',$string);  // æ to ae
+        $string = preg_replace('#&(oe|OE)lig;#','$1',$string);  // Œ to OE
+        $string = preg_replace('#&szlig;#','ss',$string);       // ß to ss
+        $string = preg_replace('#&(eth|thorn);#','th',$string); // ð and þ to th
+        $string = preg_replace('#&(ETH|THORN);#','Th',$string); // Ð and Þ to Th
+
+        return html_entity_decode($string);
+    }
+
 }

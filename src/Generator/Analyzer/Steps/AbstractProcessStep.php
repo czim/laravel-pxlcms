@@ -30,21 +30,6 @@ abstract class AbstractProcessStep extends CzimAbstractProcessStep
     }
 
     /**
-     * Converts a field name to the database column name based on CMS convention
-     *
-     * @param string $field
-     * @return string
-     */
-    protected function fieldNameToDatabaseColumn($field)
-    {
-        // the PXL CMS Generator is very forgiving when using multiple spaces,
-        // so we need to filter them out here
-        $field = preg_replace('#\s+#', ' ', $field);
-
-        return str_replace(' ', '_', trim(strtolower($field)));
-    }
-
-    /**
      * Returns the table prefix (cms_m#_ ...) for a module CMS table
      *
      * @param $moduleId

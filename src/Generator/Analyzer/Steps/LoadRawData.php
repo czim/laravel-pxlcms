@@ -6,6 +6,13 @@ use Illuminate\Support\Facades\DB;
 
 class LoadRawData extends AbstractProcessStep
 {
+    /**
+     * Whether to normalize names before storing them
+     *
+     * @var bool
+     */
+    protected $normalizeNames = true;
+
 
     protected function process()
     {
@@ -21,11 +28,11 @@ class LoadRawData extends AbstractProcessStep
         ];
 
         $this->loadMenus()
-            ->loadGroups()
-            ->loadSections()
-            ->loadModules()
-            ->loadFields()
-            ->loadResizes();
+             ->loadGroups()
+             ->loadSections()
+             ->loadModules()
+             ->loadFields()
+             ->loadResizes();
     }
 
 
@@ -44,25 +51,34 @@ class LoadRawData extends AbstractProcessStep
         foreach ($moduleData as $moduleObject) {
 
             $moduleArray = (array) $moduleObject;
+            $moduleId    = $moduleArray['id'];
             $sectionId   = $moduleArray['section_id'];
 
-            $this->data->rawData['modules'][ $moduleArray['id'] ] = [];
-            $this->data->rawData['modules'][ $moduleArray['id'] ]['prefixed_name'] = null;
+            $this->data->rawData['modules'][ $moduleId ] = [];
+            $this->data->rawData['modules'][ $moduleId ]['prefixed_name'] = null;
 
             foreach ([  'name', 'max_entries', 'is_custom',
                          'allow_create', 'allow_update', 'allow_delete',
-                         'override_table_name', 'simulate_categories_for',
-                         'section_id',
+                         'simulate_categories_for', 'section_id',
+                         'override_table_name',
                      ] as $key
             ) {
-                $this->data->rawData['modules'][ $moduleArray['id'] ][ $key ] = $moduleArray[ $key ];
+                $this->data->rawData['modules'][ $moduleId ][ $key ] = array_get($moduleArray, $key);
+            }
+
+            // normalize names
+            if ($this->normalizeNames) {
+                foreach (['name'] as $key) {
+                    $this->data->rawData['modules'][ $moduleId ][ $key ] =
+                        $this->normalize( $this->data->rawData['modules'][ $moduleId ][ $key ] );
+                }
             }
 
             // prepare for field data
-            $this->data->rawData['modules'][ $moduleArray['id'] ]['fields'] = [];
+            $this->data->rawData['modules'][ $moduleId ]['fields'] = [];
 
             // load higher level names (for later name resolution)
-            $this->data->rawData['modules'][ $moduleArray['id'] ]['parent_names'] = [
+            $this->data->rawData['modules'][ $moduleId ]['parent_names'] = [
                 'section' => $this->data->rawData['sections'][ $sectionId ]['name'],
                 'group'   => $this->data->rawData['sections'][ $sectionId ]['group_name'],
                 'menu'    => $this->data->rawData['sections'][ $sectionId ]['menu_name'],
@@ -104,6 +120,14 @@ class LoadRawData extends AbstractProcessStep
                 $this->data->rawData['fields'][ $fieldId ][ $key ] = $fieldArray[ $key ];
             }
 
+            // normalize names
+            if ($this->normalizeNames) {
+                foreach (['name'] as $key) {
+                    $this->data->rawData['fields'][ $fieldId ][ $key ] =
+                        $this->normalize( $this->data->rawData['fields'][ $fieldId ][ $key ] );
+                }
+            }
+
             $this->data->rawData['fields'][ $fieldId ]['field_type_name'] = $this->context->fieldType->getFriendlyNameForId(
                 $this->data->rawData['fields'][ $fieldId ]['field_type_id']
             );
@@ -141,6 +165,14 @@ class LoadRawData extends AbstractProcessStep
             foreach ([ 'name' ] as $key) {
                 $this->data->rawData['menus'][ $menuId ][ $key ] = $menuArray[ $key ];
             }
+
+            // normalize names
+            if ($this->normalizeNames) {
+                foreach (['name'] as $key) {
+                    $this->data->rawData['menus'][ $menuId ][ $key ] =
+                        $this->normalize( $this->data->rawData['menus'][ $menuId ][ $key ] );
+                }
+            }
         }
 
         unset($menuData, $menuObject);
@@ -165,6 +197,14 @@ class LoadRawData extends AbstractProcessStep
 
             foreach ([ 'name', 'menu_id' ] as $key) {
                 $this->data->rawData['groups'][ $groupId ][ $key ] = $groupArray[ $key ];
+            }
+
+            // normalize names
+            if ($this->normalizeNames) {
+                foreach (['name'] as $key) {
+                    $this->data->rawData['groups'][ $groupId ][ $key ] =
+                        $this->normalize( $this->data->rawData['groups'][ $groupId ][ $key ] );
+                }
             }
 
             $this->data->rawData['groups'][ $groupId ]['menu_name'] = $this->data->rawData['menus'][ $menuId ]['name'];
@@ -193,6 +233,14 @@ class LoadRawData extends AbstractProcessStep
 
             foreach ([ 'name', 'group_id' ] as $key) {
                 $this->data->rawData['sections'][ $sectionId ][ $key ] = $sectionArray[ $key ];
+            }
+
+            // normalize names
+            if ($this->normalizeNames) {
+                foreach (['name'] as $key) {
+                    $this->data->rawData['sections'][ $sectionId ][ $key ] =
+                        $this->normalize( $this->data->rawData['sections'][ $sectionId ][ $key ] );
+                }
             }
 
             $this->data->rawData['sections'][ $sectionId ]['group_name'] = $this->data->rawData['groups'][ $groupId ]['name'];
@@ -238,5 +286,16 @@ class LoadRawData extends AbstractProcessStep
         unset($resizeData, $resizeObject);
 
         return $this;
+    }
+
+    /**
+     * Standard name normalization
+     *
+     * @param string $string
+     * @return string
+     */
+    protected function normalize($string)
+    {
+        return strtolower( $this->context->normalizeCmsDatabaseString($string, ' ') );
     }
 }
