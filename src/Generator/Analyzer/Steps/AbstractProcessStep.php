@@ -37,6 +37,10 @@ abstract class AbstractProcessStep extends CzimAbstractProcessStep
      */
     protected function fieldNameToDatabaseColumn($field)
     {
+        // the PXL CMS Generator is very forgiving when using multiple spaces,
+        // so we need to filter them out here
+        $field = preg_replace('#\s+#', ' ', $field);
+
         return str_replace(' ', '_', trim(strtolower($field)));
     }
 
