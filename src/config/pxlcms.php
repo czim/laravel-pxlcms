@@ -232,12 +232,32 @@ return [
             // whether to enable laravel timestamps for models with created_at and update_at
             "enable_timestamps_on_models_with_suitable_attributes" => true,
 
+            // the date property type (or FQN) to use for ide-helper tags referring to date fields
+            'date_property_fqn' => '\\Carbon\\Carbon',
+
             // if adding hidden attributes for a model, always add these attributes to hide aswell
             'default_hidden_fields' => [
                 'e_active',
                 'e_position',
                 'e_category_id',
                 'e_user_id',
+            ],
+
+            // settings for ide-helper content to add to models
+            'ide_helper' => [
+
+                // whether to add (id-helper data to) a docblock for the model
+                'add_docblock' => true,
+
+                // whether to add @property tags for the magic attribute properties of the model
+                'tag_attribute_properties' => true,
+
+                // whether to add @property-read tags for the model's relationships
+                'tag_relationship_magic_properties' => true,
+
+                // whether to add @method static tags for whereProperty($value) type methods
+                // this can get quite spammy for models with many attributes
+                'tag_magic_where_methods_for_attributes' => false,
             ],
         ],
 

@@ -16,6 +16,9 @@ class CmsModelWriter extends AbstractCodeWriter
     const STANDARD_MODEL_IMAGE    = 'image';
     const STANDARD_MODEL_CHECKBOX = 'checkbox';
 
+    // the FQN for the Eloquent collection and builder types (in ide-helper tag content)
+    const FQN_FOR_COLLECTION = '\\Illuminate\\Database\\Eloquent\\Collection';
+    const FQN_FOR_BUILDER    = '\\Illuminate\\Database\\Query\\Builder';
 
     /**
      * Analyzer output data for generating the model
@@ -162,6 +165,8 @@ class CmsModelWriter extends AbstractCodeWriter
         $stub = preg_replace('# *{{RELATIONSCONFIG}}\n?#i', $this->getRelationsConfigStubReplace(), $stub);
 
         $stub = preg_replace('# *{{RELATIONSHIPS}}\n?#i', $this->getRelationshipsStubReplace(), $stub);
+
+        $stub = preg_replace('#{{DOCBLOCK}}\n?#i', $this->getDocBlockStubReplace(), $stub);
 
         // has to be last, because only then do we know what to include
         $stub = preg_replace('#{{USEIMPORTS}}\n?#i', $this->getImportsStubReplace(), $stub);
@@ -609,7 +614,7 @@ class CmsModelWriter extends AbstractCodeWriter
 
         foreach ($relationships as $name => $relationship) {
 
-            if (config('pxlcms.generator.models.include_namespace_of_standard_models')) {
+            if ( ! is_null($typeName) && config('pxlcms.generator.models.include_namespace_of_standard_models')) {
                 $relatedClassName = $this->getModelNameFromNamespace(config('pxlcms.generator.standard_models.' . $typeName));
             } else {
                 $relatedClassName = '\\' . config('pxlcms.generator.standard_models.' . $typeName);
@@ -654,6 +659,133 @@ class CmsModelWriter extends AbstractCodeWriter
             }
 
         }
+
+        return $replace;
+    }
+
+    /**
+     * Returns the replacement for the docblock placeholder
+     *
+     * @return string
+     */
+    protected function getDocBlockStubReplace()
+    {
+        // For now, docblocks will only contain the ide-helper content
+
+        if ( ! config('pxlcms.generator.models.ide_helper.add_docblock')) return '';
+
+        $rows = [];
+
+        /*
+         * Direct Attributes (and translated
+         */
+
+        $attributes = array_merge(
+            array_get($this->data, 'normal_fillable', []),
+            array_get($this->data, 'translated_fillable', [])
+        );
+
+        if (config('pxlcms.generator.models.ide_helper.tag_attribute_properties')) {
+
+            foreach ($attributes as $attribute) {
+
+                // determine type for property
+
+                if (in_array($attribute, array_get($this->data, 'dates', []))) {
+                    // could be a date, in which case it is (probably) Carbon
+                    $type = config('pxlcms.generator.models.date_property_fqn', '\\Carbon\\Carbon');
+
+                } else {
+                    // otherwise, check the casts to termine the type
+
+                    switch (array_get($this->data, 'casts.' . $attribute)) {
+
+                        case 'boolean':
+                        case 'integer':
+                        case 'float':
+                            $type = array_get($this->data, 'casts.' . $attribute);
+                            break;
+
+
+                        case 'string':
+                        default:
+                            // todo: consider better fallback approach with 'mixed' where unknown
+                            $type = 'string';
+                    }
+                }
+
+                $rows[] = [
+                    'tag'  => 'property',
+                    'type' => $type,
+                    'name' => '$' . $attribute,
+                ];
+            }
+        }
+
+        /*
+         * Relationships (normal)
+         */
+
+        $relationships = array_merge(
+            array_get($this->data, 'relationships.normal', []),
+            array_get($this->data, 'relationships.reverse', [])
+        );
+
+        if (config('pxlcms.generator.models.ide_helper.tag_relationship_magic_properties')) {
+
+            foreach ($relationships as $relationName => $relationship) {
+
+                $relatedClassName = studly_case($this->data['related_models'][ $relationship['model'] ]['name']);
+
+                // single relationships returns a single of the related model type
+                // multiples return collections/arrays with related model type entries
+                if ($relationship['count'] == 1) {
+                    $type = $relatedClassName;
+                } else {
+                    $type = static::FQN_FOR_COLLECTION . '|' . $relatedClassName . '[]';
+                }
+
+                // the read-only magic property for the relation
+                $rows[] = [
+                    'tag'  => 'property-read',
+                    'type' => $type,
+                    'name' => '$' . $relationName,
+                ];
+            }
+        }
+
+
+        /*
+         * Magic static methods (where<Attribute>)
+         */
+
+        if (config('pxlcms.generator.models.ide_helper.tag_magic_where_methods_for_attributes')) {
+
+            foreach ($attributes as $attribute) {
+
+                $rows[] = [
+                    'tag'  => 'method',
+                    'type' => 'static ' . static::FQN_FOR_BUILDER . '|' . studly_case(array_get($this->data, 'name')),
+                    'name' => 'where' . studly_case($attribute) . '($value)',
+                ];
+            }
+        }
+
+
+        if ( ! count($rows)) return '';
+
+        $replace = "/**\n";
+
+        foreach ($rows as $row) {
+
+            $replace .= ' * '
+                      . "@{$row['tag']} "
+                      . "{$row['type']} "
+                      . "{$row['name']}\n";
+        }
+
+        $replace .= " */\n";
+
         return $replace;
     }
 
