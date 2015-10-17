@@ -3,6 +3,7 @@ namespace Czim\PxlCms\Generator\Analyzer\Steps;
 
 use Czim\PxlCms\Generator\FieldType;
 use Czim\PxlCms\Generator\Generator;
+use Czim\PxlCms\Models\CmsModel;
 use Exception;
 
 class AnalyzeModels extends AbstractProcessStep
@@ -129,6 +130,7 @@ class AnalyzeModels extends AbstractProcessStep
                             'field'    => $fieldId,
                             'key'      => $keyName,
                             'negative' => ($fieldData['field_type_id'] == FieldType::TYPE_REFERENCE_NEGATIVE),
+                            'special'  => CmsModel::RELATION_TYPE_MODEL,
                         ];
 
                         if (config('pxlcms.generator.models.hide_foreign_key_attributes')) {
@@ -146,6 +148,7 @@ class AnalyzeModels extends AbstractProcessStep
                             'count'    => $fieldData['value_count'],    // 0 for no limit
                             'field'    => $fieldId,
                             'negative' => false,
+                            'special'    => CmsModel::RELATION_TYPE_MODEL,
                         ];
                         break;
 
@@ -163,6 +166,7 @@ class AnalyzeModels extends AbstractProcessStep
                             'field'      => $fieldId,
                             'translated' => (bool) $fieldData['multilingual'],
                             'resizes'    => $this->getImageResizesForField($fieldId),
+                            'special'    => CmsModel::RELATION_TYPE_IMAGE,
                         ];
                         break;
 
@@ -175,15 +179,17 @@ class AnalyzeModels extends AbstractProcessStep
                             'count'      => $fieldData['value_count'],
                             'field'      => $fieldId,
                             'translated' => (bool) $fieldData['multilingual'],
+                            'special'    => CmsModel::RELATION_TYPE_FILE,
                         ];
                         break;
 
                     case FieldType::TYPE_CHECKBOX:
                         $model['relationships']['checkbox'][ $relationName ] = [
-                            'type'   => Generator::RELATIONSHIP_HAS_MANY,
-                            'single' => false,
-                            'count'  => $fieldData['value_count'],
-                            'field'  => $fieldId,
+                            'type'    => Generator::RELATIONSHIP_HAS_MANY,
+                            'single'  => false,
+                            'count'   => $fieldData['value_count'],
+                            'field'   => $fieldId,
+                            'special' => CmsModel::RELATION_TYPE_CHECKBOX,
                         ];
                         break;
 
