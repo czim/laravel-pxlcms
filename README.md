@@ -36,17 +36,15 @@ $ composer require czim/laravel-pxlcms
 
 ### Generator
 
-- relationship handling: negative reference
+- relationship handling:
+    - negative reference
     - autosort relation?
+    - (optionally) adjust the relation name to plural for count > 1 reverse relationships
 
-- images
-    - multilingual: keep simple for now, optionally pass in locale,
-        but only deal with app()->getLocale() for now.
-        - but do allow injecting it through the relation
+- models:   
+    - store general attribute information (including type) for all attributes, not just for fillables
+        for more complete ide-helper generation 
 
-- models:
-    also generate ide-helper docblock!
-    
 ## Credits
 
 - [Coen Zimmerman][link-author]
