@@ -1,6 +1,8 @@
 <?php
 namespace Czim\PxlCms\Generator;
 
+use Czim\PxlCms\Generator\Analyzer\AnalyzerData;
+
 /**
  * 1. analyze cms content
  *    find all (non-ignored) modules
@@ -63,14 +65,15 @@ class Generator
      */
     public function generate()
     {
-        $data = $this->analyzer->analyze();
+        // run analyzer pipeline
+        $data = $this->analyzer->process(new AnalyzerData);
 
         if ( ! $this->write) {
-            $this->debugOutput($data);
+            $this->debugOutput($data->output);
             return true;
         }
 
-        $this->writer->setData($data);
+        $this->writer->setData($data->output);
         $this->writer->writeFiles();
 
         //$this->logOutput( $this->writer->getLog() );
