@@ -375,13 +375,24 @@ class AnalyzeModels extends AbstractProcessStep
                     // default omitted on purpose
                 }
 
+                // pluralize the name if configured to and it's a to many relationship
+                $pluralizeName = (  $reverseCount !== 1
+                                &&  config('pxlcms.generator.models.pluralize_reversed_relationship_names')
+                                &&  (   ! $selfReference
+                                    ||  config('pxlcms.generator.models.pluralize_reversed_relationship_names_for_self_reference')
+                                    )
+                                );
+
                 // name of the relationship reversed
                 // default is name of the model referred to
                 // self-referencing is an exception, since using the model name won't be useful
                 if ($selfReference) {
-                    $reverseName = $relationName . config('pxlcms.generator.models.relationship_reverse_postfix', 'Reverse');
+                    $reverseName = ($pluralizeName ? str_plural($relationName) : $relationName)
+                                 . config('pxlcms.generator.models.relationship_reverse_postfix', 'Reverse');
                 } else {
-                    $reverseName = camel_case($modelFrom['name']);
+                    $reverseName = camel_case(
+                        $pluralizeName ? str_plural($modelFrom['name']) : $modelFrom['name']
+                    );
                 }
 
                 $reverseNameSnakeCase = snake_case($reverseName);
@@ -398,7 +409,7 @@ class AnalyzeModels extends AbstractProcessStep
                 }
 
 
-                $this->context->output['models'][ $relationship['model'] ]['relationships']['reverse'][$reverseName] = [
+                $this->context->output['models'][ $relationship['model'] ]['relationships']['reverse'][ $reverseName ] = [
                     'type'     => $reverseType,
                     'model'    => $modelFromKey,
                     'single'   => ($reverseCount == 1),

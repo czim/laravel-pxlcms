@@ -201,6 +201,11 @@ return [
             // singularize the names of models (using str_singular)
             'singularize_model_names' => true,
 
+            // pluralize the names of reversed relationships if they are hasMany
+            'pluralize_reversed_relationship_names' => true,
+            // same, but for self-referencing relationships
+            'pluralize_reversed_relationship_names_for_self_reference' => true,
+
             // if used, simplify namespaces of standard models through use statements
             'include_namespace_of_standard_models' => true,
 
