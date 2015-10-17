@@ -43,6 +43,7 @@ return [
         'meta' => [
 
             'modules'     => 'cms_modules',
+            'menu'        => 'cms_menu',
             'groups'      => 'cms_groups',
             'sections'    => 'cms_sections',
             'fields'      => 'cms_fields',
@@ -209,8 +210,30 @@ return [
                 'rememberable_fqn'        => "Watson\\Rememberable\\Rememberable"
             ],
 
-            // singularize the names of models (using str_singular)
-            'singularize_model_names' => true,
+
+            // The model name prefix settings help keep things organised for multi-menu, multi-group cmses
+            // everything enabled would result in a classname like: "MenuGroupSectionModule"
+            // the prefixes can be independently applied ("MenuModule", "MenuGroupModule", etc)
+            //
+            // Note that duplicate model names are resolved by prefixing first section, then group,
+            // then menu names until this results in unique names. This behavior will occur even if
+            // any of the prefixes are disabled here.
+            //
+            // Note that you should be careful when overriding model/module names, since duplicate name
+            // checks are NOT done for forced names!
+            'model_name' => [
+
+                // always prefix the section names to the model names (level above modules)
+                'prefix_section_to_model_names' => false,
+                // always prefix the group names to the model names (higher level)
+                'prefix_group_to_model_names' => false,
+                // always prefix the menu names to the model names (highest level)
+                'prefix_menu_to_model_names' => false,
+
+                // singularize the names of all models (using str_singular)
+                'singularize_model_names' => true,
+            ],
+
 
             // pluralize the names of reversed relationships if they are hasMany
             'pluralize_reversed_relationship_names' => true,
