@@ -158,7 +158,7 @@ class ModelWriter
      */
     protected function makeTranslatedDataFromModelData(array $model)
     {
-        $translatedModel = [
+        return [
             'module'                 => $model['module'],
             'name'                   => $model['name'] . config('pxlcms.generator.models.translation_model_postfix'),
             'table'                  => ! empty($model['table'])
@@ -185,8 +185,6 @@ class ModelWriter
                 'checkbox' => [],
             ],
         ];
-
-        return $translatedModel;
     }
 
 
