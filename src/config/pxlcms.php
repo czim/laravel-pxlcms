@@ -233,7 +233,7 @@ return [
 
             // whether to allow overriding the current locale for a translated standard model
             // relation (such as images/files) through a parameter on the relations method
-            'allow_locale_override_on_translated_model_relation' => false,
+            'allow_locale_override_on_translated_model_relation' => true,
 
             // singularize relationship names for hasOne and belongsTo relationships that have only 1 possible match
             // not used, since it would break the database dependency!
