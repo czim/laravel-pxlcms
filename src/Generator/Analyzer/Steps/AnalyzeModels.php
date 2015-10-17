@@ -213,6 +213,7 @@ class AnalyzeModels extends AbstractProcessStep
                     case FieldType::TYPE_DATE:
                     case FieldType::TYPE_CUSTOM_HIDDEN:
                     case FieldType::TYPE_CUSTOM:
+                    case FieldType::TYPE_SLIDER:
 
                         switch ($fieldData['field_type_id']) {
 
@@ -221,6 +222,7 @@ class AnalyzeModels extends AbstractProcessStep
                                 break;
 
                             case FieldType::TYPE_INTEGER:
+                            case FieldType::TYPE_SLIDER:
                                 $model['casts'][ $attributeName ] = 'integer';
                                 break;
 
@@ -248,7 +250,6 @@ class AnalyzeModels extends AbstractProcessStep
                         }
                         break;
 
-                    case FieldType::TYPE_SLIDER:
                     case FieldType::TYPE_RANGE:
                     case FieldType::TYPE_LOCATION:
                     case FieldType::TYPE_REFERENCE_CROSS:
