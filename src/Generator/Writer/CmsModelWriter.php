@@ -653,8 +653,8 @@ class CmsModelWriter extends AbstractCodeWriter
                           . "\n";
             }
 
-            return $replace;
         }
+        return $replace;
     }
 
 
