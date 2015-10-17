@@ -706,6 +706,11 @@ class CmsModelWriter extends AbstractCodeWriter
                             $type = array_get($this->data, 'casts.' . $attribute);
                             break;
 
+                        case 'array':
+                        case 'json':
+                            $type = 'array';
+                            break;
+
 
                         case 'string':
                         default:
