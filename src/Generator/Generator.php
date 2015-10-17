@@ -4,22 +4,18 @@ namespace Czim\PxlCms\Generator;
 use Czim\PxlCms\Generator\Analyzer\AnalyzerData;
 
 /**
- * 1. analyze cms content
- *    find all (non-ignored) modules
- *    find all fields per module, store them per type:
- *       normal (with cast type etc)
- *       translated
- *       image / multi-image
- *       file upload(s)
- *       references (one / many / special)
- *          let op dat self-references anders moeten worden verwerkt ...
+ * This Generator completes the full process of analyzing CMS content,
+ * doing checks and overrides and finally writing the source code files
+ * that it is configured to.
+ *
+ * 1. Analyze cms content
  *    store information about these modules temporarily
  *    resolve all references between modules
  *
- * 2. determine what models may be written (do not exist yet)
- *  translations separately from models themselves (though that is not perfect)
+ * 2. Determine what models may be written (do not exist yet)
+ *      translations separately from models themselves (though that is not perfect)
  *
- * 3. write files
+ * 3. Write files
  */
 class Generator
 {
@@ -76,8 +72,6 @@ class Generator
         $this->writer->setData($data->output);
         $this->writer->writeFiles();
 
-        //$this->logOutput( $this->writer->getLog() );
-
         return true;
     }
 
@@ -90,18 +84,6 @@ class Generator
     protected function debugOutput($data)
     {
         dd($data);
-    }
-
-    /**
-     * Output the log
-     *
-     * @param array $log
-     */
-    protected function logOutput(array $log)
-    {
-        foreach ($log as $logLine) {
-            echo $logLine . "\n";
-        }
     }
 
 }
