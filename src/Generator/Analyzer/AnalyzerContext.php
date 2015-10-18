@@ -55,7 +55,7 @@ class AnalyzerContext extends AbstractProcessContext
      */
     public function normalizeNameForDatabase($name)
     {
-        return snake_case(preg_replace('#\s+#', '_', $name));
+        return trim(snake_case(preg_replace('#\s+#', '_', $name)), '_');
     }
 
     /**
@@ -80,6 +80,8 @@ class AnalyzerContext extends AbstractProcessContext
         $string = preg_replace('#[' . preg_quote($spaceSubstitute) . ']+#', $spaceSubstitute, $string);
 
         $string = preg_replace('#\s+#', $spaceSubstitute, $string);
+
+        $string = trim($string, $spaceSubstitute);
 
         return $string;
     }
