@@ -148,6 +148,35 @@ class StubReplaceDocBlock extends AbstractProcessStep
             }
         }
 
+        /*
+         * Scopes
+         */
+
+        $scopes = [];
+
+        if (config('pxlcms.generator.models.scopes.only_active') === CmsModelWriter::SCOPE_METHOD) {
+            $scopes[] = [
+                'name'       => config('pxlcms.generator.models.scopes.only_active_method'),
+                'parameters' => [],
+            ];
+        }
+
+        if (config('pxlcms.generator.models.scopes.position_order') === CmsModelWriter::SCOPE_METHOD) {
+            $scopes[] = [
+                'name'       => config('pxlcms.generator.models.scopes.position_order_method'),
+                'parameters' => [],
+            ];
+        }
+
+        foreach ($scopes as $scope) {
+
+            $rows[] = [
+                'tag'  => 'method',
+                'type' => 'static ' . CmsModelWriter::FQN_FOR_BUILDER . '|' . studly_case($this->data['name']),
+                'name' => camel_case($scope['name']) . '($query)',
+            ];
+        }
+
 
         if ( ! count($rows)) return '';
 
