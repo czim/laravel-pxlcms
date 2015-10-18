@@ -167,6 +167,7 @@ class ModelWriter
             'cached'                => $model['cached'],
             'is_translated'         => false,
             'is_listified'          => false,
+            // attributes
             'normal_fillable'       => $model['translated_attributes'],
             'translated_fillable'   => [],
             'hidden'                => [],
@@ -175,7 +176,9 @@ class ModelWriter
             'normal_attributes'     => [],
             'translated_attributes' => [],
             'timestamps'            => null,
+            // categories
             'categories_module'     => null,
+            // relations
             'relations_config'      => [],
             'relationships'         => [
                 'normal'   => [],
@@ -184,6 +187,10 @@ class ModelWriter
                 'file'     => [],
                 'checkbox' => [],
             ],
+            // special
+            'sluggable'      => false,   // for now
+            'scope_active'   => false,
+            'scope_position' => false,
         ];
     }
 
