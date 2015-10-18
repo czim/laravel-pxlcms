@@ -84,9 +84,9 @@ class LoadRawData extends AbstractProcessStep
 
             // load higher level names (for later name resolution)
             $this->data->rawData['modules'][ $moduleId ]['parent_names'] = [
-                'section' => $this->data->rawData['sections'][ $sectionId ]['name'],
-                'group'   => $this->data->rawData['sections'][ $sectionId ]['group_name'],
-                'menu'    => $this->data->rawData['sections'][ $sectionId ]['menu_name'],
+                'section' => array_get($this->data->rawData['sections'], $sectionId .'.name'),
+                'group'   => array_get($this->data->rawData['sections'], $sectionId . '.group_name'),
+                'menu'    => array_get($this->data->rawData['sections'], $sectionId . '.menu_name'),
             ];
         }
 
