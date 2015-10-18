@@ -125,6 +125,16 @@ class AnalyzeModels extends AbstractProcessStep
                         //    $keyName = $attributeName;
                         //}
 
+                        // in some weird cases, cmses have been destroyed by leaving in relationships
+                        // that do not refer to any model; these should be skipped
+                        if (empty($fieldData['refers_to_module'])) {
+                            $this->context->log(
+                                "Relation '{$relationName}', field #{$fieldId} does not refer to any module, skipped.",
+                                Generator::LOG_LEVEL_ERROR
+                            );
+                            break;
+                        }
+
                         $model['relationships']['normal'][ $relationName ] = [
                             'type'     => Generator::RELATIONSHIP_BELONGS_TO,    // reverse of hasOne
                             'model'    => $fieldData['refers_to_module'],
@@ -144,6 +154,15 @@ class AnalyzeModels extends AbstractProcessStep
                     case FieldType::TYPE_REFERENCE_MANY:
                     case FieldType::TYPE_REFERENCE_AUTOSORT:
                     case FieldType::TYPE_REFERENCE_CHECKBOXES:
+
+                        if (empty($fieldData['refers_to_module'])) {
+                            $this->context->log(
+                                "Relation '{$relationName}', field #{$fieldId} does not refer to any module, skipped.",
+                                Generator::LOG_LEVEL_ERROR
+                            );
+                            break;
+                        }
+
                         $model['relationships']['normal'][ $relationName ] = [
                             'type'     => Generator::RELATIONSHIP_BELONGS_TO_MANY,
                             'model'    => $fieldData['refers_to_module'],
