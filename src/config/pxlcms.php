@@ -178,6 +178,10 @@ return [
         'only_active' => [
             'column' => 'e_active',
         ],
+
+        'position_order' => [
+            'column' => 'e_position',
+        ],
     ],
 
 
@@ -242,7 +246,7 @@ return [
                 'rememberable_fqn'        => "Watson\\Rememberable\\Rememberable",
 
                 'scope_active_fqn'        => "Czim\\PxlCms\\Models\\Scopes\\OnlyActive",
-                'scope_position_fqn'      => "Czim\\PxlCms\\Models\\Scopes\\PositionOrder",
+                'scope_position_fqn'      => "Czim\\PxlCms\\Models\\Scopes\\PositionOrdered",
             ],
 
             // How to handle default/global scopes for models
@@ -254,14 +258,14 @@ return [
                 //  'method'        for adding a scope public method scopeActive() to each model
                 //  null / false    do nothing, don't add scopes, all records returned by default
 
-                // Scope for the e_active flag, only return active records
-                'only_active'           => 'method',
-                // If using 'method', the scope method name that will be used ('scope' is prefixed automatically)
+                // Scope for the e_active flag, only return active records.
+                // If using 'method', the '.._method' defines the scope method name that will be used
+                // ('scope' is prefixed automatically).
+                'only_active'           => 'global',
                 'only_active_method'    => 'active',
 
                 // Scope order by e_position (the listify column)
-                // todo: implement this
-                'position_order'        => 'method',
+                'position_order'        => 'global',
                 'position_order_method' => 'ordered',
             ],
 

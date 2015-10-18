@@ -33,14 +33,14 @@ There are a few caveats:
 - By default, all models are globally scoped to only include *active* records (`e_active = true`).
   - If you want to include inactive records, use the `withInactive()` scope (ie. something like `ModelName::withInactive()->get()`).
   - This depends on your pxlcms config settings, the behaviour may be changed. 
+- By default, all models are ordered by their *position* (`e_position asc`).
+  - If you want to prevent this, use the `unordered()` scope (ie. something like `ModelName::unordered()->first()`).
+  - This depends on your pxlcms config settings, the behaviour may be changed.
 
 
 ## To Do
 
 ### CmsModel
-
-- e_active global scope by default
-- listify + e_position by default
 
 - relationships with the same name as the attribute ('category' in product f.i.)
     $product->category then returns the id, not the related model .. how to (selectively) override this?
