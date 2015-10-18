@@ -159,25 +159,25 @@ class ModelWriter
     protected function makeTranslatedDataFromModelData(array $model)
     {
         return [
-            'module'                 => $model['module'],
-            'name'                   => $model['name'] . config('pxlcms.generator.models.translation_model_postfix'),
-            'table'                  => ! empty($model['table'])
+            'module'                => $model['module'],
+            'name'                  => $model['name'] . config('pxlcms.generator.models.translation_model_postfix'),
+            'table'                 => ! empty($model['table'])
                 ? $model['table'] . snake_case(config('pxlcms.tables.translation_postfix', '_ml'))
                 : null,
-            'cached'                 => $model['cached'],
-            'is_translated'          => false,
-            'is_listified'           => false,
-            'normal_fillable'        => $model['translated_attributes'],
-            'translated_fillable'    => [],
-            'hidden'                 => [],
-            'casts'                  => [],
-            'dates'                  => [],
-            'relations_config'       => [],
-            'normal_attributes'      => [],
-            'translated_attributes'  => [],
-            'timestamps'             => null,
-
-            'relationships'          => [
+            'cached'                => $model['cached'],
+            'is_translated'         => false,
+            'is_listified'          => false,
+            'normal_fillable'       => $model['translated_attributes'],
+            'translated_fillable'   => [],
+            'hidden'                => [],
+            'casts'                 => [],
+            'dates'                 => [],
+            'normal_attributes'     => [],
+            'translated_attributes' => [],
+            'timestamps'            => null,
+            'categories_module'     => null,
+            'relations_config'      => [],
+            'relationships'         => [
                 'normal'   => [],
                 'reverse'  => [],
                 'image'    => [],

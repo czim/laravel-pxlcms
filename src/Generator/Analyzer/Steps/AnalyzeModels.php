@@ -72,16 +72,19 @@ class AnalyzeModels extends AbstractProcessStep
                 'cached'                => config('pxlcms.generator.models.enable_rememberable_cache'),
                 'is_translated'         => false,
                 'is_listified'          => $listified, // makes no sense for single-entry only
+                'timestamps'            => null,
+                // attributes
                 'normal_fillable'       => [],
                 'translated_fillable'   => [],
                 'hidden'                => $overrideHidden,
                 'casts'                 => $overrideCasts,
                 'dates'                 => [],
-                'relations_config'      => [],
                 'normal_attributes'     => [],
                 'translated_attributes' => [],
-                'timestamps'            => null,
-
+                // categories
+                'has_categories'        => (bool) array_get($moduleData, 'client_cat_control'),
+                // relationships
+                'relations_config'      => [],
                 'relationships'         => [
                     'normal'   => [],
                     'reverse'  => [],

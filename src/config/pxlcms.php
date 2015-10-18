@@ -180,11 +180,12 @@ return [
         ],
 
 
-        // the FQN's for the standard CMS models for special relationships
+        // the FQN's for the standard CMS models for special relationships (and CMS categories)
         'standard_models' => [
-            'image'    => 'Czim\\PxlCms\\Models\\Image',
+            'category' => 'Czim\\PxlCms\\Models\\Category',
             'checkbox' => 'Czim\\PxlCms\\Models\\Checkbox',
             'file'     => 'Czim\\PxlCms\\Models\\File',
+            'image'    => 'Czim\\PxlCms\\Models\\Image',
         ],
 
         /*

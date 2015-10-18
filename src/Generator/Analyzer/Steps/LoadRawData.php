@@ -57,9 +57,14 @@ class LoadRawData extends AbstractProcessStep
             $this->data->rawData['modules'][ $moduleId ] = [];
             $this->data->rawData['modules'][ $moduleId ]['prefixed_name'] = null;
 
+            // note that we do not need 'simulate_categories_for', since this
+            // is strictly a CMS-feature -- the reference used for it is already
+            // accounted for in the model
+
             foreach ([  'name', 'max_entries', 'is_custom',
                          'allow_create', 'allow_update', 'allow_delete',
-                         'simulate_categories_for', 'section_id',
+                         'client_cat_control', 'max_cat_depth',
+                         'section_id',
                          'override_table_name',
                      ] as $key
             ) {
