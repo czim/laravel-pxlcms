@@ -9,12 +9,14 @@ use InvalidArgumentException;
 
 class CmsModel extends Model
 {
-    // realtionsConfig special / standard model types
+
+    // relationsConfig special / standard model types
     const RELATION_TYPE_MODEL    = 0;
     const RELATION_TYPE_IMAGE    = 1;
     const RELATION_TYPE_FILE     = 2;
     const RELATION_TYPE_CHECKBOX = 3;
     const RELATION_TYPE_CATEGORY = 4;
+
 
     /**
      * The has relationship methods.
@@ -23,7 +25,11 @@ class CmsModel extends Model
      */
     public static $hasRelationMethods = ['hasOne', 'hasMany', 'hasManyThrough'];
 
-
+    /**
+     * Disable timestamps for CMS models by default
+     * 
+     * @var bool
+     */
     public $timestamps = false;
 
     /**
@@ -38,13 +44,24 @@ class CmsModel extends Model
         'e_user_id',
     ];
 
-    // todo: some columns (not really used yet, remove?)
-    protected $activeColumn = 'e_active';
-    protected $positionColumn = 'e_position';
-    protected $categoryColumn = 'e_category_id';
-    protected $userColumn = 'e_user_id';
+    /**
+     * The column to use for active scoping
+     *
+     * @var string
+     */
+    protected $cmsActiveColumn = 'e_active';
 
-    // stored as unix timestamps
+    /**
+     * The column to use for position ordering
+     *
+     * @var string
+     */
+    protected $cmsPositionColumn = 'e_position';
+
+    /**
+     * Stored in database as Unix timestamps
+     * @var string
+     */
     protected $dateFormat = 'U';
 
     /**
@@ -207,7 +224,7 @@ class CmsModel extends Model
             return null;
         }
 
-        return (int) $this->relationsConfig[$relation]['field'];
+        return (int) $this->relationsConfig[ $relation ]['field'];
     }
 
     /**
@@ -224,7 +241,7 @@ class CmsModel extends Model
             return null;
         }
 
-        return $this->relationsConfig[$relation]['type'];
+        return $this->relationsConfig[ $relation ]['type'];
     }
 
     /**
@@ -242,17 +259,17 @@ class CmsModel extends Model
             return false;
         }
 
-        return (bool) $this->relationsConfig[$relation]['translated'];
+        return (bool) $this->relationsConfig[ $relation ]['translated'];
     }
 
 
     /**
      * Override for different naming convention
      *
-     * @param  string  $related
-     * @param  string  $foreignKey
-     * @param  string  $otherKey
-     * @param  string  $relation
+     * @param  string $related
+     * @param  string $foreignKey
+     * @param  string $otherKey
+     * @param  string $relation
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function belongsTo($related, $foreignKey = null, $otherKey = null, $relation = null)
@@ -295,11 +312,11 @@ class CmsModel extends Model
     /**
      * Override for special cms_m_references 'pivot' table
      *
-     * @param  string  $related
-     * @param  string  $table
-     * @param  string  $foreignKey
-     * @param  string  $otherKey
-     * @param  string  $relation
+     * @param  string $related
+     * @param  string $table
+     * @param  string $foreignKey
+     * @param  string $otherKey
+     * @param  string $relation
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function belongsToMany($related, $table = null, $foreignKey = null, $otherKey = null, $relation = null)
@@ -337,11 +354,11 @@ class CmsModel extends Model
      * For when you still want to use the 'normal' belongsToMany relationship in a CmsModel
      * that should be related to non-CmsModels in the laravel convention
      *
-     * @param  string  $related
-     * @param  string  $table
-     * @param  string  $foreignKey
-     * @param  string  $otherKey
-     * @param  string  $relation
+     * @param  string $related
+     * @param  string $table
+     * @param  string $foreignKey
+     * @param  string $otherKey
+     * @param  string $relation
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function belongsToManyNormal($related, $table = null, $foreignKey = null, $otherKey = null, $relation = null)
@@ -556,10 +573,10 @@ class CmsModel extends Model
             return ! in_array($caller, ['getImagesWithResizes']) && $caller != $self;
         });
 
-        if  (is_null($caller)) return null;
+        if (is_null($caller)) return null;
 
         // strip 'get' from front and 'attribute' from rear
-        return Str::camel( substr($caller['function'], 3, -9) );
+        return Str::camel(substr($caller['function'], 3, -9));
     }
 
 
