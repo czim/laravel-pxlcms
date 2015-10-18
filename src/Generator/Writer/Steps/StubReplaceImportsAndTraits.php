@@ -73,6 +73,19 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
         if ( ! count($traits)) return '';
 
 
+        // set them in the right order
+        if (config('pxlcms.generator.aesthetics.sort_imports_by_string_length')) {
+
+            // sort from shortest to longest
+            usort($traits, function ($a, $b) {
+                return strlen($a) - strlen($b);
+            });
+
+        } else {
+            sort($traits);
+        }
+
+
         $lastIndex = count($traits) - 1;
 
         $replace = $this->tab() . 'use ';
