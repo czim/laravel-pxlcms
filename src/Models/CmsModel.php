@@ -266,14 +266,30 @@ class CmsModel extends Model
             $relation = $caller['function'];
         }
 
+        $specialType = $this->getCmsSpecialRelationType($relation);
+
         // If no foreign key was supplied, we can use a backtrace to guess the proper
         // foreign key name by using the name of the relationship function, which
         // when combined with an "_id" should conventionally match the columns.
         if (is_null($foreignKey)) {
-            $foreignKey = Str::snake($relation);
+            if ($specialType === self::RELATION_TYPE_CATEGORY) {
+                $foreignKey = config('pxlcms.relations.categories.keys.category');
+            } else {
+                $foreignKey = Str::snake($relation);
+            }
         }
 
-        return parent::belongsTo($related, $foreignKey, $otherKey, $relation);
+        $belongsTo = parent::belongsTo($related, $foreignKey, $otherKey, $relation);
+
+        // category relation must be filtered by module id
+        if ($specialType === self::RELATION_TYPE_CATEGORY) {
+            $belongsTo->where(
+                config('pxlcms.relations.categories.keys.module'),
+                $this->getModuleNumber()
+            );
+        }
+
+        return $belongsTo;
     }
 
     /**
@@ -432,35 +448,29 @@ class CmsModel extends Model
      *
      * @param int    $specialType
      * @param string $foreignKey
-     * @return array    [ foreignKey, fieldKey ]
+     * @return array    [ foreignKey, secondaryKey ]
      */
     protected function getKeysForSpecialRelation($specialType, $foreignKey = null)
     {
         switch ($specialType) {
 
             case static::RELATION_TYPE_FILE:
-                $foreignKey = $foreignKey ?: config('pxlcms.relations.files.keys.entry');
-                $fieldKey   = config('pxlcms.relations.files.keys.field');
+                $foreignKey   = $foreignKey ?: config('pxlcms.relations.files.keys.entry');
+                $secondaryKey = config('pxlcms.relations.files.keys.field');
                 break;
 
             case static::RELATION_TYPE_CHECKBOX:
-                $foreignKey = $foreignKey ?: config('pxlcms.relations.checkboxes.keys.entry');
-                $fieldKey   = config('pxlcms.relations.checkboxes.keys.field');
-                break;
-
-            case static::RELATION_TYPE_CATEGORY:
-                $foreignKey = $foreignKey ?: config('pxlcms.relations.categories.keys.category');
-                // not really a field key... module key!
-                $fieldKey   = config('pxlcms.relations.checkboxes.keys.module');
+                $foreignKey   = $foreignKey ?: config('pxlcms.relations.checkboxes.keys.entry');
+                $secondaryKey = config('pxlcms.relations.checkboxes.keys.field');
                 break;
 
             case static::RELATION_TYPE_IMAGE:
             default:
-                $foreignKey = $foreignKey ?: config('pxlcms.relations.images.keys.entry');
-                $fieldKey   = config('pxlcms.relations.images.keys.field');
+                $foreignKey   = $foreignKey ?: config('pxlcms.relations.images.keys.entry');
+                $secondaryKey = config('pxlcms.relations.images.keys.field');
         }
 
-        return [ $foreignKey, $fieldKey ];
+        return [ $foreignKey, $secondaryKey ];
     }
 
 
