@@ -62,10 +62,12 @@ class StubReplaceRelationData extends AbstractProcessStep
             $this->determineCategoryRelationName();
 
             // store the category name in the data
-            $this->data->relationships['category'][ $this->categoryRelationName ] = [
-                'model' => config('pxlcms.generator.standard_models.category'),
-                'type'  => Generator::RELATIONSHIP_HAS_ONE,
-            ];
+            if ( ! empty($this->categoryRelationName)) {
+                $this->data->relationships['category'][ $this->categoryRelationName ] = [
+                    'model' => config('pxlcms.generator.standard_models.category'),
+                    'type'  => Generator::RELATIONSHIP_HAS_ONE,
+                ];
+            }
         }
 
         return $this;
