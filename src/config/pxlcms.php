@@ -116,7 +116,7 @@ return [
             'keys' => [
                 'module'   => 'module_id',
                 // The keyname on the model that refers to the categories record
-                'on_model' => 'e_category_id',
+                'category' => 'e_category_id',
             ]
         ],
     ],

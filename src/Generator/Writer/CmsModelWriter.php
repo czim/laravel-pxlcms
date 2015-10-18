@@ -12,6 +12,7 @@ class CmsModelWriter extends PipelineProcessor
 
     const STANDARD_MODEL_FILE     = 'file';
     const STANDARD_MODEL_IMAGE    = 'image';
+    const STANDARD_MODEL_CATEGORY = 'category';
     const STANDARD_MODEL_CHECKBOX = 'checkbox';
 
     // the FQN for the Eloquent collection and builder types (in ide-helper tag content)

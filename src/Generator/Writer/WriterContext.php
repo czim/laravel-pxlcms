@@ -176,6 +176,9 @@ class WriterContext extends AbstractProcessContext
             case CmsModel::RELATION_TYPE_FILE:
                 return 'file';
 
+            case CmsModel::RELATION_TYPE_CATEGORY:
+                return 'category';
+
             case CmsModel::RELATION_TYPE_CHECKBOX:
                 return 'checkbox';
 

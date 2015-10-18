@@ -7,10 +7,19 @@ use Czim\PxlCms\Models\CmsModel;
 
 class StubReplaceRelationData extends AbstractProcessStep
 {
+    /**
+     * Name of the relationship to the standard CMS Category (not always required)
+     * this will be a safe, nonconflicting name to use
+     *
+     * @var string
+     */
+    protected $categoryRelationName;
+
 
     protected function process()
     {
-        $this->normalizeRelationsData();
+        $this->normalizeRelationsData()
+             ->prepareForCategoryRelation();
 
         $this->stubPregReplace('# *{{RELATIONSCONFIG}}\n?#i', $this->getRelationsConfigReplace())
              ->stubPregReplace('# *{{RELATIONSHIPS}}\n?#i', $this->getRelationshipsReplace());
@@ -19,6 +28,8 @@ class StubReplaceRelationData extends AbstractProcessStep
 
     /**
      * Makes sure that expected relations data is traversable
+     *
+     * @return $this
      */
     protected function normalizeRelationsData()
     {
@@ -26,14 +37,38 @@ class StubReplaceRelationData extends AbstractProcessStep
             $this->data['relationships'] = [];
         }
 
-        foreach ([ 'normal', 'reverse', 'image', 'file', 'checkbox' ] as $key) {
+        foreach ([ 'normal', 'reverse', 'image', 'file', 'checkbox', 'category' ] as $key) {
 
             if (    ! array_key_exists($key, $this->data['relationships'])
                 ||  ! is_array($this->data['relationships'][ $key ])
-            ){
-                $this->data['relationships'][ $key ] = [];
+            ) {
+                $this->data->relationships[ $key ] = [];
             }
         }
+
+        return $this;
+    }
+
+    /**
+     * Prepares data & name for category relation (if required)
+     *
+     * @return $this
+     */
+    protected function prepareForCategoryRelation()
+    {
+        // also handle category relation name, if necessary
+        if ($this->data['has_categories']) {
+
+            $this->determineCategoryRelationName();
+
+            // store the category name in the data
+            $this->data->relationships['category'][ $this->categoryRelationName ] = [
+                'model' => config('pxlcms.generator.standard_models.category'),
+                'type'  => Generator::RELATIONSHIP_HAS_ONE,
+            ];
+        }
+
+        return $this;
     }
 
 
@@ -63,20 +98,26 @@ class StubReplaceRelationData extends AbstractProcessStep
 
         foreach ($this->data['relationships']['image'] as $name => $relationship) {
             $relationship['special']       = CmsModel::RELATION_TYPE_IMAGE;
-            $relationship['specialString'] = "self::RELATION_TYPE_IMAGE";
-            $relationships[ $name ]  = $relationship;
+            $relationship['specialString'] = 'self::RELATION_TYPE_IMAGE';
+            $relationships[ $name ] = $relationship;
         }
 
         foreach ($this->data['relationships']['file'] as $name => $relationship) {
             $relationship['special']       = CmsModel::RELATION_TYPE_FILE;
-            $relationship['specialString'] = "self::RELATION_TYPE_FILE";
-            $relationships[ $name ]  = $relationship;
+            $relationship['specialString'] = 'self::RELATION_TYPE_FILE';
+            $relationships[ $name ] = $relationship;
         }
 
         foreach ($this->data['relationships']['checkbox'] as $name => $relationship) {
             $relationship['special']       = CmsModel::RELATION_TYPE_CHECKBOX;
-            $relationship['specialString'] = "self::RELATION_TYPE_CHECKBOX";
-            $relationships[ $name ]  = $relationship;
+            $relationship['specialString'] = 'self::RELATION_TYPE_CHECKBOX';
+            $relationships[ $name ] = $relationship;
+        }
+
+        foreach ($this->data['relationships']['category'] as $name => $relationship) {
+            $relationship['special']       = CmsModel::RELATION_TYPE_CATEGORY;
+            $relationship['specialString'] = 'self::RELATION_TYPE_CATEGORY';
+            $relationships[ $name ] = $relationship;
         }
 
         if ( ! count($relationships)) return '';
@@ -88,9 +129,11 @@ class StubReplaceRelationData extends AbstractProcessStep
 
             $replace .= $this->tab(2) . "'" . $name . "' => [\n";
 
-            $rows = [
-                'field' => $relationship['field'],
-            ];
+            $rows = [];
+
+            if (array_get($relationship, 'field')) {
+                $rows['field'] = $relationship['field'];
+            }
 
             if (array_get($relationship, 'special')) {
                 $rows['type'] = $relationship['specialString'];
@@ -98,7 +141,7 @@ class StubReplaceRelationData extends AbstractProcessStep
                 $rows['parent'] = ($relationship['reverse'] ? 'false' : 'true');
             }
 
-            if (isset($relationship['translated']) && $relationship['translated']) {
+            if (array_get($relationship, 'translated') === true) {
                 $rows['translated'] = 'true';
             }
 
@@ -134,15 +177,17 @@ class StubReplaceRelationData extends AbstractProcessStep
         );
 
         $totalCount = count($relationships)
-            + count( $this->data['relationships']['image'] )
-            + count( $this->data['relationships']['file'] )
-            + count( $this->data['relationships']['checkbox'] );
+                    + count( $this->data['relationships']['image'] )
+                    + count( $this->data['relationships']['file'] )
+                    + count( $this->data['relationships']['checkbox'] )
+                    + count( $this->data['relationships']['category'] );
 
         if ( ! $totalCount) return '';
 
+
         $replace = "\n" . $this->tab() . "/*\n"
-            . $this->tab() . " * Relationships\n"
-            . $this->tab() . " */\n\n";
+                 . $this->tab() . " * Relationships\n"
+                 . $this->tab() . " */\n\n";
 
 
         /*
@@ -160,12 +205,12 @@ class StubReplaceRelationData extends AbstractProcessStep
             }
 
             $replace .= $this->tab() . "public function {$name}()\n"
-                . $this->tab() . "{\n"
-                . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
-                . $relationParameters
-                . ");\n"
-                . $this->tab() . "}\n"
-                . "\n";
+                      . $this->tab() . "{\n"
+                      . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
+                      . $relationParameters
+                      . ");\n"
+                      . $this->tab() . "}\n"
+                      . "\n";
         }
 
         /*
@@ -201,6 +246,16 @@ class StubReplaceRelationData extends AbstractProcessStep
             $replace .= $this->getRelationMethodSection($checkboxRelationships, CmsModel::RELATION_TYPE_CHECKBOX);
         }
 
+        /*
+         * Category
+         */
+
+        $categoryRelationships = $this->data['relationships']['category'];
+
+        if (count($categoryRelationships)) {
+            $this->context->standardModelsUsed[] = CmsModelWriter::STANDARD_MODEL_CATEGORY;
+            $replace .= $this->getRelationMethodSection($categoryRelationships, CmsModel::RELATION_TYPE_CATEGORY);
+        }
 
         return $replace;
     }
@@ -210,6 +265,71 @@ class StubReplaceRelationData extends AbstractProcessStep
     //      Helpers
     // ------------------------------------------------------------------------------
 
+    /**
+     * Attempts to determine a non-conflicting name for the relationship to the Category model
+     *
+     * @return string|false
+     */
+    protected function determineCategoryRelationName()
+    {
+        // pick a name and see if it conflicts with anything
+        $tryNames = config('pxlcms.generator.standard_models.category_relation_names', []);
+
+        $this->categoryRelationName = null;
+
+        foreach ($tryNames as $tryName) {
+
+            $tryName = trim($tryName);
+
+            if ( ! $this->doesRelationNameConflict($tryName)) {
+
+                $this->categoryRelationName = $tryName;
+                break;
+            }
+        }
+
+        if (empty($this->categoryRelationName)) {
+            $this->context->log(
+                "Unable to find a non-conflicting category relation name for model #{$this->data->module}. "
+                . "Relation omitted.",
+                Generator::LOG_LEVEL_ERROR
+            );
+        }
+
+        return $this->categoryRelationName;
+    }
+
+    /**
+     * Returns whether a given name is already in use by anything that it would conflict with
+     * for this model
+     *
+     * @param string $name
+     * @return bool
+     */
+    protected function doesRelationNameConflict($name)
+    {
+        // relationships
+        $relationships = array_merge(
+            $this->data['relationships']['normal'],
+            $this->data['relationships']['reverse'],
+            $this->data['relationships']['image'],
+            $this->data['relationships']['file'],
+            $this->data['relationships']['checkbox']
+        );
+
+        if (array_key_exists($name, $relationships)) return true;
+
+        // attributes
+        $attributes = array_merge(
+            $this->data->normal_attributes,
+            $this->data->translated_attributes
+        );
+
+        if (in_array(snake_case($name), $attributes)) return true;
+
+        return false;
+    }
+    
     /**
      * Returns stub section for relation method
      *
@@ -240,27 +360,27 @@ class StubReplaceRelationData extends AbstractProcessStep
 
                 // skip parameters not entered, pass on the optional locale key
                 $relationParameters = (substr_count($relationParameters, ',') ? null : ', null')
-                    . ', null'
-                    . ', $locale';
+                                    . ', null'
+                                    . ', $locale';
             }
 
             $replace .= $this->tab() . "public function {$name}({$relationMethodParameters})\n"
-                . $this->tab() . "{\n"
-                . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
-                . $relationParameters
-                . ");\n"
-                . $this->tab() . "}\n"
-                . "\n";
+                      . $this->tab() . "{\n"
+                      . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
+                      . $relationParameters
+                      . ");\n"
+                      . $this->tab() . "}\n"
+                      . "\n";
 
 
             if ($type == CmsModel::RELATION_TYPE_IMAGE) {
                 // since images require special attention for resize enrichment,
                 // add an accessor method that will take care of it (through some magic)
                 $replace .= $this->tab() . "public function get" . studly_case($name) . "Attribute()\n"
-                    . $this->tab() . "{\n"
-                    . $this->tab(2) . "return \$this->getImagesWithResizes();\n"
-                    . $this->tab() . "}\n"
-                    . "\n";
+                          . $this->tab() . "{\n"
+                          . $this->tab(2) . "return \$this->getImagesWithResizes();\n"
+                          . $this->tab() . "}\n"
+                          . "\n";
             }
 
         }

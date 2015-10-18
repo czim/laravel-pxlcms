@@ -14,6 +14,7 @@ class CmsModel extends Model
     const RELATION_TYPE_IMAGE    = 1;
     const RELATION_TYPE_FILE     = 2;
     const RELATION_TYPE_CHECKBOX = 3;
+    const RELATION_TYPE_CATEGORY = 4;
 
     /**
      * The has relationship methods.
@@ -445,6 +446,12 @@ class CmsModel extends Model
             case static::RELATION_TYPE_CHECKBOX:
                 $foreignKey = $foreignKey ?: config('pxlcms.relations.checkboxes.keys.entry');
                 $fieldKey   = config('pxlcms.relations.checkboxes.keys.field');
+                break;
+
+            case static::RELATION_TYPE_CATEGORY:
+                $foreignKey = $foreignKey ?: config('pxlcms.relations.categories.keys.category');
+                // not really a field key... module key!
+                $fieldKey   = config('pxlcms.relations.checkboxes.keys.module');
                 break;
 
             case static::RELATION_TYPE_IMAGE:

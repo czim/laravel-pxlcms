@@ -86,6 +86,10 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
 
         if (config('pxlcms.generator.models.include_namespace_of_standard_models')) {
 
+            if (in_array(CmsModelWriter::STANDARD_MODEL_CATEGORY, $this->context->standardModelsUsed)) {
+                $importLines[] = config('pxlcms.generator.standard_models.category');
+            }
+
             if (in_array(CmsModelWriter::STANDARD_MODEL_CHECKBOX, $this->context->standardModelsUsed)) {
                 $importLines[] = config('pxlcms.generator.standard_models.checkbox');
             }
