@@ -1,6 +1,7 @@
 <?php
 namespace Czim\PxlCms\Generator\Writer\Steps;
 
+use Czim\PxlCms\Generator\Generator;
 use Czim\PxlCms\Generator\Writer\CmsModelWriter;
 
 class StubReplaceDocBlock extends AbstractProcessStep
@@ -37,6 +38,21 @@ class StubReplaceDocBlock extends AbstractProcessStep
         if (config('pxlcms.generator.models.ide_helper.tag_attribute_properties')) {
 
             foreach ($attributes as $attribute) {
+
+                // in some CMSes, column names pop up that start with a digit
+                // since this is not allowed as a property or variable
+                // (only as a variable variable, ${'4life'}), tags for these will NOT
+                // be added.
+                if (preg_match('#^\d#', $attribute)) {
+
+                    $this->context->log(
+                        "Not adding @property tag to DocBlock for attribute '{$attribute}'"
+                        . " (module #{$this->data->module}).",
+                        Generator::LOG_LEVEL_WARNING
+                    );
+                    continue;
+                }
+
 
                 // determine type for property
 
@@ -140,9 +156,9 @@ class StubReplaceDocBlock extends AbstractProcessStep
         foreach ($rows as $row) {
 
             $replace .= ' * '
-                . "@{$row['tag']} "
-                . "{$row['type']} "
-                . "{$row['name']}\n";
+                      . "@{$row['tag']} "
+                      . "{$row['type']} "
+                      . "{$row['name']}\n";
         }
 
         $replace .= " */\n";
