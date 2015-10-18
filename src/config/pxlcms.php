@@ -12,12 +12,13 @@ return [
     |
     */
 
+    // todo: implement/use this
     'paths' => [
 
-        // relative path to images from laravel/server root
+        // Relative path to images from laravel/server root
         'images' => 'public/cms_images',
 
-        // relative path to file uploads from laravel/server root
+        // Relative path to file uploads from laravel/server root
         'files'  => 'public/cms_files',
     ],
 
@@ -33,13 +34,13 @@ return [
 
     'tables' => [
 
-        // prefix for module tables
+        // Prefix string for module tables
         'prefix' => 'cms_',
 
-        // postfix for multilingual tables
+        // Postfix string for multilingual tables
         'translation_postfix' => '_ml',
 
-        // meta-data for cms, used for CMS section grouping, etc
+        // Meta-data for cms, used for CMS section grouping, etc
         'meta' => [
 
             'modules'     => 'cms_modules',
@@ -110,6 +111,14 @@ return [
                 'entry' => 'entry_id',
             ]
         ],
+        // cms_categories
+        'categories' => [
+            'keys' => [
+                'module'   => 'module_id',
+                // The keyname on the model that refers to the categories record
+                'on_model' => 'e_category_id',
+            ]
+        ],
     ],
 
     /*
@@ -123,16 +132,16 @@ return [
 
     'translatable' => [
 
-        // translation table key to indicate locale (ml language id)
+        // Translation table key to indicate locale (ml language id)
         'locale_key' => 'language_id',
 
-        // translation foreign key to translated belongsTo parent
+        // Translation foreign key to translated belongsTo parent
         'translation_foreign_key' => 'entry_id',
 
-        // the column for the locale 'code' in cms_languages
+        // The column for the locale 'code' in cms_languages
         'locale_code_column' => 'code',
 
-        // the postfix for the translation table -- what to add to a module table to get the translation table
+        // The postfix for the translation table -- what to add to a module table to get the translation table
         'translation_table_postfix' => '_ml',
     ],
 
@@ -147,11 +156,11 @@ return [
     |
     */
 
-    // cache configuration for standard model / cms relations -- time in minutes (Rememberable)
-    // set to 0 to disable caching
+    // Cache configuration for standard model / cms relations -- time in minutes (Rememberable)
+    // Set to 0 to disable caching
     'cache' => [
 
-        // resizes (looked up for images by fieldId)
+        // Resizes for Images (looked up for images by fieldId)
         'resizes' => 60,
     ],
 
@@ -167,7 +176,7 @@ return [
     
     'generator' => [
 
-        // which namespace to prepend for generated content
+        // Which namespace to prepend for generated content
         'namespace' => [
             'models'       => 'App\\Models\\Generated',   // todo reset to without Generated
             'requests'     => 'App\\Http\\Requests',
@@ -175,17 +184,23 @@ return [
         ],
 
         'aesthetics' => [
-            // whether to sort use import statements by their length (false sorts them alphabetically)
-            'sort_imports_by_string_length' => true,
+            // Whether to sort use import statements by their length (false sorts them alphabetically)
+            'sort_imports_by_string_length' => false,
         ],
 
 
-        // the FQN's for the standard CMS models for special relationships (and CMS categories)
+        // The FQN's for the standard CMS models for special relationships (and CMS categories)
         'standard_models' => [
             'category' => 'Czim\\PxlCms\\Models\\Category',
             'checkbox' => 'Czim\\PxlCms\\Models\\Checkbox',
             'file'     => 'Czim\\PxlCms\\Models\\File',
             'image'    => 'Czim\\PxlCms\\Models\\Image',
+
+            // Name to (attempt to) use for a model's relation to the CMS category model.
+            // The first non-conflicting name will be used. Note that this relationship is always singular
+            'category_relation_names' => [
+                'category', 'cmsCategory', 'pxlCmsCategory',
+            ],
         ],
 
         /*
@@ -197,13 +212,13 @@ return [
         |
         */
 
-        // model-generation-specific settings
+        // Model-generation-specific settings
         'models' => [
 
-            // fqn for base adapter model for generated models to extend
+            // FQN for base adapter model for generated models to extend
             'extend_model' => "Czim\\PxlCms\\Models\\CmsModel",
 
-            // fqn for (optional) traits to import/use (whether they are used is not determined by this)
+            // FQN for (optional) traits to import/use (whether they are used is not determined by this)
             'traits' => [
                 'listify_fqn'             => "Lookitsatravis\\Listify\\Listify",
                 'listify_constructor_fqn' => "Czim\\PxlCms\\Models\\ListifyConstructorTrait",
@@ -224,58 +239,58 @@ return [
             // checks are NOT done for forced names!
             'model_name' => [
 
-                // always prefix the section names to the model names (level above modules)
+                // Always prefix the section names to the model names (level above modules)
                 'prefix_section_to_model_names' => false,
-                // always prefix the group names to the model names (higher level)
+                // Always prefix the group names to the model names (higher level)
                 'prefix_group_to_model_names' => false,
-                // always prefix the menu names to the model names (highest level)
+                // Always prefix the menu names to the model names (highest level)
                 'prefix_menu_to_model_names' => false,
 
-                // singularize the names of all models (using str_singular)
+                // Singularize the names of all models (using str_singular)
                 'singularize_model_names' => true,
             ],
 
 
-            // pluralize the names of reversed relationships if they are hasMany
+            // Pluralize the names of reversed relationships if they are hasMany
             'pluralize_reversed_relationship_names' => true,
-            // same, but for self-referencing relationships
+            // Same, but for self-referencing relationships
             'pluralize_reversed_relationship_names_for_self_reference' => true,
 
-            // if used, simplify namespaces of standard models through use statements
+            // If used, simplify namespaces of standard models through use statements
             'include_namespace_of_standard_models' => true,
 
-            // if a (reverse) relationship's name is already taken by an attribute
+            // If a (reverse) relationship's name is already taken by an attribute
             // in the model, add this to prevent duplicate names
             'relationship_fallback_postfix' => 'Reference',
 
-            // if a (reverse) relationship is self-referencing (on the model), the
+            // If a (reverse) relationship is self-referencing (on the model), the
             // relationship name gets this postfixed to prevent duplicate names
             'relationship_reverse_postfix'  => 'Reverse',
 
-            // postfix for translation model
+            // Postfix string for translation model
             'translation_model_postfix' => 'Translation',
 
-            // whether to allow overriding the current locale for a translated standard model
+            // Whether to allow overriding the current locale for a translated standard model
             // relation (such as images/files) through a parameter on the relations method
             'allow_locale_override_on_translated_model_relation' => true,
 
-            // singularize relationship names for hasOne and belongsTo relationships that have only 1 possible match
-            // not used, since it would break the database dependency!
+            // Singularize relationship names for hasOne and belongsTo relationships that have only 1 possible match
+            // This is not used, since it would break the database dependency!
             //'singularize_single_relationships' => true,
 
-            // whether to add foreign key attribute names to the $hidden property
+            // Whether to add foreign key attribute names to the $hidden property
             'hide_foreign_key_attributes' => true,
 
-            // whether to use rememberable trait on models generated
+            // Whether to use rememberable trait on models generated
             'enable_rememberable_cache' => true,
 
-            // whether to enable laravel timestamps for models with created_at and update_at
+            // Whether to enable laravel timestamps for models with created_at and update_at
             "enable_timestamps_on_models_with_suitable_attributes" => true,
 
-            // the date property type (or FQN) to use for ide-helper tags referring to date fields
+            // The date property type (or FQN) to use for ide-helper tags referring to date fields
             'date_property_fqn' => '\\Carbon\\Carbon',
 
-            // if adding hidden attributes for a model, always add these attributes to hide aswell
+            // If adding hidden attributes for a model, always add these attributes to hide aswell
             'default_hidden_fields' => [
                 'e_active',
                 'e_position',
@@ -283,21 +298,23 @@ return [
                 'e_user_id',
             ],
 
-            // settings for ide-helper content to add to models
+            // Settings for ide-helper content to add to models
             'ide_helper' => [
 
-                // whether to add (id-helper data to) a docblock for the model
+                // Whether to add (id-helper data to) a docblock for the model
                 'add_docblock' => true,
 
-                // whether to add @property tags for the magic attribute properties of the model
+                // Whether to add @property tags for the magic attribute properties of the model
                 'tag_attribute_properties' => true,
 
-                // whether to add @property-read tags for the model's relationships
+                // Whether to add @property-read tags for the model's relationships
                 'tag_relationship_magic_properties' => true,
 
-                // whether to add @method static tags for whereProperty($value) type methods
+                // Whether to add @method static tags for whereProperty($value) type methods
                 // this can get quite spammy for models with many attributes
                 'tag_magic_where_methods_for_attributes' => false,
+
+                // todo: make and use a tag exception toggle for whereCategory special relation tags
             ],
         ],
 
@@ -314,7 +331,7 @@ return [
 
         'ignore' => [
 
-            // indicate modules by their number: cms_m##_<some_name>
+            // Indicate modules by their number: cms_m##_<some_name>
             'modules' => [
             ],
 
@@ -332,59 +349,61 @@ return [
 
         'override' => [
 
-            // force some values for models generated to overrule the data analysis
+            // Force some values for models generated to overrule the data analysis
             'models' => [
 
-                // key by the module ID that the model is based on
+                // Key the array by the module ID that the model is based on.
 
-                // example:
-                // you can use any or all of these settings per model
+                // Example:
+                // You can use any or all of these settings per model
                 "0" => [
 
-                    // force a custom name for the model
+                    // Force a custom name for the model
                     "name" => "CustomName",
 
-                    // force listify trait on or off
+                    // Force listify trait on or off
                     "listify" => true,
 
-                    // configuration for model attributes
+                    // Configuration for model attributes
                     "attributes" => [
 
-                        // set specific attribute names (snake_case notation) to not be fillable
-                        // this amends the normal fillable list, so anything not listed here (and normally
+                        // Set specific attribute names (snake_case notation) to not be fillable
+                        // This amends the normal fillable list, so anything not listed here (and normally
                         // made fillable) will be fillable.
                         "fillable-remove" => [],
-                        // set specific attribute names (snake_case notation) to be fillable (full list)
-                        // this overrides "remove-fillable"
+                        // Set specific attribute names (snake_case notation) to be fillable (full list)
+                        // This overrides "remove-fillable"
                         "fillable" => [],
-                        // set to true to make no attribute fillable
+                        // Set to true to make no attribute fillable
                         "fillable-empty" => false,
 
-                        // add attribute names (snake_case notation) to overrule hidden fields with
-                        // don't forget e_position, e_active, etc, if you use this
+                        // Add attribute names (snake_case notation) to overrule hidden fields with
+                        // Don't forget e_position, e_active, etc, if you use this
                         "hidden" => [],
-                        // set this to true if you don't want to hide any fields for the model
+                        // Set this to true if you don't want to hide any fields for the model
                         "hidden-empty" => false,
 
-                        // add attribute names (snake_case notation) with the type to cast to
+                        // Add attribute names (snake_case notation) with the type to cast to
                         "casts" => [
                             // "some_attribute" => "boolean",
                         ],
-                        // add attribute names (snake_case notation) for which NOT to add casts
+                        // Add attribute names (snake_case notation) for which NOT to add casts
                         "casts-remove" => [],
                     ],
 
 
 
-                    // configuration per relationship of the model (references)
+                    // Configuration per relationship of the model (references)
+                    // Use camelCase notation for the names
+                    // todo: implement this
                     "relationships" => [
 
-                        // (use camelCase notation)
+
                         "yourRelationName" => [
-                            // force a different name for the relation
-                            // use camelCase notation, do not use existing attribute name
+                            // Force a different name for the relation
+                            // Use camelCase notation, do not use a conflicting/existing attribute name
                             'name' => "overrideName",
-                            // do not create reverse relationships for this relation
+                            // Do not create reverse relationships for this relation
                             "prevent_reverse" => true,
                         ]
 
