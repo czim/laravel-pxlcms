@@ -16,4 +16,5 @@ class {{MODEL_CLASSNAME}} extends {{EXTENDS}}
     {{DATES}}
     {{RELATIONSCONFIG}}
     {{RELATIONSHIPS}}
+    {{SCOPES}}
 }

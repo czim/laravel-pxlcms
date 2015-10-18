@@ -255,11 +255,14 @@ return [
                 //  null / false    do nothing, don't add scopes, all records returned by default
 
                 // Scope for the e_active flag, only return active records
-                'only_active'    => 'global',
+                'only_active'           => 'method',
+                // If using 'method', the scope method name that will be used ('scope' is prefixed automatically)
+                'only_active_method'    => 'active',
 
                 // Scope order by e_position (the listify column)
                 // todo: implement this
-                'position_order' => 'method',
+                'position_order'        => 'method',
+                'position_order_method' => 'ordered',
             ],
 
             // The model name prefix settings help keep things organised for multi-menu, multi-group cmses

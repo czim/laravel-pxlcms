@@ -44,6 +44,7 @@ class CmsModelWriter extends PipelineProcessor
             Steps\StubReplaceSimple::class,
             Steps\StubReplaceAttributeData::class,
             Steps\StubReplaceRelationData::class,
+            Steps\StubReplaceScopes::class,
             Steps\StubReplaceDocBlock::class,
             Steps\StubReplaceImportsAndTraits::class,
 
