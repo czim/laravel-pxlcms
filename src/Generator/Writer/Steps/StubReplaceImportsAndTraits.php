@@ -25,25 +25,53 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
         $traits = [];
 
         if ($this->data['is_translated']) {
-            $traits[] = 'Translatable';
+            $traits[] = $this->context->getModelNameFromNamespace(
+                config('pxlcms.generator.models.traits.translatable_fqn')
+            );
         } else {
             $this->context->importsNotUsed[] = CmsModelWriter::IMPORT_TRAIT_TRANSLATABLE;
         }
 
         if ($this->data['is_listified']) {
-            $traits[] = 'Listify';
-            $traits[] = 'ListifyConstructorTrait';
+            $traits[] = $this->context->getModelNameFromNamespace(
+                config('pxlcms.generator.models.traits.listify_fqn')
+            );
+            $traits[] = $this->context->getModelNameFromNamespace(
+                config('pxlcms.generator.models.traits.listify_constructor_fqn')
+            );
         } else {
             $this->context->importsNotUsed[] = CmsModelWriter::IMPORT_TRAIT_LISTIFY;
         }
 
         if ( ! $this->context->blockRememberableTrait) {
-            $traits[] = 'Rememberable';
+            $traits[] = $this->context->getModelNameFromNamespace(
+                config('pxlcms.generator.models.traits.rememberable_fqn')
+            );
         } else {
             $this->context->importsNotUsed[] = CmsModelWriter::IMPORT_TRAIT_REMEMBERABLE;
         }
 
+        // scopes
+
+        if (config('pxlcms.generator.models.scopes.only_active') === CmsModelWriter::SCOPE_GLOBAL) {
+            $traits[] = $this->context->getModelNameFromNamespace(
+                config('pxlcms.generator.models.traits.scope_active_fqn')
+            );
+        } else {
+            $this->context->importsNotUsed[] = CmsModelWriter::IMPORT_TRAIT_SCOPE_ACTIVE;
+        }
+
+        if (config('pxlcms.generator.models.scopes.position_order') === CmsModelWriter::SCOPE_GLOBAL) {
+            $traits[] = $this->context->getModelNameFromNamespace(
+                config('pxlcms.generator.models.traits.scope_position_fqn')
+            );
+        } else {
+            $this->context->importsNotUsed[] = CmsModelWriter::IMPORT_TRAIT_SCOPE_ORDER;
+        }
+
+
         if ( ! count($traits)) return '';
+
 
         $lastIndex = count($traits) - 1;
 
@@ -73,6 +101,8 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
                 CmsModelWriter::IMPORT_TRAIT_LISTIFY,
                 CmsModelWriter::IMPORT_TRAIT_TRANSLATABLE,
                 CmsModelWriter::IMPORT_TRAIT_REMEMBERABLE,
+                CmsModelWriter::IMPORT_TRAIT_SCOPE_ACTIVE,
+                CmsModelWriter::IMPORT_TRAIT_SCOPE_ORDER,
             ],
             $this->context->importsNotUsed
         );
@@ -115,6 +145,16 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
 
         if (in_array(CmsModelWriter::IMPORT_TRAIT_REMEMBERABLE, $imports)) {
             $importLines[] = config('pxlcms.generator.models.traits.rememberable_fqn');
+        }
+
+        // scopes
+
+        if (in_array(CmsModelWriter::IMPORT_TRAIT_SCOPE_ACTIVE, $imports)) {
+            $importLines[] = config('pxlcms.generator.models.traits.scope_active_fqn');
+        }
+
+        if (in_array(CmsModelWriter::IMPORT_TRAIT_SCOPE_ORDER, $imports)) {
+            $importLines[] = config('pxlcms.generator.models.traits.scope_position_fqn');
         }
 
 

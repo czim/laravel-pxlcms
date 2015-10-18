@@ -164,6 +164,22 @@ return [
         'resizes' => 60,
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    |
+    | Configuration of (global) scopes for models (and perhaps other classes).
+    |
+    */
+
+    'scopes' => [
+
+        'only_active' => [
+            'column' => 'e_active',
+        ],
+    ],
+
 
     /*
     |--------------------------------------------------------------------------
@@ -223,9 +239,28 @@ return [
                 'listify_fqn'             => "Lookitsatravis\\Listify\\Listify",
                 'listify_constructor_fqn' => "Czim\\PxlCms\\Models\\ListifyConstructorTrait",
                 'translatable_fqn'        => "Czim\\PxlCms\\Translatable\\Translatable",
-                'rememberable_fqn'        => "Watson\\Rememberable\\Rememberable"
+                'rememberable_fqn'        => "Watson\\Rememberable\\Rememberable",
+
+                'scope_active_fqn'        => "Czim\\PxlCms\\Models\\Scopes\\OnlyActive",
+                'scope_position_fqn'      => "Czim\\PxlCms\\Models\\Scopes\\PositionOrder",
             ],
 
+            // How to handle default/global scopes for models
+            'scopes' => [
+
+                // Available modes for each scope are:
+                //
+                //  'global'        for a global scope that may be ignored with ::withInactive() (scope trait)
+                //  'method'        for adding a scope public method scopeActive() to each model
+                //  null / false    do nothing, don't add scopes, all records returned by default
+
+                // Scope for the e_active flag, only return active records
+                'only_active'    => 'global',
+
+                // Scope order by e_position (the listify column)
+                // todo: implement this
+                'position_order' => 'method',
+            ],
 
             // The model name prefix settings help keep things organised for multi-menu, multi-group cmses
             // everything enabled would result in a classname like: "MenuGroupSectionModule"
