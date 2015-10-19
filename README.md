@@ -37,6 +37,16 @@ There are a few caveats:
   - If you want to prevent this, use the `unordered()` scope (ie. something like `ModelName::unordered()->first()`).
   - This depends on your pxlcms config settings, the behaviour may be changed.
 
+## Features and Traits
+
+- For multilingual support, **translatable** is used.
+    This offers the same functionality, but uses an adapter trait that uses the CMS .._ml table content.
+- By default, **rememberable** is added to every model, allowing you to cache queries with the `->remember()` method on any Eloquent Builder instance for the models.
+- **Listify** is used to handle the position column on the model. You should probably let the CMS handle things, but if you need it, it is available.
+- For slug handling **sluggable** is provided, through an adapter trait that uses the commonly used approach of using a `cms_slugs` table. (WIP) 
+
+See the configuration file for ways to change or disable the above.
+
 
 ## To Do
 
@@ -54,11 +64,26 @@ There are a few caveats:
 
 ### Generator
 
+- allow ignoring an entire menu or group
+    - note that this might result in broken references, which should be
+      caught, warned about and left out
+
+- reversed relationships:
+    - if multiple reversed relationships exist to a single other model,
+        this does not result in the correct / expected reversed relations,
+        only a single one makes it -- need a naming scheme based on the foreign key name
+        (or just add Reverse for that too.. if that happens).
+        (ex. producten -> kleur1, 2 etc)
+
 - models:   
     - store general attribute information (including type) for all attributes, not just for fillables
         for more complete ide-helper generation 
 
 - slugs? look at the 'standardized' slug setup by Erik
+    - sluggable + cms_slugs table setup
+    - make it configurable
+    - translatable by setting slugs on the translated models
+        - maybe work something out with model -> slug -> translation.slug magic redirect
 
 - handle dutch naming schemes, plural/singular.. (producten => productens :])
     - model names
