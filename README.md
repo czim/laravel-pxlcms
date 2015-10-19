@@ -68,13 +68,6 @@ See the configuration file for ways to change or disable the above.
     - note that this might result in broken references, which should be
       caught, warned about and left out
 
-- reversed relationships:
-    - if multiple reversed relationships exist to a single other model,
-        this does not result in the correct / expected reversed relations,
-        only a single one makes it -- need a naming scheme based on the foreign key name
-        (or just add Reverse for that too.. if that happens).
-        (ex. producten -> kleur1, 2 etc)
-
 - models:   
     - store general attribute information (including type) for all attributes, not just for fillables
         for more complete ide-helper generation 

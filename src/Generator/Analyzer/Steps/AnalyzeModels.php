@@ -359,9 +359,11 @@ class AnalyzeModels extends AbstractProcessStep
 
                 // special case, referencing model is itself
                 $selfReference     = ($modelFromKey == $relationship['model']);
+                $partOfMultiple    = $this->multipleBelongsToRelationsBetweenModels($modelFromKey, $relationship['model']);
                 $reverseType       = null;
                 $reverseCount      = 0;
                 $reverseForeignKey = null;
+
 
                 // For non-cms_m_references relations, we need to be careful about
                 // foreign keys not following the expected laravel convention
@@ -411,6 +413,7 @@ class AnalyzeModels extends AbstractProcessStep
                 // pluralize the name if configured to and it's a to many relationship
                 $pluralizeName = (  $reverseCount !== 1
                                 &&  config('pxlcms.generator.models.pluralize_reversed_relationship_names')
+                                &&  ! $partOfMultiple
                                 &&  (   ! $selfReference
                                     ||  config('pxlcms.generator.models.pluralize_reversed_relationship_names_for_self_reference')
                                     )
@@ -418,10 +421,17 @@ class AnalyzeModels extends AbstractProcessStep
 
                 // name of the relationship reversed
                 // default is name of the model referred to
-                // self-referencing is an exception, since using the model name won't be useful
                 if ($selfReference) {
+                    // self-referencing is an exception, since using the model name won't be useful
                     $reverseName = ($pluralizeName ? str_plural($relationName) : $relationName)
                                  . config('pxlcms.generator.models.relationship_reverse_postfix', 'Reverse');
+
+                } elseif($partOfMultiple) {
+                    // part of multiple belongsto is an exception, to avoid duplicates
+                    $reverseName = $modelFrom['name']
+                                 . ucfirst( ($pluralizeName ? str_plural($relationName) : $relationName) )
+                                 . config('pxlcms.generator.models.relationship_reverse_postfix', 'Reverse');
+
                 } else {
                     $reverseName = camel_case(
                         $pluralizeName ? str_plural($modelFrom['name']) : $modelFrom['name']
@@ -455,6 +465,30 @@ class AnalyzeModels extends AbstractProcessStep
         }
     }
 
+
+    /**
+     * Returns whether there are multiple relationships from one model to the other
+     *
+     * @param int $fromModuleId
+     * @param int $toModuleId
+     * @return bool
+     */
+    protected function multipleBelongsToRelationsBetweenModels($fromModuleId, $toModuleId)
+    {
+        $count = 0;
+
+        foreach ($this->context->output['models'][ $fromModuleId ]['relationships']['normal'] as $relationship) {
+
+            if (    $relationship['model'] == $toModuleId
+                &&  $relationship['type'] == Generator::RELATIONSHIP_BELONGS_TO
+                &&  ! array_get($relationship, 'negative')
+            ) {
+                $count++;
+            }
+        }
+
+        return ($count > 1);
+    }
 
     /**
      * Returns data about resizes for an image field
