@@ -50,18 +50,6 @@ See the configuration file for ways to change or disable the above.
 
 ## To Do
 
-### CmsModel
-
-- relationships with the same name as the attribute ('category' in product f.i.)
-    $product->category then returns the id, not the related model .. how to (selectively) override this?
-
-- path helper methods?
-    - cms / file upload paths, from configuration?
-
-- images:
-    - add full internal and/or external path as appended property on image
-    - same for (enriched) resizes
-
 ### Generator
 
 - allow ignoring an entire menu or group
@@ -69,14 +57,15 @@ See the configuration file for ways to change or disable the above.
       caught, warned about and left out
 
 - models:   
-    - store general attribute information (including type) for all attributes, not just for fillables
-        for more complete ide-helper generation 
+    x store general attribute information (including type) for all attributes, not just for fillables
+        for more complete ide-helper generation
+    [ not required now/yet ] 
 
 - slugs? look at the 'standardized' slug setup by Erik
-    - sluggable + cms_slugs table setup
-    - make it configurable
+    x sluggable + cms_slugs table setup
+    x make it configurable
     - translatable by setting slugs on the translated models
-        - maybe work something out with model -> slug -> translation.slug magic redirect
+        - maybe work something out with model -> slug -> translation.slug magic redirect ?
 
 - handle dutch naming schemes, plural/singular.. (producten => productens :])
     - model names
@@ -90,7 +79,10 @@ See the configuration file for ways to change or disable the above.
 
 - Negative References (They do not get used; provide example if you find one).
 - Custom Modules (They are skipped, since no reliable table information is available, if any are even used).
-
+- Relationships with the same name as the foreign key attribute are not caught. Reasons not to touch this:
+   1. It would be magic
+   2. It would conflict with normal Eloquent usage
+   3. It would be inefficient (would needs checks for EVERY access operation on the model)
 
 ## Credits
 
