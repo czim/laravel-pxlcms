@@ -51,6 +51,17 @@ class AnalyzerContext extends AbstractProcessContext
         $this->fieldType = new FieldType();
     }
 
+    /**
+     * Returns whether there is user interaction available
+     *
+     * @return array
+     */
+    public function isInteractive()
+    {
+        if (is_null($this->command)) return false;
+
+        return ! (bool) $this->command->option('auto');
+    }
 
     /**
      * @param string $message

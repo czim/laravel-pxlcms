@@ -93,9 +93,10 @@ class AnalyzeModels extends AbstractProcessStep
                     'checkbox' => [],
                 ],
                 // special
-                'sluggable'      => false,  // todo: determine this, with config
-                'scope_active'   => null,   // config determines
-                'scope_position' => null,   // config determines
+                'sluggable'       => false,
+                'sluggable_setup' => [],
+                'scope_active'    => null,   // config determines
+                'scope_position'  => null,   // config determines
             ];
 
 

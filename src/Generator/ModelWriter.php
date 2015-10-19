@@ -158,6 +158,9 @@ class ModelWriter
      */
     protected function makeTranslatedDataFromModelData(array $model)
     {
+        // translated model is sluggable if model is, but on translated property or column
+        $sluggable = ($model['sluggable'] && array_get($model, 'sluggable_setup.translated'));
+
         return [
             'module'                => $model['module'],
             'name'                  => $model['name'] . config('pxlcms.generator.models.translation_model_postfix'),
@@ -188,9 +191,10 @@ class ModelWriter
                 'checkbox' => [],
             ],
             // special
-            'sluggable'      => false,   // for now
-            'scope_active'   => false,
-            'scope_position' => false,
+            'sluggable'       => $sluggable,
+            'sluggable_setup' => $sluggable ? $model['sluggable_setup'] : [],
+            'scope_active'    => false,
+            'scope_position'  => false,
         ];
     }
 
