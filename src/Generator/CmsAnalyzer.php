@@ -47,6 +47,7 @@ class CmsAnalyzer extends PipelineProcessor
             Steps\LoadRawData::class,
             Steps\ResolveModuleNames::class,
             Steps\AnalyzeModels::class,
+            Steps\UnsetRawData::class,
         ];
     }
 
