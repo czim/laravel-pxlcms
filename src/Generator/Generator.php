@@ -2,6 +2,7 @@
 namespace Czim\PxlCms\Generator;
 
 use Czim\PxlCms\Generator\Analyzer\AnalyzerData;
+use Illuminate\Console\Command;
 
 /**
  * This Generator completes the full process of analyzing CMS content,
@@ -47,13 +48,23 @@ class Generator
     protected $write = true;
 
     /**
-     * @param bool $write   whether to write files; if false, just outputs analyzed data
+     * The console command that called the generator
+     *
+     * @var Command     null if not called by console
      */
-    public function __construct($write = true)
+    protected $command;
+
+    /**
+     * @param bool    $write    whether to write files; if false, just outputs analyzed data
+     * @param Command $command  the console command, if it was called from console
+     */
+    public function __construct($write = true, Command $command = null)
     {
-        $this->analyzer = new CmsAnalyzer();
-        $this->writer   = new ModelWriter();
         $this->write    = (bool) $write;
+        $this->command  = $command;
+
+        $this->analyzer = new CmsAnalyzer($command);
+        $this->writer   = new ModelWriter();
     }
 
     /**

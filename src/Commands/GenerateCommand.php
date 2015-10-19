@@ -42,7 +42,7 @@ class GenerateCommand extends Command
 
         $this->listenForLogEvents();
 
-        $generator = new Generator( ! $dryRun);
+        $generator = new Generator( ! $dryRun, $this);
 
         $generator->generate();
 

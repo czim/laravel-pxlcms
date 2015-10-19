@@ -5,6 +5,7 @@ use Czim\DataObject\Contracts\DataObjectInterface;
 use Czim\Processor\Contexts\AbstractProcessContext;
 use Czim\PxlCms\Generator\FieldType;
 use Czim\PxlCms\Generator\Generator;
+use Illuminate\Console\Command;
 
 class AnalyzerContext extends AbstractProcessContext
 {
@@ -23,6 +24,13 @@ class AnalyzerContext extends AbstractProcessContext
     public $output = [
         'models',
     ];
+
+    /**
+     * The console command that initiated the process
+     *
+     * @var Command|null
+     */
+    public $command;
 
 
     /**
