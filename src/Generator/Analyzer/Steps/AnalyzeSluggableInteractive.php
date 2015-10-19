@@ -51,16 +51,142 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
 
         if ($this->isInteractive()) {
 
-            // if a model has one sluggable column, ask a y/n for it
-            // if a model has multiple, ask to make a choice which column to use
-
+            foreach ($candidates as $moduleId => $candidate) {
+                $this->updateModelDataInteractively($moduleId, $candidate);
+            }
 
         } else {
             // if not interactive, use configuration settings where possible, skip anything else
 
+            foreach ($candidates as $moduleId => $candidate) {
+                $this->updateModelDataAutomatically($moduleId, $candidate);
+            }
+        }
+    }
+    
+
+    /**
+     * Updates the output models data, using interaction where required
+     *
+     * @param int   $moduleId
+     * @param array $candidate
+     */
+    protected function updateModelDataInteractively($moduleId, array $candidate)
+    {
+        $moduleName = array_get($this->context->output, 'models.' . $moduleId . '.name', 'Unknown');
+
+        // if a model has one sluggable column, ask a y/n for using it
+        if ($candidate['slug_column']) {
+
+            $alternative = $this->context->slugStructurePresent
+                    ? "\n Model slugs will be saved to the CMS slugs table otherwise."
+                    : "\n Model will not be sluggable otherwise.";
+
+            if ( ! $this->answerIsYes(
+                $this->context->command->ask(
+                    "Module #{$moduleId} ('{$moduleName}') has a column '{$candidate['slug_column']}'.\n"
+                    . " Use it as a sluggable target column (saving the slug on the model itself)?"
+                    . $alternative
+                    . "\n [y|N]",
+                    false
+                )
+            )) {
+                $candidate['slug_column'] = null;
+            }
         }
 
+        // if a model has multiple possible sources, ask to make a choice which column to use
+        $selectedSources = ($candidate['translated'])
+            ?   $candidate['slug_sources_translated']
+            :   $candidate['slug_sources_normal'];
 
+
+        if (count($selectedSources) == 1) {
+
+            $selectedSource = head($selectedSources);
+
+        } else {
+            // ask user to make a choice
+
+            $choice               = null;
+            $normalAttributes     = array_get($this->context->output, 'models.' . $moduleId . '.normal_attributes', []);
+            $translatedAttributes = array_get($this->context->output, 'models.' . $moduleId . '.translated_attributes', []);
+
+            // it may occur that there are no selectedSources yet (no likely candidates)
+            // just proceed directly to asking the user which to use
+            if (count($selectedSources)) {
+
+                $choice = $this->context->command->choice(
+                    "Module #{$moduleId} ('{$moduleName}') has a multiple candidate columns to use as a source for slugs.\n"
+                    . " Which one should be used?",
+                    array_merge($selectedSources, [ '<other column>' ])
+                );
+            }
+
+            // if none picked or 'other' selected, choose any of the model's attributes (in the correct category)
+            if (empty($choice) || $choice === '<other column>') {
+
+                if ( ! empty($candidate['slug_column'])) {
+
+                    $attributes = ($candidate['translated']) ? $translatedAttributes : $normalAttributes;
+
+                } else {
+
+                    $attributes = array_merge(
+                        $normalAttributes,
+                        $translatedAttributes
+                    );
+                }
+
+                do {
+                    $choice = $this->context->command->choice(
+                        "Choose a source column for the attribute.\n",
+                        $attributes
+                    );
+
+                    if ($candidate['slug_column'] == $choice) {
+                        $this->context->log(
+                            "Source column may not be same as slug target column!",
+                            Generator::LOG_LEVEL_ERROR
+                        );
+                        $choice = null;
+                    }
+
+                } while (empty($choice));
+            }
+
+            $selectedSource = $choice;
+
+            // make sure the translated flag is still correct
+            $candidate['translated'] = (in_array($selectedSource, $translatedAttributes));
+        }
+
+        // pick the first sluggable source candidate and be done with it
+        $this->context->output['models'][ $moduleId ]['sluggable'] = true;
+        $this->context->output['models'][ $moduleId ]['sluggable_setup'] = [
+            'translated' => $candidate['translated'],
+            'source'     => $selectedSource,
+        ];
+    }
+
+    /**
+     * Updates the output models data (non-interactive approach)
+     *
+     * @param int   $moduleId
+     * @param array $candidate
+     */
+    protected function updateModelDataAutomatically($moduleId, array $candidate)
+    {
+        $selectedSource = ($candidate['translated'])
+            ?   head($candidate['slug_sources_translated'])
+            :   head($candidate['slug_sources_normal']);
+
+        // pick the first sluggable source candidate and be done with it
+        $this->context->output['models'][ $moduleId ]['sluggable'] = true;
+        $this->context->output['models'][ $moduleId ]['sluggable_setup'] = [
+            'translated' => $candidate['translated'],
+            'source'     => $selectedSource,
+        ];
     }
 
     /**
@@ -186,8 +312,10 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
                 );
                 return false;
             }
-
         }
+
+        // ensure that translated is set if source is translated
+        $analysis['translated'] = (count($analysis['slug_sources_translated']) > 0);
 
         return $analysis;
     }
@@ -239,9 +367,9 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
 
         // make sure we keep slug and source column in the same model (translated or parent)
         if ($analysis['translated']) {
-            $analysis['slug_sources_translated'] = array_values(array_intersect($model['translated_attributes'], $slugSources));
+            $analysis['slug_sources_translated'] = array_values(array_intersect($slugSources, $model['translated_attributes']));
         } else {
-            $analysis['slug_sources_normal'] = array_values(array_intersect($model['normal_attributes'], $slugSources));
+            $analysis['slug_sources_normal'] = array_values(array_intersect($slugSources, $model['normal_attributes']));
         }
 
 
@@ -275,8 +403,21 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
      */
     protected function isInteractive()
     {
-        if (config('pxlcms.generator.models.slugs.interactive')) return true;
+        if ( ! $this->context->isInteractive()) return false;
 
-        return $this->context->isInteractive();
+        return (bool) config('pxlcms.generator.models.slugs.interactive');
+    }
+
+    /**
+     * Returns whether a confirmation answer is 'yes'
+     *
+     * @param string $answer
+     * @return bool
+     */
+    protected function answerIsYes($answer)
+    {
+        if ($answer == false) return false;
+
+        return (bool) preg_match('#^\s*y(es)?\s*$#i', $answer);
     }
 }

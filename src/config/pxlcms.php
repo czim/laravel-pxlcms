@@ -386,7 +386,7 @@ return [
                 'enable' => true,
 
                 // Whether slug handling is always interactive (overrides artisan command -i flag)
-                'interactive' => false,
+                'interactive' => true,
 
                 // Which attributes/columns, if present, to consider candidates for sluggable source
                 // the order determines which one to pick first (if not using interactive command)
