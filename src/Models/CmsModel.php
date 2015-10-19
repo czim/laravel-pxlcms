@@ -1,6 +1,7 @@
 <?php
 namespace Czim\PxlCms\Models;
 
+use Czim\PxlCms\Helpers\Paths;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -525,17 +526,22 @@ class CmsModel extends Model
             $fileName = $image->file;
             $imageResizes = [];
 
+            // put full path to image in image
+            $image->url = Paths::images($fileName);
+
             foreach ($resizes as $resize) {
 
                 $imageResizes[ $resize->prefix ] = [
                     'id'     => $resize->id,
                     'prefix' => $resize->prefix,
                     'file'   => $resize->prefix . $fileName,
+                    'url'    => Paths::images($resize->prefix . $fileName),
                     'width'  => $resize->width,
                     'height' => $resize->height,
                 ];
             }
 
+            // append full resizes info
             $image->resizes = $imageResizes;
         }
 
