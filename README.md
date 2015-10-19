@@ -47,8 +47,37 @@ There are a few caveats:
 
 See the configuration file for ways to change or disable the above.
 
+ ## Images and Uploads
+ 
+ Image and File fields are set up as special relationships on the generated model.
+ If you use the magic property for the relationship on the model, like so:
+  
+ ```php
+   // For a model with a relationship: images() to the CMS Image model
+   $model->images
+ ```
+ 
+... then the image results will be enriched with information about resizes and the external URLs to the images (or files).
+
+```php
+   $image = $model->images->first();
+   
+   // This will return the external URL to the (base) image 
+   $image->url
+   
+   // This will list all resizes with appended prefixes and full URLs
+   $image->resizes
+```
+
+Saving images will work, but will not affect resizes.
+Note that Laravel leaves you free to update the Image model's records with nonexistant files.
+Additionally, no resize files will be generated for any fresh images this way.
+
 
 ## To Do
+
+- Enrich File magic property calls, just as for Image, with full URL to the file (internal and external)
+
 
 ### Generator
 
