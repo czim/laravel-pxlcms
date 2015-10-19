@@ -37,6 +37,7 @@ There are a few caveats:
   - If you want to prevent this, use the `unordered()` scope (ie. something like `ModelName::unordered()->first()`).
   - This depends on your pxlcms config settings, the behaviour may be changed.
 
+
 ## Features and Traits
 
 - For multilingual support, **translatable** is used.
@@ -47,7 +48,8 @@ There are a few caveats:
 
 See the configuration file for ways to change or disable the above.
 
- ## Images and Uploads
+
+## Images and Uploads
  
  Image and File fields are set up as special relationships on the generated model.
  If you use the magic property for the relationship on the model, like so:
