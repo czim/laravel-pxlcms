@@ -15,6 +15,7 @@ class GenerateCommand extends Command
      */
     protected $signature = 'pxlcms:generate
                                 {--dry-run : Analyzes and shows debug output, but does not write files }
+                                {--auto : Disable user interaction }
                                 {--models-only : Only generates models}';
 
     /**
@@ -37,16 +38,15 @@ class GenerateCommand extends Command
      */
     public function handle()
     {
-        $modelsOnly = (bool) $this->option('models-only');
-        $dryRun     = (bool) $this->option('dry-run');
+        $modelsOnly  = (bool) $this->option('models-only');
+        $dryRun      = (bool) $this->option('dry-run');
+        $interactive = ! (bool) $this->option('auto');
 
         $this->listenForLogEvents();
 
         $generator = new Generator( ! $dryRun, $this);
 
         $generator->generate();
-
-        // todo: handle logging output for cli
 
         $this->info('Done.');
     }
