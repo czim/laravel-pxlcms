@@ -44,6 +44,10 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
         // note that it will have to keep track of whether it is a translated slug source
         $candidates = $this->findSluggableCandidateModels();
 
+        // if a model is to be sluggable'd, set its 'sluggable' property to true
+        // and add the 'sluggable_setup' array, with a 'translated' key (which indicates whether
+        // the parent model or the translated model is to be affected), the optional 'slug' and
+        // required 'source' attribute.
 
         if ($this->isInteractive()) {
 
