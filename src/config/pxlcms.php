@@ -184,6 +184,41 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Slugs
+    |--------------------------------------------------------------------------
+    |
+    | Configuration of model slug handling. An adapted version of Sluggable
+    | is used by default, but the original CMS table setup will be used;
+    | only use this is if is a compatible setup (it is not a standard part
+    | of our CMS (yet)).
+    |
+    | This expects to find a table with slugs for all modules, so with
+    | a `module_id`, `entry_id` and `language_id` column -- and a field for
+    | the slug itself.
+    |
+    */
+
+    'slugs' => [
+
+        // The slug model that represents a slug
+        'model' => 'Czim\\PxlCms\\Models\\Slug',
+
+        // The database table where the slugs are stored
+        'table' => 'cms_slugs',
+
+        // The slug column on the slugs table
+        'column' => 'slug',
+
+        // The key columns on the slugs table
+        'keys' => [
+            'module'   => 'ref_module_id',
+            'entry'    => 'entry_id',
+            'language' => 'language_id',
+        ],
+    ],
+
 
     /*
     |--------------------------------------------------------------------------
@@ -339,6 +374,24 @@ return [
                 'e_category_id',
                 'e_user_id',
             ],
+
+
+            // If slugs-functionality is enabled, this describes how the models should be analyzed
+            'slugs' => [
+
+
+                // Which attributes/columns, if present, to consider candidates for sluggable source
+                // the order determines which one to pick first (if not using interactive command)
+                'slug_source_columns' => [
+                    'name',  'naam',
+                    'title', 'titel',
+                ],
+
+                // Which attributes/columns, if present, to consider a slug stored directly on the model
+                'slug_columns' => [ 'slug' ],
+                'untranslated_locale' => null,
+            ],
+
 
             // Settings for ide-helper content to add to models
             'ide_helper' => [

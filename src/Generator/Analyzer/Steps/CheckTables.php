@@ -1,21 +1,37 @@
 <?php
 namespace Czim\PxlCms\Generator\Analyzer\Steps;
 
+use Czim\PxlCms\Generator\Generator;
 use Exception;
 use Illuminate\Support\Facades\DB;
 
 class CheckTables extends AbstractProcessStep
 {
+    /**
+     * List of tables in the CMS database
+     *
+     * @var array
+     */
+    protected $tables;
+
+
     protected function process()
     {
-        $tables = DB::select('SHOW TABLES');
+        $this->loadTableList();
 
-        $tableList = [];
+        $this->checkRequiredTables();
 
-        foreach ($tables as $tableObject) {
+        $this->detectSlugStructure();
+    }
 
-            $tableList[] = array_get(array_values((array) $tableObject), '0');
-        }
+
+    /**
+     * Checks if all required tables are present
+     *
+     * @throws Exception    if a table is not found
+     */
+    protected function checkRequiredTables()
+    {
 
         // check if relevant tables are present in the list
         foreach ([
@@ -39,9 +55,85 @@ class CheckTables extends AbstractProcessStep
 
                  ] as $checkTable
         ) {
-            if ( ! in_array($checkTable, $tableList)) {
+            if ( ! in_array($checkTable, $this->tables)) {
+
                 throw new Exception("Could not find expected CMS table in database: '{$checkTable}'");
             }
         }
+    }
+
+    /**
+     * Detects whether this CMS has the 'typical' slug table setup
+     */
+    protected function detectSlugStructure()
+    {
+        $this->context->slugStructurePresent = false;
+
+        $slugsTable = config('pxlcms.slugs.table');
+
+        if ( ! in_array($slugsTable, $this->tables)) {
+
+            $this->context->log("No slugs table detected.");
+            return;
+        }
+
+        // the table exists.. does it have the content we need / expect?
+        // Note: cannot escape/PDO this, so be careful with your config
+        $columns = $this->loadColumnListForTable($slugsTable);
+
+        foreach ([
+                     config('pxlcms.slugs.keys.module'),
+                     config('pxlcms.slugs.keys.entry'),
+                     config('pxlcms.slugs.keys.language'),
+                 ] as $requiredColumn
+        ) {
+            if (in_array($requiredColumn, $columns)) continue;
+
+            // column does not exist!
+            $this->context->log(
+                "Slugs table detected but not usable for Sluggable handling!"
+                . " Missing required column '{$requiredColumn}'.",
+                Generator::LOG_LEVEL_WARNING
+            );
+            return;
+        }
+
+        $this->context->slugStructurePresent = true;
+        $this->context->log("Slugs table detected and considered usable for Sluggable handling.");
+    }
+
+
+    /**
+     * Caches the list of tables in the database
+     */
+    protected function loadTableList()
+    {
+        $tables = DB::select('SHOW TABLES');
+
+        $this->tables = [];
+
+        foreach ($tables as $tableObject) {
+
+            $this->tables[] = array_get(array_values((array) $tableObject), '0');
+        }
+    }
+
+    /**
+     * Returns the column names for a table
+     *
+     * @param string $table
+     * @return array
+     */
+    protected function loadColumnListForTable($table)
+    {
+        $columnResults = DB::select("SHOW columns FROM `{$table}`");
+        $columns       = [];
+
+        foreach ($columnResults as $columnObject) {
+
+            $columns[] = array_get(array_values((array) $columnObject), '0');
+        }
+
+        return $columns;
     }
 }

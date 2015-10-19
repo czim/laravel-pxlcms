@@ -32,6 +32,13 @@ class AnalyzerContext extends AbstractProcessContext
      */
     public $command;
 
+    /**
+     * Whether the CMS has a 'typical' slug structure setup
+     *
+     * @var bool
+     */
+    public $slugStructurePresent = false;
+
 
     /**
      * @param DataObjectInterface $data
