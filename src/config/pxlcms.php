@@ -12,14 +12,19 @@ return [
     |
     */
 
-    // todo: implement/use this
     'paths' => [
 
+        // Base external path for generating URLs to CMS content
+        'base_external' => config('app.url'),
+
+        // Base internal path for generating internal paths to CMS content
+        'base_internal' => 'public',
+
         // Relative path to images from laravel/server root
-        'images' => 'public/cms_images',
+        'images' => 'cms_images',
 
         // Relative path to file uploads from laravel/server root
-        'files'  => 'public/cms_files',
+        'files'  => 'cms_files',
     ],
 
 
