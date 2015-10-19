@@ -129,6 +129,12 @@ class AnalyzeModels extends AbstractProcessStep
                         //    $keyName = $attributeName;
                         //}
 
+                        // attribute names with numbers in them wreak havoc on the name conversion methods
+                        // so always add the key for those
+                        if (preg_match('#\d#', $relationName)) {
+                            $keyName = $attributeName;
+                        }
+
                         // in some weird cases, cmses have been destroyed by leaving in relationships
                         // that do not refer to any model; these should be skipped
                         if (empty($fieldData['refers_to_module'])) {
@@ -381,7 +387,7 @@ class AnalyzeModels extends AbstractProcessStep
 
                     } elseif ($relationName !== camel_case($this->context->output['models'][ $relationship['model'] ]['name'])) {
 
-                        $reverseForeignKey = snake_case($relationName);
+                        $reverseForeignKey = $this->normalizeDb($relationName);
                     }
                 }
 
@@ -428,7 +434,7 @@ class AnalyzeModels extends AbstractProcessStep
 
                 } elseif($partOfMultiple) {
                     // part of multiple belongsto is an exception, to avoid duplicates
-                    $reverseName = $modelFrom['name']
+                    $reverseName = camel_case($modelFrom['name'])
                                  . ucfirst( ($pluralizeName ? str_plural($relationName) : $relationName) )
                                  . config('pxlcms.generator.models.relationship_reverse_postfix', 'Reverse');
 
