@@ -63,7 +63,7 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
             }
         }
     }
-    
+
 
     /**
      * Updates the output models data, using interaction where required
@@ -82,14 +82,11 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
                     ? "\n Model slugs will be saved to the CMS slugs table otherwise."
                     : "\n Model will not be sluggable otherwise.";
 
-            if ( ! $this->answerIsYes(
-                $this->context->command->ask(
+            if ( ! $this->context->command->confirm(
                     "Module #{$moduleId} ('{$moduleName}') has a column '{$candidate['slug_column']}'.\n"
                     . " Use it as a sluggable target column (saving the slug on the model itself)?"
                     . $alternative
-                    . "\n [y|N]",
-                    false
-                )
+                    . "\n"
             )) {
                 $candidate['slug_column'] = null;
             }
@@ -407,17 +404,5 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
 
         return (bool) config('pxlcms.generator.models.slugs.interactive');
     }
-
-    /**
-     * Returns whether a confirmation answer is 'yes'
-     *
-     * @param string $answer
-     * @return bool
-     */
-    protected function answerIsYes($answer)
-    {
-        if ($answer == false) return false;
-
-        return (bool) preg_match('#^\s*y(es)?\s*$#i', $answer);
-    }
+    
 }
