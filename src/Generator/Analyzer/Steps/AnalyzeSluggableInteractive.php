@@ -75,19 +75,30 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
     {
         $moduleName = array_get($this->context->output, 'models.' . $moduleId . '.name', 'Unknown');
 
+        if ( ! $this->context->command->confirm(
+            "Module #{$moduleId} ('{$moduleName}') looks like it could be set up with Sluggify. Do so?"
+        )) {
+            return;
+        }
+
+
         // if a model has one sluggable column, ask a y/n for using it
         if ($candidate['slug_column']) {
 
             $alternative = $this->context->slugStructurePresent
-                    ? "\n Model slugs will be saved to the CMS slugs table otherwise."
-                    : "\n Model will not be sluggable otherwise.";
+                    ? "the model slugs will be saved to the CMS slugs table."
+                    : "the model will not be sluggable.";
 
             if ( ! $this->context->command->confirm(
-                    "Module #{$moduleId} ('{$moduleName}') has a column '{$candidate['slug_column']}'.\n"
-                    . " Use it as a sluggable target column (saving the slug on the model itself)?"
-                    . $alternative
-                    . "\n"
+                    "This module has a field called '{$candidate['slug_column']}'."
+                    . " Use it as a sluggable target column?\n"
+                    . " The slug would be saved on the model itself.\n"
+                    . " If you choose 'no', {$alternative}\n"
             )) {
+
+                // if there's no alternative, don't sluggify
+                if ( ! $this->context->slugStructurePresent) return;
+
                 $candidate['slug_column'] = null;
             }
         }
@@ -138,8 +149,10 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
                 do {
                     $choice = $this->context->command->choice(
                         "Choose a source column for the attribute.\n",
-                        $attributes
+                        array_merge($attributes, [ '<cancel>' ])
                     );
+
+                    if ($choice == '<cancel>') return;
 
                     if ($candidate['slug_column'] == $choice) {
                         $this->context->log(
@@ -404,5 +417,5 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
 
         return (bool) config('pxlcms.generator.models.slugs.interactive');
     }
-    
+
 }
