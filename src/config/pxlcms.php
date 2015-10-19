@@ -162,6 +162,9 @@ return [
 
         // Resizes for Images (looked up for images by fieldId)
         'resizes' => 60,
+
+        // Slugs table entries
+        'slugs' => 60,
     ],
 
     /*
@@ -379,6 +382,11 @@ return [
             // If slugs-functionality is enabled, this describes how the models should be analyzed
             'slugs' => [
 
+                // Whether to do any slug analyzing or handling for models
+                'enable' => true,
+
+                // Whether slug handling is always interactive (overrides artisan command -i flag)
+                'interactive' => false,
 
                 // Which attributes/columns, if present, to consider candidates for sluggable source
                 // the order determines which one to pick first (if not using interactive command)
@@ -389,6 +397,9 @@ return [
 
                 // Which attributes/columns, if present, to consider a slug stored directly on the model
                 'slug_columns' => [ 'slug' ],
+
+                // Default locale value to fill in for slugs that are not translated
+                // Use locales, not language IDs: 'nl' for language_id 116.
                 'untranslated_locale' => null,
             ],
 
@@ -443,6 +454,24 @@ return [
         */
 
         'override' => [
+
+            // Which models to consider sluggable or not
+            'sluggable' => [
+
+                // Add presets for explicitly overriding the sluggability of modules
+                'force' => [
+
+                    // Syntax:
+                    // <module ID> => [ 'source' => <attribute name>, 'slug' => <slug column:optional> ]
+                    //
+                    // Add the 'slug' if the model has a slug attribute/column on the table itself.
+                    // If the slug is omitted, the cms_slugs (configuration above) table is used if available.
+
+
+                ],
+                // Add module IDs for modules never to consider
+                'exclude' => [],
+            ],
 
             // Force some values for models generated to overrule the data analysis
             'models' => [
