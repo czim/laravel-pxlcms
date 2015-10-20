@@ -3,6 +3,22 @@ namespace Czim\PxlCms\Models;
 
 use Watson\Rememberable\Rememberable;
 
+/**
+ * @property int     $field_id
+ * @property string  $prefix
+ * @property int     $width
+ * @property int     $height
+ * @property boolean $make_grayscale
+ * @property string  $watermark_image
+ * @property boolean $watermark
+ * @property int     $watermark_left
+ * @property int     $watermark_top
+ * @property int     $corners
+ * @property string  $corners_name
+ * @property boolean $no_cropping
+ * @property string  $background_color
+ * @property boolean $trim
+ */
 class Resize extends CmsModel
 {
     use Rememberable;

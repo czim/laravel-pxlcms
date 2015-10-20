@@ -3,6 +3,11 @@ namespace Czim\PxlCms\Models;
 
 use Watson\Rememberable\Rememberable;
 
+/**
+ * @property string $choice
+ * @property int    $field_id
+ * @property int    $entry_id
+ */
 class Checkbox extends CmsModel
 {
     use Rememberable;

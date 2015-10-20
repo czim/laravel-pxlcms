@@ -8,6 +8,17 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 
+/**
+ * CmsModel Adapter
+ *
+ * Based on Eloquent, but with overrides and adaptations for accessing
+ * PXL CMS database content.
+ *
+ * @property boolean $e_active
+ * @property int     $e_position
+ * @property int     $e_category_id
+ * @property int     $e_user_id
+ */
 class CmsModel extends Model
 {
 
@@ -100,6 +111,12 @@ class CmsModel extends Model
      */
     protected $resizeModel = Resize::class;
 
+    /**
+     * Whether, if sluggable model, the slug is to be saved on the model itself
+     *
+     * @var bool
+     */
+    protected $cmsSluggableLocally;
 
     /**
      * The default CMS model listify config
@@ -526,9 +543,6 @@ class CmsModel extends Model
             $fileName = $image->file;
             $imageResizes = [];
 
-            // put full path to image in image
-            $image->url = Paths::images($fileName);
-
             foreach ($resizes as $resize) {
 
                 $imageResizes[ $resize->prefix ] = [
@@ -611,6 +625,23 @@ class CmsModel extends Model
     }
 
     /**
+     * Retrieves locale for a given language ID code
+     *
+     * @param int $languageId
+     * @return string|null  of language for ID was not found
+     */
+    protected function lookupLocaleForLanguageId($languageId)
+    {
+        $languageModel = $this->languageModel;
+
+        $language = $languageModel::find($languageId);
+
+        if (empty($language)) return null;
+
+        return $this->normalizeToLocale($language->code);
+    }
+
+    /**
      * Normalizes the locale so it will match the CMS's language code
      *
      * en-US to en, for instance?
@@ -621,6 +652,18 @@ class CmsModel extends Model
     protected function normalizeLocale($locale)
     {
         return strtolower($locale);
+    }
+
+    /**
+     * Normalizes the language code in the CMS languages table so it
+     * matches locales.
+     *
+     * @param string $languageCode
+     * @return string
+     */
+    protected function normalizeToLocale($languageCode)
+    {
+        return strtolower($languageCode);
     }
 
 }

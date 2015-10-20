@@ -1,6 +1,8 @@
 <?php
 namespace Czim\PxlCms\Models;
 
+use Czim\PxlCms\Helpers\Paths;
+use Illuminate\Database\Eloquent\Model;
 use Lookitsatravis\Listify\Listify;
 use Watson\Rememberable\Rememberable;
 
@@ -11,9 +13,10 @@ use Watson\Rememberable\Rememberable;
  * @property string $caption
  * @property string $extension
  * @property-read string $url
+ * @property-read string $localPath
  * @property-read array  $resizes
  */
-class Image extends CmsModel
+class Image extends Model
 {
     use Listify,
         Rememberable;
@@ -21,12 +24,6 @@ class Image extends CmsModel
     protected $table = 'cms_m_images';
 
     public $timestamps = false;
-
-    /**
-     * The full URL to the image asset
-     * @var string
-     */
-    public $url;
 
     /**
      * List of resizes for the image (if loaded through a model's magic property)
@@ -67,12 +64,27 @@ class Image extends CmsModel
     }
 
     /*
-     * Accessors for Appends
+     * Accessors / Mutators for Appends
      */
 
     public function getUrlAttribute()
     {
-        return $this->url;
+        return Paths::images($this->file);
+    }
+
+    public function setUrlAttribute()
+    {
+        return null;
+    }
+
+    public function getLocalPathAttribute()
+    {
+        return Paths::uploadsInternal($this->file);
+    }
+
+    public function setLocalPathAttribute()
+    {
+        return null;
     }
 
     public function getResizesAttribute()
