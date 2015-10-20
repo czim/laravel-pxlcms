@@ -29,7 +29,7 @@ There are a few caveats:
 - Foreign keys in CMS tables have the name of the property. They are named 'category', for instance, not 'category_id'.
   - This means that using `$model->category` on an unloaded relationship will **not** trigger the magic property since the attribute is present.
     You will get the ID integer instead.
-    To get around this, either `load()` the relationships, eager load them with `with()`, or simply call the relation method itself (ie. `$model->category->first()`).  
+    To get around this, simply call the relation method itself (ie. `$model->category->first()`).  
 - By default, all models are globally scoped to only include *active* records (`e_active = true`).
   - If you want to include inactive records, use the `withInactive()` scope (ie. something like `ModelName::withInactive()->get()`).
   - This depends on your pxlcms config settings, the behaviour may be changed. 
@@ -59,13 +59,16 @@ See the configuration file for ways to change or disable the above.
    $model->images
  ```
  
-... then the image results will be enriched with information about resizes and the external URLs to the images (or files).
+... then the image results will be enriched with information about resizes and the external URLs to the images or files.
 
 ```php
    $image = $model->images->first();
    
    // This will return the external URL to the (base) image 
    $image->url
+   
+   // This will return the local path to the file
+   $image->localPath
    
    // This will list all resizes with appended prefixes and full URLs
    $image->resizes
@@ -76,10 +79,9 @@ Note that Laravel leaves you free to update the Image model's records with nonex
 Additionally, no resize files will be generated for any fresh images this way.
 
 
+
+
 ## To Do
-
-- Enrich File magic property calls, just as for Image, with full URL to the file (internal and external)
-
 
 ### Generator
 
@@ -104,6 +106,10 @@ Additionally, no resize files will be generated for any fresh images this way.
     - preferrably only by exception, since it's not going to happen often!
         - add configurable 'endings' plus their plural/singular forms in config 'product(en)?' -> product, producten
     x do not mess with eloquent's table conventions!
+
+- detect typical cms_m#_languages table
+    - configurable whether to automatically do this or interactively
+    - create relation to cms_languages if allowed, add by-locale lookups
 
 
 ## Things NOT taken into account
