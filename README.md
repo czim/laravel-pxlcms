@@ -2,7 +2,7 @@
 
 [![Software License][ico-license]](LICENSE.md)
 
-PXL CMS Adapter.
+PXL CMS Adapter for Laravel.
 
 
 ## Install
@@ -89,11 +89,6 @@ Additionally, no resize files will be generated for any fresh images this way.
     - note that this might result in broken references, which should be
       caught, warned about and left out
 
-- models:   
-    x store general attribute information (including type) for all attributes, not just for fillables
-        for more complete ide-helper generation
-    [ not required now/yet ] 
-
 - slugs? look at the 'standardized' slug setup by Erik
     x sluggable + cms_slugs table setup
     x make it configurable
@@ -110,6 +105,10 @@ Additionally, no resize files will be generated for any fresh images this way.
 - detect typical cms_m#_languages table
     - configurable whether to automatically do this or interactively
     - create relation to cms_languages if allowed, add by-locale lookups
+
+- detect typical multilingual_labels table
+    - add locale-based methods / helpers
+    - add Translation helper class / methods?
 
 
 ## Things NOT taken into account
