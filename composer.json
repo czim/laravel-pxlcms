@@ -22,6 +22,7 @@
         "illuminate/support": "5.*",
         "illuminate/database": "5.*",
         "czim/laravel-processor": "^1.0",
+        "czim/dutch-helper": "^1.0",
         "watson/rememberable": "dev-master",
         "dimsav/laravel-translatable": "~5.0",
         "lookitsatravis/listify": "^1.1"

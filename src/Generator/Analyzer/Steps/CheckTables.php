@@ -22,6 +22,8 @@ class CheckTables extends AbstractProcessStep
         $this->checkRequiredTables();
 
         $this->detectSlugStructure();
+
+        $this->detectDutchContent();
     }
 
 
@@ -102,6 +104,44 @@ class CheckTables extends AbstractProcessStep
         $this->context->log("Slugs table detected and considered usable for Sluggable handling.");
     }
 
+
+    protected function detectDutchContent()
+    {
+        $this->context->dutchNames = false;
+
+        $modules = 0;
+        $hits    = 0;
+
+        $matchers = config('pxlcms.generator.dutch-detection.matchers', []);
+
+        if (empty($matchers)) return;
+
+        // detect common dutch words in table names
+        foreach ($this->tables as $table) {
+
+            if ( ! preg_match('#^cms_m\d#i', $table)) continue;
+
+            $modules++;
+
+            foreach ($matchers as $matcher) {
+
+                if (preg_match($matcher, $table)) {
+                    $hits++;
+                    break;
+                }
+            }
+        }
+
+        if ( ! $modules) return;
+
+
+        if (    $hits >= config('pxlcms.generator.dutch-detection.threshold', 3)
+            ||  $hits === $modules
+        ) {
+            $this->context->dutchNames = true;
+            $this->context->log("Dutch naming detected ({$hits} matche(s)).");
+        }
+    }
 
     /**
      * Caches the list of tables in the database

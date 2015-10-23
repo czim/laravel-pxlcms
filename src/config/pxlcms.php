@@ -539,6 +539,35 @@ return [
                     ]
                 ],
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Dutch Detection
+        |--------------------------------------------------------------------------
+        |
+        | Regular expression content for detecting 'Dutch-ness' in names of
+        | f.i. tables and attributes.
+        |
+        */
+
+        'dutch-detection' => [
+
+            // How many table names must match before considered Dutch
+            'threshold' => 3,
+
+            // PREG matchers which determine whether a name is dutch
+            'matchers' => [
+                '#zoek#i',
+                '#tekst#i',
+                '#actie#i',
+                '#kleur#i',
+                '#pagina#i',
+                '#persoon#i',
+                '#algemeen#i',
+                '#overzicht#i',
+                '#instelling#i',
+                '#configuratie#i',
+                '#beschrijving#i',
             ],
         ],
 
