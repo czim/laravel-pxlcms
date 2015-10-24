@@ -90,7 +90,11 @@ trait SluggableTrait
             static::$slugsTable,
             function($join) use ($model, $locale) {
 
-                $join->on($model->getTable() . '.' . $model->getKeyName(), '=', static::$slugsTable . '.' . static::$slugsEntryKey);
+                $idKey = $this->isTranslationModel()
+                    ?   config('pxlcms.translatable.translation_foreign_key')
+                    :   $this->getKeyName();
+
+                $join->on($model->getTable() . '.' . $idKey, '=', static::$slugsTable . '.' . static::$slugsEntryKey);
                 $join->on(static::$slugsTable . '.' . static::$slugsModuleKey, '=', DB::raw( (int) $model->getModuleNumber()));
 
                 if ( ! empty($locale) && $model->isTranslationModel()) {
@@ -172,10 +176,14 @@ trait SluggableTrait
 
         $languageId = $this->storeSlugForLanguageId();
 
+        $entryId = $this->isTranslationModel()
+            ?   $this->getAttribute(config('pxlcms.translatable.translation_foreign_key'))
+            :   $this->getKey();
+
         $existing = DB::table(static::$slugsTable)
             ->select([ 'id', static::$slugsColumn . ' as slug' ])
             ->where(static::$slugsModuleKey, $this->getModuleNumber())
-            ->where(static::$slugsEntryKey, $this->getKey())
+            ->where(static::$slugsEntryKey, $entryId)
             ->where(static::$slugsLanguageKey, $languageId)
             ->limit(1)
             ->first();
@@ -292,12 +300,16 @@ trait SluggableTrait
         // if the model has no id, cannot store slug for it
         if ( ! $this->exists) return;
 
+        $entryId = $this->isTranslationModel()
+                    ?   $this->getAttribute(config('pxlcms.translatable.translation_foreign_key'))
+                    :   $this->getKey();
+
         // create new entry
         DB::table(static::$slugsTable)
             ->insert([
                 static::$slugsColumn      => $slug,
                 static::$slugsModuleKey   => $this->getModuleNumber(),
-                static::$slugsEntryKey    => $this->getKey(),
+                static::$slugsEntryKey    => $entryId,
                 static::$slugsLanguageKey => $languageId,
             ]);
     }
