@@ -188,16 +188,18 @@ trait SluggableTrait
     /**
      * Returns the entry/model ID for a given slug
      *
-     * @param bool $limitToLanguage if set, limits search to current language
+     * @param string $slug
+     * @param bool   $limitToLanguage if set, limits search to current language
      * @return int|null
      */
-    public function findRecordIdForSlugFromCmsTable($limitToLanguage = false)
+    public function findRecordIdForSlugFromCmsTable($slug, $limitToLanguage = false)
     {
         /** @var CmsModel|SluggableTrait $this */
 
         $existing = DB::table(static::$slugsTable)
             ->select([ static::$slugsEntryKey . ' as entry' ])
-            ->where(static::$slugsModuleKey, $this->getModuleNumber());
+            ->where(static::$slugsModuleKey, $this->getModuleNumber())
+            ->where(static::$slugsColumn, $slug);
 
         if ($limitToLanguage) {
 
