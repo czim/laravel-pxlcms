@@ -70,6 +70,9 @@ class ModelWriter
 
         foreach ($this->data['models'] as $model) {
 
+            // for tracking whether translation model has a written main model
+            $wroteMainModel = false;
+
             try {
 
                 $model = $this->appendRelatedModelsToModelData($model);
@@ -79,6 +82,7 @@ class ModelWriter
 
                 $this->log("Wrote model {$model['name']}.");
                 $countWritten++;
+                $wroteMainModel = true;
 
             } catch (ModelFileAlreadyExistsException $e) {
 
@@ -98,6 +102,14 @@ class ModelWriter
 
                     $this->log("Wrote translation for model {$model['name']}.");
                     $countTranslationsWritten++;
+
+                    if ( ! $wroteMainModel) {
+                        $this->log(
+                            "Warning: translation for model {$model['name']} was written, but model itself was not (over)written.\n"
+                            . "Delete the old model and try again, or check the translation setup of the model manually.",
+                            Generator::LOG_LEVEL_ERROR
+                        );
+                    }
 
                 } catch (ModelFileAlreadyExistsException $e) {
 
