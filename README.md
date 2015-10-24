@@ -13,12 +13,26 @@ Via Composer
 $ composer require czim/laravel-pxlcms
 ```
 
+Add this line of code to the providers array located in your `config/app.php` file:
+
+```php
+    Czim\PxlCms\PxlCmsServiceProvider::class,
+```
+
+Publish the configuration:
+
+``` bash
+$ php artisan vendor:publish
+```
+
 ## Workflow
 
 1. Generate CMS content
-2. Install and set up new Laravel project
-3. Require and configure this package
-4. Run `artisan pxlcms:generate`
+2. Install and set up new Laravel project and connect it to the CMS database
+3. Install this package
+4. Configure this package
+5. Run the generator: `artisan pxlcms:generate`
+
 
 ## Using Models
 
@@ -79,6 +93,17 @@ Note that Laravel leaves you free to update the Image model's records with nonex
 Additionally, no resize files will be generated for any fresh images this way.
 
 
+## Running the Generator
+
+The code generator is run through the Artisan command: `pxlcms:generate`.
+It will analyze the database CMS content, if it can find it, and generate code based on the `pxclms.php` config file.
+
+The following options are available:
+
+```
+--auto      automatic mode, skips interactivity
+ -v         verbose mode, shows debug output
+```
 
 
 ## To Do
