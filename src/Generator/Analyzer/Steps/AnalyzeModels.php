@@ -1,6 +1,7 @@
 <?php
 namespace Czim\PxlCms\Generator\Analyzer\Steps;
 
+use Czim\DutchHelper\DutchHelper;
 use Czim\PxlCms\Generator\FieldType;
 use Czim\PxlCms\Generator\Generator;
 use Czim\PxlCms\Models\CmsModel;
@@ -44,10 +45,18 @@ class AnalyzeModels extends AbstractProcessStep
      */
     protected $overrideHidden = [];
 
+    /**
+     * @var DutchHelper
+     */
+    protected $dutchHelper;
 
 
     protected function process()
     {
+        if ($this->context->dutchMode) {
+            $this->dutchHelper = app(DutchHelper::class);
+        }
+
         // build up a list of models
         foreach ($this->data->rawData['modules'] as $moduleId => $moduleData) {
 
@@ -145,6 +154,7 @@ class AnalyzeModels extends AbstractProcessStep
     {
         $this->overrides = $this->getOverrideConfigForModel($this->moduleId);
 
+        // determine name to use, handle pluralization and check database table override
         if (array_key_exists('name', $this->overrides)) {
 
             $name = $this->overrides['name'];
@@ -154,7 +164,12 @@ class AnalyzeModels extends AbstractProcessStep
             $name = array_get($this->module, 'prefixed_name') ?: $this->module['name'];
 
             if (config('pxlcms.generator.models.model_name.singularize_model_names')) {
-                $name = str_singular($name);
+
+                if ($this->context->dutchMode) {
+                    $name = $this->dutchSingularize($name);
+                } else {
+                    $name = str_singular($name);
+                }
             }
         }
 
@@ -527,22 +542,34 @@ class AnalyzeModels extends AbstractProcessStep
 
                 // name of the relationship reversed
                 // default is name of the model referred to
-                if ($selfReference) {
-                    // self-referencing is an exception, since using the model name won't be useful
-                    $reverseName = ($pluralizeName ? str_plural($relationName) : $relationName)
-                                 . config('pxlcms.generator.models.relationship_reverse_postfix', 'Reverse');
+                $baseName = $relationName;
 
-                } elseif ($partOfMultiple) {
+                if ($partOfMultiple) {
+
+                    $baseName = camel_case($modelFrom['name']) . ucfirst($baseName);
+
+                } elseif ( ! $selfReference) {
+
+                    $baseName = $modelFrom['name'];
+                }
+
+                if ($pluralizeName) {
+
+                    $baseName = ($this->context->dutchMode) ? $this->dutchPluralize($baseName) : str_plural($baseName);
+                }
+
+
+
+                if ($selfReference || $partOfMultiple) {
+                    // self-referencing is an exception, since using the model name won't be useful
                     // part of multiple belongsto is an exception, to avoid duplicates
-                    $reverseName = camel_case($modelFrom['name'])
-                                 . ucfirst(($pluralizeName ? str_plural($relationName) : $relationName))
+
+                    $reverseName = $baseName
                                  . config('pxlcms.generator.models.relationship_reverse_postfix', 'Reverse');
 
                 } else {
 
-                    $reverseName = camel_case(
-                        $pluralizeName ? str_plural($modelFrom['name']) : $modelFrom['name']
-                    );
+                    $reverseName = camel_case($baseName);
                 }
 
                 $reverseNameSnakeCase = snake_case($reverseName);
@@ -642,4 +669,31 @@ class AnalyzeModels extends AbstractProcessStep
     {
         return $this->context->normalizeNameForDatabase($string);
     }
+
+    /**
+     * Singularizes a noun/name for Dutch content
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function dutchSingularize($name)
+    {
+        if (empty($this->dutchHelper)) return $name;
+
+        return $this->dutchHelper->singularize($name);
+    }
+
+    /**
+     * Pluralizes a noun/name for Dutch content
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function dutchPluralize($name)
+    {
+        if (empty($this->dutchHelper)) return $name;
+
+        return $this->dutchHelper->pluralize($name);
+    }
+
 }
