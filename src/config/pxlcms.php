@@ -225,6 +225,10 @@ return [
             'entry'    => 'entry_id',
             'language' => 'language_id',
         ],
+
+        // If the slugs table can have inactive slugs, set the boolean column here
+        // False if there is no such column
+        'active_column' => false,
     ],
 
 
