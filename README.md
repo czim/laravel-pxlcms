@@ -93,6 +93,16 @@ Note that Laravel leaves you free to update the Image model's records with nonex
 Additionally, no resize files will be generated for any fresh images this way.
 
 
+## Slugs
+
+A modified version of the [Sluggable](https://github.com/cviebrock/eloquent-sluggable) Eloquent model trait is used to handle slugs for the models that were 'sluggified' during model generation.
+This works mostly like the original Sluggify, with some exceptions:
+
+- Slugs may be stored in the `cms_slugs` table (which can be defined in the generator config).
+  If so, the change is transparent when using Sluggable methods. 
+- Route model binding has not been tested yet, and might be broken (it may work, though, report back to me please). 
+
+
 ## Running the Generator
 
 The code generator is run through the Artisan command: `pxlcms:generate`.
@@ -110,22 +120,13 @@ The following options are available:
 
 ### Generator
 
-- allow ignoring an entire menu or group
-    - note that this might result in broken references, which should be
-      caught, warned about and left out
-
 - slugs? look at the 'standardized' slug setup by Erik
-    x sluggable + cms_slugs table setup
-    x make it configurable
     - translatable by setting slugs on the translated models
+        - handle language_id stuff for lookups and saves -> locale on translation -> language_id ...
         - maybe work something out with model -> slug -> translation.slug magic redirect ?
-
-- handle dutch naming schemes, plural/singular.. (producten => productens :])
-    - model names
-    - relation names
-    - preferrably only by exception, since it's not going to happen often!
-        - add configurable 'endings' plus their plural/singular forms in config 'product(en)?' -> product, producten
-    x do not mess with eloquent's table conventions!
+    - add some means to use slugs in routing, if we can set it up easily
+        - either by model route binding and/or
+        - through a standardized slug-to-content lookup helper
 
 - detect typical cms_m#_languages table
     - configurable whether to automatically do this or interactively
@@ -144,6 +145,7 @@ The following options are available:
    1. It would be magic
    2. It would conflict with normal Eloquent usage
    3. It would be inefficient (would needs checks for EVERY access operation on the model)
+
 
 ## Credits
 
