@@ -92,6 +92,16 @@ Saving images will work, but will not affect resizes.
 Note that Laravel leaves you free to update the Image model's records with nonexistant files.
 Additionally, no resize files will be generated for any fresh images this way.
 
+Note that this will work for *translated* images and uploads.
+Relationships will only return results for the current locale.
+The locale used may be overridden (generated model code allows this by default):
+
+```php
+   // Return image results for locale other than the active application locale
+   $englishImage = $model->images('en')->first();
+   $dutchImage   = $model->images('nl')->first();
+```
+
 
 ## Slugs
 
