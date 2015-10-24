@@ -9,6 +9,43 @@ use Exception;
 class AnalyzeModels extends AbstractProcessStep
 {
 
+    /**
+     * ID of the module currently being processed
+     *
+     * @var int
+     */
+    protected $moduleId;
+
+    /**
+     * Temporary data for module currently being processed
+     *
+     * @var array
+     */
+    protected $module = [];
+
+    /**
+     * Temporary data for the model currently being built up from the processed module data
+     *
+     * @var array
+     */
+    protected $model = [];
+
+    /**
+     * Temporary data for overrides for module currently being processed
+     *
+     * @var array
+     */
+    protected $overrides = [];
+
+    /**
+     * Temporary data specific for attributes hidden property
+     *
+     * @var array
+     */
+    protected $overrideHidden = [];
+
+
+
     protected function process()
     {
         // build up a list of models
@@ -22,333 +59,395 @@ class AnalyzeModels extends AbstractProcessStep
                 continue;
             }
 
-            $overrides = $this->getOverrideConfigForModel($moduleId);
+            $this->processModule($moduleId, $moduleData);
+        }
 
-            if (array_key_exists('name', $overrides)) {
+        // for each model we have built up, generated reversed relationships
+        $this->generateReversedRelationships();
 
-                $name = $overrides['name'];
+    }
 
-            } else {
+    /**
+     * Process a single module (to model)
+     *
+     * @param int   $moduleId
+     * @param array $moduleData
+     * @throws Exception
+     */
+    protected function processModule($moduleId, array $moduleData)
+    {
+        $this->resetTemporaryModelCache();
 
-                $name = array_get($moduleData, 'prefixed_name') ?: $moduleData['name'];
+        // fill cache with current module's data
+        $this->moduleId = $moduleId;
+        $this->module   = $moduleData;
 
-                if (config('pxlcms.generator.models.model_name.singularize_model_names')) {
-                    $name = str_singular($name);
-                }
+        // set default model data
+        $this->model = [
+            'module'                => $moduleId,
+            'name'                  => $this->module['name'],
+            'table'                 => null,
+            'cached'                => config('pxlcms.generator.models.enable_rememberable_cache'),
+            'is_translated'         => false,
+            'is_listified'          => false,
+            'timestamps'            => null,
+            // attributes
+            'normal_fillable'       => [],
+            'translated_fillable'   => [],
+            'hidden'                => [],
+            'casts'                 => [],
+            'dates'                 => [],
+            'normal_attributes'     => [],
+            'translated_attributes' => [],
+            // categories
+            'has_categories'        => (bool) array_get($this->module, 'client_cat_control'),
+            // relationships
+            'relations_config'      => [],
+            'relationships'         => [
+                'normal'   => [],
+                'reverse'  => [],
+                'image'    => [],
+                'file'     => [],
+                'checkbox' => [],
+            ],
+            // special
+            'sluggable'       => false,
+            'sluggable_setup' => [],
+            'scope_active'    => null,   // config determines
+            'scope_position'  => null,   // config determines
+        ];
+
+        // set overrides in model data
+        $this->prepareModelOverrides();
+
+        // add module fields as attribute data
+        $this->processModuleFields();
+
+        // save completely built up model to context
+        $this->context->output['models'][ $moduleId ] = $this->model;
+    }
+
+    /**
+     * Resets cache properties, preparing for the next module processing step
+     */
+    protected function resetTemporaryModelCache()
+    {
+        $this->moduleId  = 0;
+        $this->module    = [];
+        $this->model     = [];
+        $this->overrides = [];
+    }
+
+    /**
+     * Prepares override cache for current model being assembled
+     */
+    protected function prepareModelOverrides()
+    {
+        $this->overrides = $this->getOverrideConfigForModel($this->moduleId);
+
+        if (array_key_exists('name', $this->overrides)) {
+
+            $name = $this->overrides['name'];
+
+        } else {
+
+            $name = array_get($this->module, 'prefixed_name') ?: $this->module['name'];
+
+            if (config('pxlcms.generator.models.model_name.singularize_model_names')) {
+                $name = str_singular($name);
             }
+        }
 
-            // make sure we force set a table name if it does not follow convention
-            $tableOverride = null;
-            if (str_plural($this->normalizeDb($name)) != $this->normalizeDb($moduleData['name'])) {
-                $tableOverride = $this->getModuleTablePrefix($moduleId) . $this->normalizeDb($moduleData['name']);
-            }
+        // make sure we force set a table name if it does not follow convention
+        $tableOverride = null;
 
-            // force listified?
-            $listified = array_key_exists('listify', $overrides)
-                ? (bool) $overrides['listify']
-                : ($moduleData['max_entries'] != 1);
+        if (str_plural($this->normalizeDb($name)) != $this->normalizeDb($this->module['name'])) {
 
+            $tableOverride = $this->getModuleTablePrefix($this->moduleId)
+                           . $this->normalizeDb($this->module['name']);
+        }
 
-            // override hidden attributes?
-            $overrideHidden = [];
-
-            if ( ! is_null(array_get($overrides, 'attributes.hidden'))
-                && ! array_get($overrides, 'attributes.hidden-empty')
-            ) {
-                $overrideHidden = array_get($overrides, 'attributes.hidden');
-
-                if ( ! is_array($overrideHidden)) $overrideHidden = [(string) $overrideHidden];
-            }
-
-            // override casts?
-            $overrideCasts = array_get($overrides, 'attributes.casts', []);
-            $removeCasts   = array_get($overrides, 'attributes.casts-remove', []);
+        // force listified?
+        $listified = array_key_exists('listify', $this->overrides)
+                   ?    (bool) $this->overrides['listify']
+                   :    ($this->module['max_entries'] != 1);
 
 
-            $model = [
-                'module'                => $moduleId,
-                'name'                  => $name,
-                'table'                 => $tableOverride,   // default
-                'cached'                => config('pxlcms.generator.models.enable_rememberable_cache'),
-                'is_translated'         => false,
-                'is_listified'          => $listified, // makes no sense for single-entry only
-                'timestamps'            => null,
-                // attributes
-                'normal_fillable'       => [],
-                'translated_fillable'   => [],
-                'hidden'                => $overrideHidden,
-                'casts'                 => $overrideCasts,
-                'dates'                 => [],
-                'normal_attributes'     => [],
-                'translated_attributes' => [],
-                // categories
-                'has_categories'        => (bool) array_get($moduleData, 'client_cat_control'),
-                // relationships
-                'relations_config'      => [],
-                'relationships'         => [
-                    'normal'   => [],
-                    'reverse'  => [],
-                    'image'    => [],
-                    'file'     => [],
-                    'checkbox' => [],
-                ],
-                // special
-                'sluggable'       => false,
-                'sluggable_setup' => [],
-                'scope_active'    => null,   // config determines
-                'scope_position'  => null,   // config determines
-            ];
+        // override hidden attributes?
+        $this->overrideHidden = [];
 
+        if (    ! is_null(array_get($this->overrides, 'attributes.hidden'))
+            &&  ! array_get($this->overrides, 'attributes.hidden-empty')
+        ) {
+            $this->overrideHidden = array_get($this->overrides, 'attributes.hidden');
 
-            // ------------------------------------------------------------------------------
-            //      Analyze fields
-            // ------------------------------------------------------------------------------
-
-            foreach ($moduleData['fields'] as $fieldId => $fieldData) {
-
-                $attributeName = $this->normalizeDb($fieldData['name']);
-                $relationName  = camel_case($attributeName);
-
-                switch ($fieldData['field_type_id']) {
-
-                    // references
-
-                    case FieldType::TYPE_REFERENCE:
-                    case FieldType::TYPE_REFERENCE_NEGATIVE:
-
-                        // add foreign key if it is different than the targeted model name
-                        // (would break the convention) -- this is NOT necessary, since the convention
-                        // for the CmsModel class is to use the relation name anyway!
-                        //
-                        // this only needs to be set if the relation name ends up being different
-                        // from the relation name
-                        //
-                        // todo: so keep a close eye on the reversed relationships!
-                        $keyName = null;
-                        //if ($relationName !== studly_case($this->data->rawData['modules'][ $fieldData['refers_to_module'] ]['name'])) {
-                        //    $keyName = $attributeName;
-                        //}
-
-                        // attribute names with numbers in them wreak havoc on the name conversion methods
-                        // so always add the key for those
-                        if (preg_match('#\d#', $relationName)) {
-                            $keyName = $attributeName;
-                        }
-
-                        // in some weird cases, cmses have been destroyed by leaving in relationships
-                        // that do not refer to any model; these should be skipped
-                        if (empty($fieldData['refers_to_module'])) {
-                            $this->context->log(
-                                "Relation '{$relationName}', field #{$fieldId} does not refer to any module, skipped.",
-                                Generator::LOG_LEVEL_ERROR
-                            );
-                            break;
-                        }
-
-                        $model['relationships']['normal'][ $relationName ] = [
-                            'type'     => Generator::RELATIONSHIP_BELONGS_TO,    // reverse of hasOne
-                            'model'    => $fieldData['refers_to_module'],
-                            'single'   => ($fieldData['value_count'] == 1),
-                            'count'    => $fieldData['value_count'],  // should always be 1 for single ref
-                            'field'    => $fieldId,
-                            'key'      => $keyName,
-                            'negative' => ($fieldData['field_type_id'] == FieldType::TYPE_REFERENCE_NEGATIVE),
-                            'special'  => CmsModel::RELATION_TYPE_MODEL,
-                        ];
-
-                        if (config('pxlcms.generator.models.hide_foreign_key_attributes')) {
-                            $model['hidden'][] = $attributeName;
-                        }
-                        break;
-
-                    case FieldType::TYPE_REFERENCE_MANY:
-                    case FieldType::TYPE_REFERENCE_AUTOSORT:
-                    case FieldType::TYPE_REFERENCE_CHECKBOXES:
-
-                        if (empty($fieldData['refers_to_module'])) {
-                            $this->context->log(
-                                "Relation '{$relationName}', field #{$fieldId} does not refer to any module, skipped.",
-                                Generator::LOG_LEVEL_ERROR
-                            );
-                            break;
-                        }
-
-                        $model['relationships']['normal'][ $relationName ] = [
-                            'type'     => Generator::RELATIONSHIP_BELONGS_TO_MANY,
-                            'model'    => $fieldData['refers_to_module'],
-                            'single'   => false,
-                            'count'    => $fieldData['value_count'],    // 0 for no limit
-                            'field'    => $fieldId,
-                            'negative' => false,
-                            'special'    => CmsModel::RELATION_TYPE_MODEL,
-                        ];
-                        break;
-
-
-                    // special references
-
-                    case FieldType::TYPE_IMAGE:
-                    case FieldType::TYPE_IMAGE_MULTI:
-                        $model['relationships']['image'][ $relationName ] = [
-                            'type'       => ($fieldData['value_count'] == 1)
-                                ? Generator::RELATIONSHIP_HAS_ONE
-                                : Generator::RELATIONSHIP_HAS_MANY,
-                            'single'     => ($fieldData['value_count'] == 1),
-                            'count'      => $fieldData['value_count'],
-                            'field'      => $fieldId,
-                            'translated' => (bool) $fieldData['multilingual'],
-                            'resizes'    => $this->getImageResizesForField($fieldId),
-                            'special'    => CmsModel::RELATION_TYPE_IMAGE,
-                        ];
-                        break;
-
-                    case FieldType::TYPE_FILE:
-                        $model['relationships']['file'][ $relationName ] = [
-                            'type'       => ($fieldData['value_count'] == 1)
-                                ? Generator::RELATIONSHIP_HAS_ONE
-                                : Generator::RELATIONSHIP_HAS_MANY,
-                            'single'     => ($fieldData['value_count'] == 1),
-                            'count'      => $fieldData['value_count'],
-                            'field'      => $fieldId,
-                            'translated' => (bool) $fieldData['multilingual'],
-                            'special'    => CmsModel::RELATION_TYPE_FILE,
-                        ];
-                        break;
-
-                    case FieldType::TYPE_CHECKBOX:
-                        $model['relationships']['checkbox'][ $relationName ] = [
-                            'type'    => Generator::RELATIONSHIP_HAS_MANY,
-                            'single'  => false,
-                            'count'   => $fieldData['value_count'],
-                            'field'   => $fieldId,
-                            'special' => CmsModel::RELATION_TYPE_CHECKBOX,
-                        ];
-                        break;
-
-
-                    // normal fields
-
-                    case FieldType::TYPE_INPUT:
-                    case FieldType::TYPE_DROPDOWN:
-                    case FieldType::TYPE_LABEL:
-                    case FieldType::TYPE_COLORCODE:
-                    case FieldType::TYPE_TEXT:
-                    case FieldType::TYPE_TEXT_HTML_FLEX:
-                    case FieldType::TYPE_TEXT_HTML_RAW:
-                    case FieldType::TYPE_TEXT_HTML_FCK:
-                    case FieldType::TYPE_TEXT_HTML_ALOHA:
-                    case FieldType::TYPE_TEXT_LONG:
-                    case FieldType::TYPE_BOOLEAN:
-                    case FieldType::TYPE_INTEGER:
-                    case FieldType::TYPE_NUMERIC:
-                    case FieldType::TYPE_FLOAT:
-                    case FieldType::TYPE_DATE:
-                    case FieldType::TYPE_CUSTOM_HIDDEN:
-                    case FieldType::TYPE_CUSTOM:
-                    case FieldType::TYPE_SLIDER:
-
-                        switch ($fieldData['field_type_id']) {
-
-                            case FieldType::TYPE_BOOLEAN:
-                                $model['casts'][ $attributeName ] = 'boolean';
-                                break;
-
-                            case FieldType::TYPE_INTEGER:
-                            case FieldType::TYPE_SLIDER:
-                                $model['casts'][ $attributeName ] = 'integer';
-                                break;
-
-                            case FieldType::TYPE_NUMERIC:
-                            case FieldType::TYPE_FLOAT:
-                                $model['casts'][ $attributeName ] = 'float';
-                                break;
-
-                            case FieldType::TYPE_DATE:
-                                if ( ! array_key_exists($attributeName, $overrideCasts)) {
-                                    $model['dates'][] = $attributeName;
-                                }
-                                break;
-
-                            // default omitted on purpose
-                        }
-
-                        if ($fieldData['multilingual']) {
-                            $model['is_translated']           = true;
-                            $model['translated_attributes'][] = $attributeName;
-                            $model['translated_fillable'][]   = $attributeName;
-                        } else {
-                            $model['normal_attributes'][] = $attributeName;
-                            $model['normal_fillable'][]   = $attributeName;
-                        }
-                        break;
-
-                    case FieldType::TYPE_RANGE:
-                    case FieldType::TYPE_LOCATION:
-                    case FieldType::TYPE_REFERENCE_CROSS:
-                    default:
-                        throw new Exception(
-                            "Unknown/unhandled field type {$fieldData['field_type_id']} "
-                            . "({$fieldData['field_type_name']})"
-                        );
-                }
-            }
-
-            // force hidden override
-            if (count($model['hidden']) && ! count($overrideHidden)) {
-                $model['hidden'] = array_merge(
-                    $model['hidden'],
-                    config('pxlcms.generator.models.default_hidden_fields', [])
-                );
-            }
-
-
-            // clear, set or remove fillable attributes by override
-            if (array_get($overrides, 'attributes.fillable-empty')) {
-
-                $model['normal_fillable']     = [];
-                $model['translated_fillable'] = [];
-
-            } elseif ($overrideFillable = array_get($overrides, 'attributes.fillable', [])) {
-
-                $model['normal_fillable']     = $overrideFillable;
-                $model['translated_fillable'] = [];
-
-            } elseif ($removeFillable = array_get($overrides, 'attributes.fillable-remove', [])) {
-
-                $model['normal_fillable']     = array_diff($model['normal_fillable'], $removeFillable);
-                $model['translated_fillable'] = array_diff($model['translated_fillable'], $removeFillable);
-            }
-
-
-            // force casts as overridden
-            foreach ($overrideCasts as $attributeName => $type) {
-                if (array_key_exists($attributeName, $model['casts'])) {
-                    $model['casts'][$attributeName] = $type;
-                }
-            }
-
-            foreach ($removeCasts as $attributeName) {
-                if (array_key_exists($attributeName, $model['casts'])) {
-                    unset ($model['casts'][$attributeName]);
-                }
-            }
-
-
-            // enable timestamps?
-            if (    config('pxlcms.generator.models.enable_timestamps_on_models_with_suitable_attributes')
-                &&  in_array('created_at', $model['dates'])
-                &&  in_array('updated_at', $model['dates'])
-            ) {
-                $model['timestamps'] = true;
-            }
-
-            $this->context->output['models'][ $moduleId ] = $model;
+            if ( ! is_array($this->overrideHidden)) $this->overrideHidden = [ (string) $this->overrideHidden ];
         }
 
 
-        // ------------------------------------------------------------------------------
-        //      Generate reversed relationships
-        // ------------------------------------------------------------------------------
+        // apply overrides to model data
+        $this->model['name']         = $name;
+        $this->model['table']        = $tableOverride;
+        $this->model['is_listified'] = $listified;
+        $this->model['hidden']       = $this->overrideHidden;
+        $this->model['casts']        = array_get($this->overrides, 'attributes.casts', []);
+    }
+
+    /**
+     * Processes field data from the module
+     */
+    protected function processModuleFields()
+    {
+        $overrideCasts = array_get($this->overrides, 'attributes.casts', []);
+        $removeCasts   = array_get($this->overrides, 'attributes.casts-remove', []);
+
+
+        foreach ($this->module['fields'] as $fieldId => $fieldData) {
+
+            $attributeName = $this->normalizeDb($fieldData['name']);
+            $relationName  = camel_case($attributeName);
+
+            switch ($fieldData['field_type_id']) {
+
+                // references
+
+                case FieldType::TYPE_REFERENCE:
+                case FieldType::TYPE_REFERENCE_NEGATIVE:
+
+                    // add foreign key if it is different than the targeted model name
+                    // (would break the convention) -- this is NOT necessary, since the convention
+                    // for the CmsModel class is to use the relation name anyway!
+                    //
+                    // this only needs to be set if the relation name ends up being different
+                    // from the relation name
+                    //
+                    // todo: so keep a close eye on the reversed relationships!
+                    $keyName = null;
+                    //if ($relationName !== studly_case($this->data->rawData['modules'][ $fieldData['refers_to_module'] ]['name'])) {
+                    //    $keyName = $attributeName;
+                    //}
+
+                    // attribute names with numbers in them wreak havoc on the name conversion methods
+                    // so always add the key for those
+                    if (preg_match('#\d#', $relationName)) {
+                        $keyName = $attributeName;
+                    }
+
+                    // in some weird cases, cmses have been destroyed by leaving in relationships
+                    // that do not refer to any model; these should be skipped
+                    if (empty($fieldData['refers_to_module'])) {
+                        $this->context->log(
+                            "Relation '{$relationName}', field #{$fieldId} does not refer to any module, skipped.",
+                            Generator::LOG_LEVEL_ERROR
+                        );
+                        break;
+                    }
+
+                    $this->model['relationships']['normal'][ $relationName ] = [
+                        'type'     => Generator::RELATIONSHIP_BELONGS_TO,    // reverse of hasOne
+                        'model'    => $fieldData['refers_to_module'],
+                        'single'   => ($fieldData['value_count'] == 1),
+                        'count'    => $fieldData['value_count'],  // should always be 1 for single ref
+                        'field'    => $fieldId,
+                        'key'      => $keyName,
+                        'negative' => ($fieldData['field_type_id'] == FieldType::TYPE_REFERENCE_NEGATIVE),
+                        'special'  => CmsModel::RELATION_TYPE_MODEL,
+                    ];
+
+                    if (config('pxlcms.generator.models.hide_foreign_key_attributes')) {
+                        $this->model['hidden'][] = $attributeName;
+                    }
+                    break;
+
+                case FieldType::TYPE_REFERENCE_MANY:
+                case FieldType::TYPE_REFERENCE_AUTOSORT:
+                case FieldType::TYPE_REFERENCE_CHECKBOXES:
+
+                    if (empty($fieldData['refers_to_module'])) {
+                        $this->context->log(
+                            "Relation '{$relationName}', field #{$fieldId} does not refer to any module, skipped.",
+                            Generator::LOG_LEVEL_ERROR
+                        );
+                        break;
+                    }
+
+                    $this->model['relationships']['normal'][ $relationName ] = [
+                        'type'     => Generator::RELATIONSHIP_BELONGS_TO_MANY,
+                        'model'    => $fieldData['refers_to_module'],
+                        'single'   => false,
+                        'count'    => $fieldData['value_count'],    // 0 for no limit
+                        'field'    => $fieldId,
+                        'negative' => false,
+                        'special'    => CmsModel::RELATION_TYPE_MODEL,
+                    ];
+                    break;
+
+
+                // special references
+
+                case FieldType::TYPE_IMAGE:
+                case FieldType::TYPE_IMAGE_MULTI:
+                    $this->model['relationships']['image'][ $relationName ] = [
+                        'type'       => ($fieldData['value_count'] == 1)
+                                            ? Generator::RELATIONSHIP_HAS_ONE
+                                            : Generator::RELATIONSHIP_HAS_MANY,
+                        'single'     => ($fieldData['value_count'] == 1),
+                        'count'      => $fieldData['value_count'],
+                        'field'      => $fieldId,
+                        'translated' => (bool) $fieldData['multilingual'],
+                        'resizes'    => $this->getImageResizesForField($fieldId),
+                        'special'    => CmsModel::RELATION_TYPE_IMAGE,
+                    ];
+                    break;
+
+                case FieldType::TYPE_FILE:
+                    $this->model['relationships']['file'][ $relationName ] = [
+                        'type'       => ($fieldData['value_count'] == 1)
+                                            ? Generator::RELATIONSHIP_HAS_ONE
+                                            : Generator::RELATIONSHIP_HAS_MANY,
+                        'single'     => ($fieldData['value_count'] == 1),
+                        'count'      => $fieldData['value_count'],
+                        'field'      => $fieldId,
+                        'translated' => (bool) $fieldData['multilingual'],
+                        'special'    => CmsModel::RELATION_TYPE_FILE,
+                    ];
+                    break;
+
+                case FieldType::TYPE_CHECKBOX:
+                    $this->model['relationships']['checkbox'][ $relationName ] = [
+                        'type'    => Generator::RELATIONSHIP_HAS_MANY,
+                        'single'  => false,
+                        'count'   => $fieldData['value_count'],
+                        'field'   => $fieldId,
+                        'special' => CmsModel::RELATION_TYPE_CHECKBOX,
+                    ];
+                    break;
+
+
+                // normal fields
+
+                case FieldType::TYPE_INPUT:
+                case FieldType::TYPE_DROPDOWN:
+                case FieldType::TYPE_LABEL:
+                case FieldType::TYPE_COLORCODE:
+                case FieldType::TYPE_TEXT:
+                case FieldType::TYPE_TEXT_HTML_FLEX:
+                case FieldType::TYPE_TEXT_HTML_RAW:
+                case FieldType::TYPE_TEXT_HTML_FCK:
+                case FieldType::TYPE_TEXT_HTML_ALOHA:
+                case FieldType::TYPE_TEXT_LONG:
+                case FieldType::TYPE_BOOLEAN:
+                case FieldType::TYPE_INTEGER:
+                case FieldType::TYPE_NUMERIC:
+                case FieldType::TYPE_FLOAT:
+                case FieldType::TYPE_DATE:
+                case FieldType::TYPE_CUSTOM_HIDDEN:
+                case FieldType::TYPE_CUSTOM:
+                case FieldType::TYPE_SLIDER:
+
+                    switch ($fieldData['field_type_id']) {
+
+                        case FieldType::TYPE_BOOLEAN:
+                            $this->model['casts'][ $attributeName ] = 'boolean';
+                            break;
+
+                        case FieldType::TYPE_INTEGER:
+                        case FieldType::TYPE_SLIDER:
+                            $this->model['casts'][ $attributeName ] = 'integer';
+                            break;
+
+                        case FieldType::TYPE_NUMERIC:
+                        case FieldType::TYPE_FLOAT:
+                            $this->model['casts'][ $attributeName ] = 'float';
+                            break;
+
+                        case FieldType::TYPE_DATE:
+                            if ( ! array_key_exists($attributeName, $overrideCasts)) {
+                                $this->model['dates'][] = $attributeName;
+                            }
+                            break;
+
+                        // default omitted on purpose
+                    }
+
+                    if ($fieldData['multilingual']) {
+                        $this->model['is_translated']           = true;
+                        $this->model['translated_attributes'][] = $attributeName;
+                        $this->model['translated_fillable'][]   = $attributeName;
+                    } else {
+                        $this->model['normal_attributes'][] = $attributeName;
+                        $this->model['normal_fillable'][]   = $attributeName;
+                    }
+                    break;
+
+                case FieldType::TYPE_RANGE:
+                case FieldType::TYPE_LOCATION:
+                case FieldType::TYPE_REFERENCE_CROSS:
+                default:
+                    throw new Exception(
+                        "Unknown/unhandled field type {$fieldData['field_type_id']} "
+                        . "({$fieldData['field_type_name']})"
+                    );
+            }
+        }
+
+        // force hidden override
+        if (count($this->model['hidden']) && ! count($this->overrideHidden)) {
+
+            $this->model['hidden'] = array_merge(
+                $this->model['hidden'],
+                config('pxlcms.generator.models.default_hidden_fields', [])
+            );
+        }
+
+
+        // clear, set or remove fillable attributes by override
+        if (array_get($this->overrides, 'attributes.fillable-empty')) {
+
+            $this->model['normal_fillable']     = [];
+            $this->model['translated_fillable'] = [];
+
+        } elseif ($overrideFillable = array_get($this->overrides, 'attributes.fillable', [])) {
+
+            $this->model['normal_fillable']     = $overrideFillable;
+            $this->model['translated_fillable'] = [];
+
+        } elseif ($removeFillable = array_get($this->overrides, 'attributes.fillable-remove', [])) {
+
+            $this->model['normal_fillable']     = array_diff($this->model['normal_fillable'], $removeFillable);
+            $this->model['translated_fillable'] = array_diff($this->model['translated_fillable'], $removeFillable);
+        }
+
+
+        // force casts as overridden
+        foreach ($overrideCasts as $attributeName => $type) {
+            if (array_key_exists($attributeName, $this->model['casts'])) {
+                $this->model['casts'][ $attributeName ] = $type;
+            }
+        }
+
+        foreach ($removeCasts as $attributeName) {
+            if (array_key_exists($attributeName, $this->model['casts'])) {
+                unset ($this->model['casts'][ $attributeName ]);
+            }
+        }
+
+
+        // enable timestamps?
+        if (    config('pxlcms.generator.models.enable_timestamps_on_models_with_suitable_attributes')
+            &&  in_array('created_at', $this->model['dates'])
+            &&  in_array('updated_at', $this->model['dates'])
+        ) {
+            $this->model['timestamps'] = true;
+        }
+    }
+
+
+    /**
+     * Generates model data for reversed relationships, for all available models
+     */
+    protected function generateReversedRelationships()
+    {
 
         foreach ($this->context->output['models'] as $modelFromKey => $modelFrom) {
 
@@ -396,13 +495,13 @@ class AnalyzeModels extends AbstractProcessStep
 
                     case GENERATOR::RELATIONSHIP_HAS_ONE:
                     case GENERATOR::RELATIONSHIP_HAS_MANY:
-                        $reverseType  = GENERATOR::RELATIONSHIP_BELONGS_TO;
+                        $reverseType = GENERATOR::RELATIONSHIP_BELONGS_TO;
                         break;
 
                     case GENERATOR::RELATIONSHIP_BELONGS_TO:
                         // for single-entry modules, a hasOne will do
                         if ($this->data->rawData['modules'][ $modelFromKey ]['max_entries'] == 1) {
-                            $reverseType = GENERATOR::RELATIONSHIP_HAS_ONE;
+                            $reverseType  = GENERATOR::RELATIONSHIP_HAS_ONE;
                             $reverseCount = 1;
                         } else {
                             $reverseType = GENERATOR::RELATIONSHIP_HAS_MANY;
@@ -417,13 +516,14 @@ class AnalyzeModels extends AbstractProcessStep
                 }
 
                 // pluralize the name if configured to and it's a to many relationship
-                $pluralizeName = (  $reverseCount !== 1
-                                &&  config('pxlcms.generator.models.pluralize_reversed_relationship_names')
-                                &&  ! $partOfMultiple
-                                &&  (   ! $selfReference
-                                    ||  config('pxlcms.generator.models.pluralize_reversed_relationship_names_for_self_reference')
-                                    )
-                                );
+                $pluralizeName = (
+                        $reverseCount !== 1
+                    &&  config('pxlcms.generator.models.pluralize_reversed_relationship_names')
+                    &&  ! $partOfMultiple
+                    &&  (   ! $selfReference
+                        ||  config('pxlcms.generator.models.pluralize_reversed_relationship_names_for_self_reference')
+                        )
+                );
 
                 // name of the relationship reversed
                 // default is name of the model referred to
@@ -432,13 +532,14 @@ class AnalyzeModels extends AbstractProcessStep
                     $reverseName = ($pluralizeName ? str_plural($relationName) : $relationName)
                                  . config('pxlcms.generator.models.relationship_reverse_postfix', 'Reverse');
 
-                } elseif($partOfMultiple) {
+                } elseif ($partOfMultiple) {
                     // part of multiple belongsto is an exception, to avoid duplicates
                     $reverseName = camel_case($modelFrom['name'])
-                                 . ucfirst( ($pluralizeName ? str_plural($relationName) : $relationName) )
+                                 . ucfirst(($pluralizeName ? str_plural($relationName) : $relationName))
                                  . config('pxlcms.generator.models.relationship_reverse_postfix', 'Reverse');
 
                 } else {
+
                     $reverseName = camel_case(
                         $pluralizeName ? str_plural($modelFrom['name']) : $modelFrom['name']
                     );
