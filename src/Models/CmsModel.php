@@ -84,13 +84,6 @@ class CmsModel extends Model
     protected $relationsConfig = [];
 
     /**
-     * The model class which represents the cms_languages content
-     *
-     * @var string
-     */
-    protected $languageModel = Language::class;
-
-    /**
      * By default, fall back to translation fallback with Translatable
      *
      * @var bool
@@ -98,18 +91,25 @@ class CmsModel extends Model
     protected $useTranslationFallback = true;
 
     /**
+     * The model class which represents the cms_languages content
+     *
+     * @var string
+     */
+    protected static $cmsLanguageModel = Language::class;
+
+    /**
      * The model class which represents the cms_images content
      *
      * @var string
      */
-    protected $imageModel = Image::class;
+    protected static $cmsImageModel = Image::class;
 
     /**
      * The model class which represents the resizes in the cms
      *
      * @var string
      */
-    protected $resizeModel = Resize::class;
+    protected static $cmsResizeModel = Resize::class;
 
     /**
      * Whether, if sluggable model, the slug is to be saved on the model itself
@@ -567,7 +567,7 @@ class CmsModel extends Model
      */
     protected function getResizesForFieldId($fieldId)
     {
-        $resizeModel = $this->resizeModel;
+        $resizeModel = static::$cmsResizeModel;
 
         $resizes = $resizeModel::where('field_id', (int) $fieldId);
 
@@ -610,11 +610,12 @@ class CmsModel extends Model
      * @param string $locale
      * @return int|null     null if language was not found for locale
      */
-    protected function lookUpLanguageIdForLocale($locale)
+    public function lookUpLanguageIdForLocale($locale)
     {
         $locale = $this->normalizeLocale($locale);
 
-        $languageModel = $this->languageModel;
+        $languageModel = static::$cmsLanguageModel;
+
         $language = $languageModel::where(config('pxlcms.translatable.locale_code_column'), $locale)
             ->remember((config('pxlcms.cache.languages-ttl')))
             ->first();
@@ -630,9 +631,9 @@ class CmsModel extends Model
      * @param int $languageId
      * @return string|null  of language for ID was not found
      */
-    protected function lookupLocaleForLanguageId($languageId)
+    public function lookupLocaleForLanguageId($languageId)
     {
-        $languageModel = $this->languageModel;
+        $languageModel = static::$cmsLanguageModel;
 
         $language = $languageModel::find($languageId);
 
