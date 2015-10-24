@@ -1,11 +1,12 @@
 <?php
 namespace Czim\PxlCms\Generator\Analyzer\Steps;
+
 use Czim\PxlCms\Generator\Generator;
 
 /**
  * Analyzes models to see if they might be candidates for making sluggable.
  *
- * Interactive: asks whether you the user wants to add sluggable and for which column.
+ * Interactive: asks whether the user wants to add sluggable and for which column.
  */
 class AnalyzeSluggableInteractive extends AbstractProcessStep
 {
