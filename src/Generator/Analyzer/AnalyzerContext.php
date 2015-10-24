@@ -39,6 +39,20 @@ class AnalyzerContext extends AbstractProcessContext
      */
     public $slugStructurePresent = false;
 
+    /**
+     * Whether the CMS is considered to have Dutch named modules
+     *
+     * @var bool
+     */
+    public $dutchNames = false;
+
+    /**
+     * Whether Dutch Mode is enabled
+     *
+     * @var bool
+     */
+    public $dutchMode = false;
+
 
     /**
      * @param DataObjectInterface $data

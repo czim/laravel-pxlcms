@@ -335,7 +335,6 @@ return [
                 'singularize_model_names' => true,
             ],
 
-
             // Pluralize the names of reversed relationships if they are hasMany
             'pluralize_reversed_relationship_names' => true,
             // Same, but for self-referencing relationships
@@ -542,32 +541,44 @@ return [
 
         /*
         |--------------------------------------------------------------------------
-        | Dutch Detection
+        | Dutch Mode
         |--------------------------------------------------------------------------
         |
-        | Regular expression content for detecting 'Dutch-ness' in names of
-        | f.i. tables and attributes.
+        | How to handle specifically Dutch setups. With regular expression content
+        | for detecting 'Dutch-ness' in names of f.i. tables and attributes.
         |
         */
 
-        'dutch-detection' => [
+        'dutch-mode' => [
 
-            // How many table names must match before considered Dutch
-            'threshold' => 3,
+            // If the content in the CMS is (mostly) Dutch, handle naming (pluralization etc) differently
+            // Note that this is not perfect, so be sure to check up on the model and realtion names
+            // If true, this will override interactive mode and detection.
+            'enabled' => false,
 
-            // PREG matchers which determine whether a name is dutch
-            'matchers' => [
-                '#zoek#i',
-                '#tekst#i',
-                '#actie#i',
-                '#kleur#i',
-                '#pagina#i',
-                '#persoon#i',
-                '#algemeen#i',
-                '#overzicht#i',
-                '#instelling#i',
-                '#configuratie#i',
-                '#beschrijving#i',
+            // If not forcing Dutch-mode, this will ask whether to enable the mode if it detects Dutch content
+            'interactive' => true,
+
+            // Determines when content is considered Dutch
+            'detection' => [
+
+                // How many table names must match before considered Dutch
+                'threshold' => 3,
+
+                // PREG matchers which determine whether a name is dutch
+                'matchers' => [
+                    '#zoek#i',
+                    '#tekst#i',
+                    '#actie#i',
+                    '#kleur#i',
+                    '#pagina#i',
+                    '#persoon#i',
+                    '#algemeen#i',
+                    '#overzicht#i',
+                    '#instelling#i',
+                    '#beschrijving#i',
+                    '#configuratie#i',
+                ],
             ],
         ],
 

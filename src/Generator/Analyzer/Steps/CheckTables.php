@@ -112,7 +112,7 @@ class CheckTables extends AbstractProcessStep
         $modules = 0;
         $hits    = 0;
 
-        $matchers = config('pxlcms.generator.dutch-detection.matchers', []);
+        $matchers = config('pxlcms.generator.dutch-mode.detection.matchers', []);
 
         if (empty($matchers)) return;
 
@@ -135,7 +135,7 @@ class CheckTables extends AbstractProcessStep
         if ( ! $modules) return;
 
 
-        if (    $hits >= config('pxlcms.generator.dutch-detection.threshold', 3)
+        if (    $hits >= config('pxlcms.generator.dutch-mode.detection.threshold', 3)
             ||  $hits === $modules
         ) {
             $this->context->dutchNames = true;
