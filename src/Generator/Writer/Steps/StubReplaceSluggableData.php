@@ -30,6 +30,10 @@ class StubReplaceSluggableData extends AbstractProcessStep
             $rows['build_from'] = "'" . $setup['source'] . "'";
         }
 
+        if (array_get($setup, 'target')) {
+            $rows['save_to'] = "'" . $setup['target'] . "'";
+        }
+
         if (config('pxlcms.generator.models.slugs.resluggify_on_update')) {
             $rows['on_update'] = 'true';
         }

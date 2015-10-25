@@ -175,9 +175,16 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
         // pick the first sluggable source candidate and be done with it
         $this->context->output['models'][ $moduleId ]['sluggable'] = true;
         $this->context->output['models'][ $moduleId ]['sluggable_setup'] = [
-            'translated' => $candidate['translated'],
-            'source'     => $selectedSource,
+            'translated'  => $candidate['translated'],
+            'source'      => $selectedSource,
+            'target'      => $candidate['slug_column'],
         ];
+
+        $this->context->log(
+            "Picked Sluggable setup for '{$moduleName}': source: '{$selectedSource}',"
+            . " target: " . ($candidate['slug_column'] ? "'" . $candidate['slug_column'] . "'" : '(CMS slugs table)'),
+            Generator::LOG_LEVEL_INFO
+        );
     }
 
     /**
@@ -188,6 +195,8 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
      */
     protected function updateModelDataAutomatically($moduleId, array $candidate)
     {
+        $moduleName = array_get($this->context->output, 'models.' . $moduleId . '.name', 'Unknown');
+
         // if translated is still null, we are undecided, so pick one based on the
         // available sources (preferring translated candidates)
         if (is_null($candidate['translated'])) {
@@ -198,13 +207,30 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
             ?   head($candidate['slug_sources_translated'])
             :   head($candidate['slug_sources_normal']);
 
+        if (empty($selectedSource)) {
+
+            $this->context->log(
+                "Failed to automatically set slugs for '{$moduleName}'. "
+                . "No candidate for a source attribute despite target column candidate '{$candidate['slug_column']}'.",
+                Generator::LOG_LEVEL_WARNING
+            );
+            return;
+        }
 
         // pick the first sluggable source candidate and be done with it
         $this->context->output['models'][ $moduleId ]['sluggable'] = true;
         $this->context->output['models'][ $moduleId ]['sluggable_setup'] = [
             'translated' => $candidate['translated'],
             'source'     => $selectedSource,
+            'target'     => $candidate['slug_column'],
         ];
+
+
+        $this->context->log(
+            "Automatic Sluggable setup for '{$moduleName}': source: '{$selectedSource}',"
+            . " target: " . ($candidate['slug_column'] ? "'" . $candidate['slug_column'] . "'" : '(CMS slugs table)'),
+            Generator::LOG_LEVEL_INFO
+        );
     }
 
     /**
