@@ -181,6 +181,7 @@ class ModelWriter
                 : null,
             'cached'                => $model['cached'],
             'is_translated'         => false,
+            'is_translation'        => true,    // only true if it is a Translation model itself
             'is_listified'          => false,
             // attributes
             'normal_fillable'       => $model['translated_attributes'],

@@ -98,6 +98,7 @@ class AnalyzeModels extends AbstractProcessStep
             'table'                 => null,
             'cached'                => config('pxlcms.generator.models.enable_rememberable_cache'),
             'is_translated'         => false,
+            'is_translation'        => false,
             'is_listified'          => false,
             'timestamps'            => null,
             // attributes

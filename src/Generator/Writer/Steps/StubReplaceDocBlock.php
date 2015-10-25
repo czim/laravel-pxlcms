@@ -168,12 +168,25 @@ class StubReplaceDocBlock extends AbstractProcessStep
             ];
         }
 
+        // special scope for sluggable
+        if ($this->context->modelIsSluggable) {
+            $scopes[] = [
+                'name'       => 'whereSlug',
+                'parameters' => (array_get($this->data['sluggable_setup'], 'translated'))
+                    ?   [ '$slug', '$locale = null' ]
+                    :   [ '$slug' ],
+            ];
+        }
+
         foreach ($scopes as $scope) {
 
             $rows[] = [
                 'tag'  => 'method',
                 'type' => 'static ' . CmsModelWriter::FQN_FOR_BUILDER . '|' . studly_case($this->data['name']),
-                'name' => camel_case($scope['name']) . '($query)',
+                'name' => camel_case($scope['name'])
+                        . '('
+                        . (count($scope['parameters']) ? implode(', ', $scope['parameters']) : '')
+                        . ')',
             ];
         }
 

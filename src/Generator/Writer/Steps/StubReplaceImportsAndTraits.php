@@ -69,6 +69,12 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
             $this->context->importsNotUsed[] = CmsModelWriter::IMPORT_TRAIT_SCOPE_ORDER;
         }
 
+        // sluggable?
+        if ($this->context->modelIsSluggable) {
+            $traits[] = $this->context->getModelNameFromNamespace(
+                config('pxlcms.generator.models.slugs.sluggable_trait')
+            );
+        }
 
         if ( ! count($traits)) return '';
 
@@ -168,6 +174,13 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
 
         if (in_array(CmsModelWriter::IMPORT_TRAIT_SCOPE_ORDER, $imports)) {
             $importLines[] = config('pxlcms.generator.models.traits.scope_position_fqn');
+        }
+
+        // sluggable
+
+        if ($this->context->modelIsSluggable) {
+            $importLines[] = config('pxlcms.generator.models.slugs.sluggable_interface');
+            $importLines[] = config('pxlcms.generator.models.slugs.sluggable_trait');
         }
 
 

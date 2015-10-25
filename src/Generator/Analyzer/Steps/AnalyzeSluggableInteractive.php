@@ -188,9 +188,16 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
      */
     protected function updateModelDataAutomatically($moduleId, array $candidate)
     {
+        // if translated is still null, we are undecided, so pick one based on the
+        // available sources (preferring translated candidates)
+        if (is_null($candidate['translated'])) {
+            $candidate['translated'] = (bool) count($candidate['slug_sources_translated']);
+        }
+
         $selectedSource = ($candidate['translated'])
             ?   head($candidate['slug_sources_translated'])
             :   head($candidate['slug_sources_normal']);
+
 
         // pick the first sluggable source candidate and be done with it
         $this->context->output['models'][ $moduleId ]['sluggable'] = true;
@@ -341,7 +348,7 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
     protected function analyzeModelForSluggable(array $model)
     {
         $analysis = [
-            'translated'              => false,
+            'translated'              => null,
             'slug_column'             => null,
             'slug_sources_normal'     => [],
             'slug_sources_translated' => [],
@@ -377,10 +384,13 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
         $slugSources = config('pxlcms.generator.models.slugs.slug_source_columns', []);
 
         // make sure we keep slug and source column in the same model (translated or parent)
-        if ($analysis['translated']) {
-            $analysis['slug_sources_translated'] = array_values(array_intersect($slugSources, $model['translated_attributes']));
-        } else {
-            $analysis['slug_sources_normal'] = array_values(array_intersect($slugSources, $model['normal_attributes']));
+        $analysis['slug_sources_translated'] = array_values(array_intersect($slugSources, $model['translated_attributes']));
+        $analysis['slug_sources_normal']     = array_values(array_intersect($slugSources, $model['normal_attributes']));
+
+        if ($analysis['translated'] === true) {
+            $analysis['slug_sources_normal'] = [];
+        } elseif ($analysis === false) {
+            $analysis['slug_sources_translated'] = [];
         }
 
 

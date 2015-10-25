@@ -409,6 +409,16 @@ return [
                 // Default locale value to fill in for slugs that are not translated
                 // Use locales, not language IDs: 'nl' for language_id 116.
                 'untranslated_locale' => null,
+
+                // Whether the Sluggable 'on_update' config flag is set to true by default
+                // Note that it might be better to handle this through the published sluggable config!
+                'resluggify_on_update' => false,
+
+                // The FQN to the interface to implement on sluggable models
+                'sluggable_interface' => 'Cviebrock\EloquentSluggable\SluggableInterface',
+
+                // The FQN to the trait to use for sluggable models
+                'sluggable_trait' => 'Czim\PxlCms\Sluggable\SluggableTrait',
             ],
 
 

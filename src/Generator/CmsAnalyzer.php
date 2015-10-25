@@ -49,6 +49,7 @@ class CmsAnalyzer extends PipelineProcessor
             Steps\ResolveModuleNames::class,
             Steps\AnalyzeModels::class,
             Steps\UnsetRawData::class,
+            Steps\AnalyzeSluggableInteractive::class,
         ];
     }
 

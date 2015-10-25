@@ -63,6 +63,13 @@ class WriterContext extends AbstractProcessContext
      */
     public $imports = [];
 
+    /**
+     * Whether the model needs the full sluggable treatment (not true if separate translated model does!)
+     *
+     * @var bool
+     */
+    public $modelIsSluggable = false;
+
 
     /**
      * @param DataObjectInterface $data
