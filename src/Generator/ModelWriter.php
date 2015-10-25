@@ -121,13 +121,15 @@ class ModelWriter
 
         $this->log(
             "Models written: {$countWritten} of {$totalToWrite}"
-            . ($countTranslationsWritten ? " (and {$countTranslationsWritten} translation models)" : null),
+            . ($countTranslationsWritten ? " (and {$countTranslationsWritten} translation model"
+            . ($countTranslationsWritten != 1 ? 's' : '') . ")" : null),
             Generator::LOG_LEVEL_INFO
         );
 
         if ($countAlreadyExist) {
             $this->log(
-                "{$countAlreadyExist} models already had files and were not (over)written",
+                "{$countAlreadyExist} model" . ($countAlreadyExist != 1 ? 's' : '') . " already had files and "
+                . ($countAlreadyExist == 1 ? 'was' : 'were') . " not (over)written",
                 Generator::LOG_LEVEL_WARNING
             );
         }
