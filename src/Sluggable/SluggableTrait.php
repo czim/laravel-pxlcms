@@ -70,6 +70,12 @@ trait SluggableTrait
 
         $id = $model->findRecordIdForSlugFromCmsTable($slug, $locale);
 
+        // if it is translated, return by entry ID instead
+        if ($model->isTranslationModel()) {
+
+            return $model->where(config('pxlcms.translatable.translation_foreign_key'), $id)->first();
+        }
+
         return $model->find($id);
     }
 
