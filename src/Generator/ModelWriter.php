@@ -2,8 +2,8 @@
 namespace Czim\PxlCms\Generator;
 
 use Czim\PxlCms\Generator\Exceptions\ModelFileAlreadyExistsException;
-use Czim\PxlCms\Generator\Writer\CmsModelWriter;
-use Czim\PxlCms\Generator\Writer\WriterModelData;
+use Czim\PxlCms\Generator\Writer\Model\CmsModelWriter;
+use Czim\PxlCms\Generator\Writer\Model\WriterModelData;
 use InvalidArgumentException;
 
 /**

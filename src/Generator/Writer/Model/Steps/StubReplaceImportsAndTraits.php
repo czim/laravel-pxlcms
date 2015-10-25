@@ -1,7 +1,7 @@
 <?php
-namespace Czim\PxlCms\Generator\Writer\Steps;
+namespace Czim\PxlCms\Generator\Writer\Model\Steps;
 
-use Czim\PxlCms\Generator\Writer\CmsModelWriter;
+use Czim\PxlCms\Generator\Writer\Model\CmsModelWriter;
 
 /**
  * Should always be executed last, since only then do we know

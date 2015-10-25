@@ -1,15 +1,14 @@
 <?php
-namespace Czim\PxlCms\Generator\Writer\Steps;
+namespace Czim\PxlCms\Generator\Writer\Model\Steps;
 
 use Czim\Processor\Steps\AbstractProcessStep as CzimAbstractProcessStep;
-use Czim\PxlCms\Generator\Writer\WriterContext;
-use Czim\PxlCms\Generator\Writer\WriterModelData;
-
+use Czim\PxlCms\Generator\Writer\Model\ModelWriterContext;
+use Czim\PxlCms\Generator\Writer\Model\WriterModelData;
 
 abstract class AbstractProcessStep extends CzimAbstractProcessStep
 {
     /**
-     * @var WriterContext
+     * @var ModelWriterContext
      */
     protected $context;
 

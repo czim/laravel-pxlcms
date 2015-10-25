@@ -1,8 +1,8 @@
 <?php
-namespace Czim\PxlCms\Generator\Writer;
+namespace Czim\PxlCms\Generator\Writer\Model;
 
 use Czim\Processor\PipelineProcessor;
-use Czim\PxlCms\Generator\Writer\Steps;
+use Czim\PxlCms\Generator\Writer\Model\Steps;
 
 class CmsModelWriter extends PipelineProcessor
 {
@@ -27,7 +27,7 @@ class CmsModelWriter extends PipelineProcessor
 
     protected $databaseTransaction = false;
 
-    protected $processContextClass = WriterContext::class;
+    protected $processContextClass = ModelWriterContext::class;
 
     /**
      * Gathers the steps to pass the dataobject through as a collection

@@ -1,8 +1,8 @@
 <?php
-namespace Czim\PxlCms\Generator\Writer\Steps;
+namespace Czim\PxlCms\Generator\Writer\Model\Steps;
 
 use Czim\PxlCms\Generator\Generator;
-use Czim\PxlCms\Generator\Writer\CmsModelWriter;
+use Czim\PxlCms\Generator\Writer\Model\CmsModelWriter;
 use Czim\PxlCms\Models\CmsModel;
 
 class StubReplaceRelationData extends AbstractProcessStep

@@ -1,5 +1,5 @@
 <?php
-namespace Czim\PxlCms\Generator\Writer\Steps;
+namespace Czim\PxlCms\Generator\Writer\Model\Steps;
 
 class StubReplaceSluggableData extends AbstractProcessStep
 {

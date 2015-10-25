@@ -4,16 +4,12 @@ namespace Czim\PxlCms\Generator\Writer;
 use Czim\DataObject\Contracts\DataObjectInterface;
 use Czim\Processor\Contexts\AbstractProcessContext;
 use Czim\PxlCms\Generator\Generator;
-use Czim\PxlCms\Models\CmsModel;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 
-class WriterContext extends AbstractProcessContext
+abstract class WriterContext extends AbstractProcessContext
 {
-    const DEFAULT_STUB_FILE = 'model';
-
-
     /**
      * @var Application
      */
@@ -24,58 +20,12 @@ class WriterContext extends AbstractProcessContext
      */
     protected $files;
 
-
     /**
-     * FQN name of model
+     * FQN name of main class being written (model/subject)
      *
      * @var string
      */
     public $fqnName;
-
-    /**
-     * List of imports that aren't required for the model
-     *
-     * @var array
-     * @todo phase out
-     */
-    public $importsNotUsed = [];
-
-    /**
-     * Which of the standard special relationships models were used
-     * in this model's context
-     *
-     * @var array
-     */
-    public $standardModelsUsed = [];
-
-    /**
-     * Whether the rememberable trait is blocked for the model
-     *
-     * @var bool
-     */
-    public $blockRememberableTrait = false;
-
-    /**
-     * The 'use' imports to include
-     *
-     * @var array
-     * @todo phase in
-     */
-    public $imports = [];
-
-    /**
-     * Whether the model needs the full sluggable treatment (not true if separate translated model does!)
-     *
-     * @var bool
-     */
-    public $modelIsSluggable = false;
-
-    /**
-     * Whether the model is the parent of a translation model that is sluggable
-     *
-     * @var bool
-     */
-    public $modelIsParentOfSluggableTranslation = false;
 
 
     /**
@@ -120,8 +70,15 @@ class WriterContext extends AbstractProcessContext
      */
     protected function getStub()
     {
-        return __DIR__ . '/stubs/' . ($this->getSetting('stub') ?: self::DEFAULT_STUB_FILE) . '.stub';
+        return __DIR__ . '/stubs/' . ($this->getSetting('stub') ?: $this->getDefaultStubName()) . '.stub';
     }
+
+    /**
+     * Returns default name of stub (without extension)
+     *
+     * @return string
+     */
+    abstract protected function getDefaultStubName();
 
 
     // ------------------------------------------------------------------------------
@@ -151,55 +108,6 @@ class WriterContext extends AbstractProcessContext
         $parts = explode('\\', $namespace);
 
         return trim($parts[ count($parts) - 1 ]);
-    }
-
-    /**
-     * Returns the model name (FQN if not to be imported) for a standard model
-     * based on CmsModel const values for RELATION_TYPEs
-     *
-     * @param int $type
-     * @return string
-     */
-    public function getModelNamespaceForSpecialModel($type)
-    {
-        $typeName = $this->getConfigNameForStandardModelType($type);
-
-        if (    ! is_null($typeName)
-            &&  config('pxlcms.generator.models.include_namespace_of_standard_models')
-        ) {
-            return $this->getModelNameFromNamespace(config('pxlcms.generator.standard_models.' . $typeName));
-        }
-
-        return '\\' . config('pxlcms.generator.standard_models.' . $typeName);
-    }
-
-    /**
-     * Returns the special model type name used for config properties
-     * based on CmsModel const values for RELATION_TYPEs
-     *
-     * @param int $type
-     * @return null|string
-     */
-    protected function getConfigNameForStandardModelType($type)
-    {
-        switch ($type) {
-
-            case CmsModel::RELATION_TYPE_IMAGE:
-                return 'image';
-
-            case CmsModel::RELATION_TYPE_FILE:
-                return 'file';
-
-            case CmsModel::RELATION_TYPE_CATEGORY:
-                return 'category';
-
-            case CmsModel::RELATION_TYPE_CHECKBOX:
-                return 'checkbox';
-
-            // default omitted on purpose
-        }
-
-        return null;
     }
 
 
