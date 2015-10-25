@@ -245,7 +245,7 @@ return [
 
         // Which namespace to prepend for generated content
         'namespace' => [
-            'models'       => 'App\\Models\\Generated',   // todo reset to without Generated
+            'models'       => 'App\\Models',
             'requests'     => 'App\\Http\\Requests',
             'repositories' => 'App\\Repositories',
         ],
