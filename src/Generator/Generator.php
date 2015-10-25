@@ -38,7 +38,12 @@ class Generator
     /**
      * @var ModelWriter
      */
-    protected $writer;
+    protected $modelWriter;
+
+    /**
+     * @var RepositoryWriter
+     */
+    protected $repositoryWriter;
 
     /**
      * Whether to write output files
@@ -63,8 +68,9 @@ class Generator
         $this->write    = (bool) $write;
         $this->command  = $command;
 
-        $this->analyzer = new CmsAnalyzer($command);
-        $this->writer   = new ModelWriter();
+        $this->analyzer         = new CmsAnalyzer($command);
+        $this->modelWriter      = new ModelWriter();
+        $this->repositoryWriter = new RepositoryWriter();
     }
 
     /**
@@ -80,8 +86,18 @@ class Generator
             return true;
         }
 
-        $this->writer->setData($data->output);
-        $this->writer->writeFiles();
+
+        // write models
+        $this->modelWriter->setData($data->output);
+        $this->modelWriter->writeFiles();
+
+
+        // write repositories, if allowed to
+        if ( ! config('pxlcms.generator.repositories.skip')) {
+
+            $this->repositoryWriter->setData($data->output);
+            $this->repositoryWriter->writeFiles();
+        }
 
         return true;
     }

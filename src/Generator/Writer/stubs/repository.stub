@@ -1,0 +1,9 @@
+<?php
+namespace {{NAMESPACE}};
+{{USEIMPORTS}}
+{{DOCBLOCK}}
+class {{REPOSITORY_CLASSNAME}} extends {{EXTENDS}} {{IMPLEMENTS}}
+{
+    {{USETRAITS}}
+    {{MODEL_CLASSNAME_METHOD}}
+}

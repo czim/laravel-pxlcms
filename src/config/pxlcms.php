@@ -448,6 +448,36 @@ return [
 
         /*
         |--------------------------------------------------------------------------
+        | Repository Generation
+        |--------------------------------------------------------------------------
+        |
+        | Settings affecting automatic generation of Repository files.
+        |
+        */
+
+        'repositories' => [
+
+            // FQN for base repository class for generated repositories to extend
+            'extend_class' => "Czim\\Repository\\BaseRepository",
+
+            // Postfix model name with this to make repository name
+            'name_postfix' => 'Repository',
+
+            // Whether to skip repository analysis/writing altogether (will not ask any questions either)
+            'skip' => false,
+
+            // Whether to create a repository for each model generated
+            'create_for_all_models' => true,
+
+            // If not creating for all models, insert module IDs in this array to
+            // select which models/modules to create repositories for
+            // If none are set and interactive mode is disabled, no repositories will be written.
+            'create_for_models' => [],
+        ],
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Ignoring CMS content while analyzing generating
         |--------------------------------------------------------------------------
         |
