@@ -126,6 +126,7 @@ The following options are available:
 
 ```
 --auto      automatic mode, skips interactivity
+--dry-run   performs analysis and outputs data without writing any files
  -v         verbose mode, shows debug output
 ```
 
