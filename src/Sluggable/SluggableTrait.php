@@ -55,7 +55,12 @@ trait SluggableTrait
         return $this->getSlugFromCmsTable();
     }
 
-    public static function findBySlug($slug)
+    /**
+     * @param string $slug
+     * @param string $locale    optional, restrict search to given locale
+     * @return mixed
+     */
+    public static function findBySlug($slug, $locale = null)
     {
         $model = new static;
 
@@ -63,7 +68,7 @@ trait SluggableTrait
             return $model::findBySlug($slug);
         }
 
-        $id = $model->findRecordIdForSlugFromCmsTable($slug);
+        $id = $model->findRecordIdForSlugFromCmsTable($slug, $locale);
 
         return $model->find($id);
     }
@@ -197,10 +202,11 @@ trait SluggableTrait
      * Returns the entry/model ID for a given slug
      *
      * @param string $slug
+     * @param string $locale          the locale to limit for (if null, set limitToLanguage)
      * @param bool   $limitToLanguage if set, limits search to current language
      * @return int|null
      */
-    public function findRecordIdForSlugFromCmsTable($slug, $limitToLanguage = false)
+    public function findRecordIdForSlugFromCmsTable($slug, $locale = null, $limitToLanguage = false)
     {
         /** @var CmsModel|SluggableTrait $this */
 
@@ -209,9 +215,13 @@ trait SluggableTrait
             ->where(static::$slugsModuleKey, $this->getModuleNumber())
             ->where(static::$slugsColumn, $slug);
 
-        if ($limitToLanguage) {
+        if ($locale || $limitToLanguage) {
 
-            $existing->where(static::$slugsLanguageKey, $this->storeSlugForLanguageId());
+            if ($locale) {
+                $existing->where(static::$slugsLanguageKey, $this->lookUpLanguageIdForLocale($locale));
+            } else {
+                $existing->where(static::$slugsLanguageKey, $this->storeSlugForLanguageId());
+            }
         }
 
         $existing = $existing->orderBy('id', 'asc')
@@ -355,11 +365,9 @@ trait SluggableTrait
      */
     protected function isTranslationModel()
     {
-        $config      = $this->getSluggableConfig();
-        $languageKey = array_get($config, 'language_key');
-        $localeKey   = array_get($config, 'locale_key');
+        $config = $this->getSluggableConfig();
 
-        return ($languageKey || $localeKey);
+        return (array_get($config, 'language_key') || array_get($config, 'locale_key'));
     }
 
 }
