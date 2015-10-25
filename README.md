@@ -58,7 +58,7 @@ There are a few caveats:
     This offers the same functionality, but uses an adapter trait that uses the CMS .._ml table content.
 - By default, **rememberable** is added to every model, allowing you to cache queries with the `->remember()` method on any Eloquent Builder instance for the models.
 - **Listify** is used to handle the position column on the model. You should probably let the CMS handle things, but if you need it, it is available.
-- For slug handling **sluggable** is provided, through an adapter trait that uses the commonly used approach of using a `cms_slugs` table. (WIP) 
+- For slug handling **sluggable** is provided, through an adapter trait that uses the commonly used approach of using a `cms_slugs` table.
 
 See the configuration file for ways to change or disable the above.
 
@@ -110,8 +110,9 @@ This works mostly like the original Sluggify, with some exceptions:
 
 - Slugs may be stored in the `cms_slugs` table (which can be defined in the generator config).
   If so, the change is transparent when using Sluggable methods. 
-- Route model binding has not been tested yet, and might be broken (it may work, though, report back to me please). 
-
+- Route model binding should work just find, look it up in the Sluggable documentation.
+- The `findBy` method is now expanded with an optional `locale` parameter, wich limits slug searches to a specific locale/language: `findBy($slug, $locale = null)`.
+  Likewise, the `whereSlug` scope has an optional `locale` parameter.
 
 ## Running the Generator
 
@@ -130,13 +131,7 @@ The following options are available:
 
 ### Generator
 
-- slugs? look at the 'standardized' slug setup by Erik
-    - translatable by setting slugs on the translated models
-        - handle language_id stuff for lookups and saves -> locale on translation -> language_id ...
-        - maybe work something out with model -> slug -> translation.slug magic redirect ?
-    - add some means to use slugs in routing, if we can set it up easily
-        - either by model route binding and/or
-        - through a standardized slug-to-content lookup helper
+- sluggable: maybe work something out with model -> slug -> translation.slug magic redirect ?
 
 - detect typical cms_m#_languages table
     - configurable whether to automatically do this or interactively
