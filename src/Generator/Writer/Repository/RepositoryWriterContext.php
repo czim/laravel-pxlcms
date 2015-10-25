@@ -22,11 +22,21 @@ class RepositoryWriterContext extends WriterContext
      * @param string $name
      * @return string
      */
-    public function makeFqnForModelName($name)
+    public function makeFqnForRepositoryName($name)
     {
         return config('pxlcms.generator.namespace.repositories') . "\\"
              . studly_case($name)
              . config('pxlcms.generator.repositories.name_postfix');
     }
 
+    /**
+     * Build Fully Qualified Namespace for a model name
+     *
+     * @param string $name
+     * @return string
+     */
+    public function makeFqnForModelName($name)
+    {
+        return config('pxlcms.generator.namespace.models') . "\\" . studly_case($name);
+    }
 }

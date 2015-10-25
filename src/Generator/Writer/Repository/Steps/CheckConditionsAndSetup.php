@@ -11,7 +11,7 @@ class CheckConditionsAndSetup extends AbstractProcessStep
     {
         $this->data->output = [];
 
-        $name = $this->context->makeFqnForModelName( $this->data->name );
+        $name = $this->context->makeFqnForRepositoryName( $this->data->name );
 
         if (empty($name)) {
             throw new InvalidArgumentException("Empty name for repository, check the data parameter");

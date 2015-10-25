@@ -26,10 +26,9 @@ class CmsRepositoryWriter extends PipelineProcessor
     {
         return [
             Steps\CheckConditionsAndSetup::class,
-
-            //Steps\StubReplaceSimple::class,
+            Steps\StubReplaceSimple::class,
             //Steps\StubReplaceDocBlock::class,
-            //Steps\StubReplaceImportsAndTraits::class,
+            Steps\StubReplaceImportsAndTraits::class,
 
             Steps\WriteFile::class,
         ];
