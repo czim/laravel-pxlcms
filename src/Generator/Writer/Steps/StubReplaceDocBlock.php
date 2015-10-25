@@ -169,7 +169,7 @@ class StubReplaceDocBlock extends AbstractProcessStep
         }
 
         // special scope for sluggable
-        if ($this->context->modelIsSluggable) {
+        if ($this->context->modelIsSluggable || $this->context->modelIsParentOfSluggableTranslation) {
             $scopes[] = [
                 'name'       => 'whereSlug',
                 'parameters' => (array_get($this->data['sluggable_setup'], 'translated'))

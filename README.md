@@ -113,6 +113,9 @@ This works mostly like the original Sluggify, with some exceptions:
 - Route model binding should work just find, look it up in the Sluggable documentation.
 - The `findBy` method is now expanded with an optional `locale` parameter, wich limits slug searches to a specific locale/language: `findBy($slug, $locale = null)`.
   Likewise, the `whereSlug` scope has an optional `locale` parameter.
+- Translation models should be made Sluggable for multilingual slugs.
+  The translation's parent model will still implement the `SluggableInterface` and delegate the relevant calls to the translation model. 
+
 
 ## Running the Generator
 
@@ -130,8 +133,6 @@ The following options are available:
 ## To Do
 
 ### Generator
-
-- sluggable: maybe work something out with model -> slug -> translation.slug magic redirect ?
 
 - detect typical cms_m#_languages table
     - configurable whether to automatically do this or interactively

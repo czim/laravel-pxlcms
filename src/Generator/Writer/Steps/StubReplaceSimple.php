@@ -57,9 +57,9 @@ class StubReplaceSimple extends AbstractProcessStep
      */
     protected function getImplementsReplace()
     {
-        if ( ! $this->context->modelIsSluggable) return '';
+        if ( ! $this->context->modelIsSluggable && ! $this->context->modelIsParentOfSluggableTranslation) return '';
 
-        // if the model is sluggable, it needs to implement the interface
+        // if the model is sluggable (or the parent of), it needs to implement the interface
 
         return ' implements '
               . $this->context->getModelNameFromNamespace(
@@ -73,17 +73,24 @@ class StubReplaceSimple extends AbstractProcessStep
      */
     protected function determineIfModelIsSluggable()
     {
+        $this->context->modelIsSluggable                    = false;
+        $this->context->modelIsParentOfSluggableTranslation = false;
+
         // if the model is sluggable and not translated, or this is the actual translation
-        if (    $this->data['sluggable']
-            && (    ! isset($this->data->sluggable_setup['translated'])
+        if ($this->data['sluggable']) {
+
+            if (    ! isset($this->data->sluggable_setup['translated'])
                 ||  ! $this->data->sluggable_setup['translated']
                 ||  $this->data->is_translation
-                )
-        ) {
-            $this->context->modelIsSluggable = true;
-            return;
-        }
+            ) {
 
-        $this->context->modelIsSluggable = false;
+                $this->context->modelIsSluggable = true;
+
+            } else {
+                // this is the parent of a translated sluggable model
+
+                $this->context->modelIsParentOfSluggableTranslation = true;
+            }
+        }
     }
 }

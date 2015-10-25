@@ -71,8 +71,15 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
 
         // sluggable?
         if ($this->context->modelIsSluggable) {
+
             $traits[] = $this->context->getModelNameFromNamespace(
                 config('pxlcms.generator.models.slugs.sluggable_trait')
+            );
+
+        } elseif ($this->context->modelIsParentOfSluggableTranslation) {
+
+            $traits[] = $this->context->getModelNameFromNamespace(
+                config('pxlcms.generator.models.slugs.sluggable_translated_trait')
             );
         }
 
@@ -179,8 +186,14 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
         // sluggable
 
         if ($this->context->modelIsSluggable) {
+
             $importLines[] = config('pxlcms.generator.models.slugs.sluggable_interface');
             $importLines[] = config('pxlcms.generator.models.slugs.sluggable_trait');
+
+        } elseif($this->context->modelIsParentOfSluggableTranslation) {
+
+            $importLines[] = config('pxlcms.generator.models.slugs.sluggable_interface');
+            $importLines[] = config('pxlcms.generator.models.slugs.sluggable_translated_trait');
         }
 
 

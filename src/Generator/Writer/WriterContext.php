@@ -70,6 +70,13 @@ class WriterContext extends AbstractProcessContext
      */
     public $modelIsSluggable = false;
 
+    /**
+     * Whether the model is the parent of a translation model that is sluggable
+     *
+     * @var bool
+     */
+    public $modelIsParentOfSluggableTranslation = false;
+
 
     /**
      * @param DataObjectInterface $data

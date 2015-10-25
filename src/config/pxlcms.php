@@ -419,6 +419,9 @@ return [
 
                 // The FQN to the trait to use for sluggable models
                 'sluggable_trait' => 'Czim\PxlCms\Sluggable\SluggableTrait',
+
+                // The FQN to the trait to use for parent models of translation models that are sluggable
+                'sluggable_translated_trait' => 'Czim\PxlCms\Sluggable\SluggableTranslatedTrait',
             ],
 
 
