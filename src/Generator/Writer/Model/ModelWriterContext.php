@@ -6,7 +6,6 @@ use Czim\PxlCms\Models\CmsModel;
 
 class ModelWriterContext extends WriterContext
 {
-    const DEFAULT_STUB_FILE = 'model';
 
     /**
      * List of imports that aren't required for the model
