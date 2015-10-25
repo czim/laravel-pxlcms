@@ -64,6 +64,17 @@ class ModelWriterContext extends WriterContext
     }
 
     /**
+     * Build Fully Qualified Namespace for a model name
+     *
+     * @param string $name
+     * @return string
+     */
+    public function makeFqnForModelName($name)
+    {
+        return config('pxlcms.generator.namespace.models') . "\\" . studly_case($name);
+    }
+
+    /**
      * Returns the model name (FQN if not to be imported) for a standard model
      * based on CmsModel const values for RELATION_TYPEs
      *
@@ -77,7 +88,7 @@ class ModelWriterContext extends WriterContext
         if (    ! is_null($typeName)
             &&  config('pxlcms.generator.models.include_namespace_of_standard_models')
         ) {
-            return $this->getModelNameFromNamespace(config('pxlcms.generator.standard_models.' . $typeName));
+            return $this->getClassNameFromNamespace(config('pxlcms.generator.standard_models.' . $typeName));
         }
 
         return '\\' . config('pxlcms.generator.standard_models.' . $typeName);

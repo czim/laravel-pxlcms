@@ -81,39 +81,18 @@ abstract class WriterContext extends AbstractProcessContext
     abstract protected function getDefaultStubName();
 
 
-    // ------------------------------------------------------------------------------
-    //      Model-specific
-    // ------------------------------------------------------------------------------
-
     /**
-     * Build Fully Qualified Namespace for a model name
-     *
-     * @param string $name
-     * @return string
-     */
-    public function makeFqnForModelName($name)
-    {
-        return config('pxlcms.generator.namespace.models') . "\\" . studly_case($name);
-    }
-
-
-    /**
-     * Get the model name from a FQN
+     * Get the base class name from a FQN
      *
      * @param string $namespace
      * @return string
      */
-    public function getModelNameFromNamespace($namespace)
+    public function getClassNameFromNamespace($namespace)
     {
         $parts = explode('\\', $namespace);
 
         return trim($parts[ count($parts) - 1 ]);
     }
-
-
-    // ------------------------------------------------------------------------------
-    //      General
-    // ------------------------------------------------------------------------------
 
     /**
      * Get the full namespace name for a given class.

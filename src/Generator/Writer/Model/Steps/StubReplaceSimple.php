@@ -10,7 +10,7 @@ class StubReplaceSimple extends AbstractProcessStep
 
         $class = str_replace($this->context->getNamespace($name) . '\\', '', $name);
 
-        $extends = $this->context->getModelNameFromNamespace(config('pxlcms.generator.models.extend_model'));
+        $extends = $this->context->getClassNameFromNamespace(config('pxlcms.generator.models.extend_model'));
 
         $this->determineIfModelIsSluggable();
 
@@ -62,7 +62,7 @@ class StubReplaceSimple extends AbstractProcessStep
         // if the model is sluggable (or the parent of), it needs to implement the interface
 
         return ' implements '
-              . $this->context->getModelNameFromNamespace(
+              . $this->context->getClassNameFromNamespace(
                     config('pxlcms.generator.models.slugs.sluggable_interface')
                 );
     }

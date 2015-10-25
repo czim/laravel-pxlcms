@@ -25,7 +25,7 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
         $traits = [];
 
         if ($this->data['is_translated']) {
-            $traits[] = $this->context->getModelNameFromNamespace(
+            $traits[] = $this->context->getClassNameFromNamespace(
                 config('pxlcms.generator.models.traits.translatable_fqn')
             );
         } else {
@@ -33,10 +33,10 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
         }
 
         if ($this->data['is_listified']) {
-            $traits[] = $this->context->getModelNameFromNamespace(
+            $traits[] = $this->context->getClassNameFromNamespace(
                 config('pxlcms.generator.models.traits.listify_fqn')
             );
-            $traits[] = $this->context->getModelNameFromNamespace(
+            $traits[] = $this->context->getClassNameFromNamespace(
                 config('pxlcms.generator.models.traits.listify_constructor_fqn')
             );
         } else {
@@ -44,7 +44,7 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
         }
 
         if ( ! $this->context->blockRememberableTrait) {
-            $traits[] = $this->context->getModelNameFromNamespace(
+            $traits[] = $this->context->getClassNameFromNamespace(
                 config('pxlcms.generator.models.traits.rememberable_fqn')
             );
         } else {
@@ -54,7 +54,7 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
         // scopes
 
         if ($this->useScopeActive()) {
-            $traits[] = $this->context->getModelNameFromNamespace(
+            $traits[] = $this->context->getClassNameFromNamespace(
                 config('pxlcms.generator.models.traits.scope_active_fqn')
             );
         } else {
@@ -62,7 +62,7 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
         }
 
         if ($this->useScopePosition()) {
-            $traits[] = $this->context->getModelNameFromNamespace(
+            $traits[] = $this->context->getClassNameFromNamespace(
                 config('pxlcms.generator.models.traits.scope_position_fqn')
             );
         } else {
@@ -72,13 +72,13 @@ class StubReplaceImportsAndTraits extends AbstractProcessStep
         // sluggable?
         if ($this->context->modelIsSluggable) {
 
-            $traits[] = $this->context->getModelNameFromNamespace(
+            $traits[] = $this->context->getClassNameFromNamespace(
                 config('pxlcms.generator.models.slugs.sluggable_trait')
             );
 
         } elseif ($this->context->modelIsParentOfSluggableTranslation) {
 
-            $traits[] = $this->context->getModelNameFromNamespace(
+            $traits[] = $this->context->getClassNameFromNamespace(
                 config('pxlcms.generator.models.slugs.sluggable_translated_trait')
             );
         }
