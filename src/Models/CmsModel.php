@@ -202,10 +202,7 @@ class CmsModel extends Model
      */
     public function getCmsJoiningTable()
     {
-        $table = config('pxlcms.tables.references', 'cms_m_references');
-        //return $table . ' as ' . uniqid($table);
-        // todo: does not work.. how to add an alias for each unique relationship?
-        return $table;
+        return config('pxlcms.tables.references', 'cms_m_references');
     }
 
     /**
@@ -366,8 +363,6 @@ class CmsModel extends Model
 
         // add constraints
         $belongsToMany->wherePivot(config('pxlcms.relations.references.keys.field', 'from_field_id'), $fieldId);
-
-        // todo: add default sorting? autosort relation?
 
         return $belongsToMany;
     }

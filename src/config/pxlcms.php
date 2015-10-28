@@ -441,8 +441,6 @@ return [
                 // Whether to add @method static tags for whereProperty($value) type methods
                 // this can get quite spammy for models with many attributes
                 'tag_magic_where_methods_for_attributes' => false,
-
-                // todo: make and use a tag exception toggle for whereCategory special relation tags
             ],
         ],
 
