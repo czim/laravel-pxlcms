@@ -130,9 +130,13 @@ class CmsModel extends Model
         'add_new_at'  => 'bottom',
     ];
 
-    // global scope by default for:
-    // position
-    // active
+    /**
+     * The default configured CMS sorting clauses, in attribute => direction pairs
+     * Only relevant when not sorting by position / listify !
+     *
+     * @var array
+     */
+    protected $cmsOrderBy = [];
 
 
     // ------------------------------------------------------------------------------

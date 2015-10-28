@@ -228,6 +228,7 @@ class AnalyzeModels extends AbstractProcessStep
                 // references
 
                 case FieldType::TYPE_REFERENCE:
+                case FieldType::TYPE_REFERENCE_CROSS:
                 case FieldType::TYPE_REFERENCE_NEGATIVE:
 
                     // add foreign key if it is different than the targeted model name
@@ -398,7 +399,6 @@ class AnalyzeModels extends AbstractProcessStep
 
                 case FieldType::TYPE_RANGE:
                 case FieldType::TYPE_LOCATION:
-                case FieldType::TYPE_REFERENCE_CROSS:
                 default:
                     throw new Exception(
                         "Unknown/unhandled field type {$fieldData['field_type_id']} "
