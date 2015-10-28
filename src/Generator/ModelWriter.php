@@ -192,6 +192,7 @@ class ModelWriter
             'hidden'                => [],
             'casts'                 => [],
             'dates'                 => [],
+            'defaults'              => [],
             'normal_attributes'     => [],
             'translated_attributes' => [],
             'timestamps'            => null,

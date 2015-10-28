@@ -121,6 +121,7 @@ class LoadRawData extends AbstractProcessStep
                          'name', 'display_name',
                          'value_count', 'refers_to_module',
                          'multilingual', 'options',
+                         'default',
                      ] as $key
             ) {
                 $this->data->rawData['fields'][ $fieldId ][ $key ] = $fieldArray[ $key ];

@@ -107,6 +107,7 @@ class AnalyzeModels extends AbstractProcessStep
             'hidden'                => [],
             'casts'                 => [],
             'dates'                 => [],
+            'defaults'              => [],
             'normal_attributes'     => [],
             'translated_attributes' => [],
             // categories
@@ -444,6 +445,34 @@ class AnalyzeModels extends AbstractProcessStep
                         $this->model['normal_attributes'][] = $attributeName;
                         $this->model['normal_fillable'][]   = $attributeName;
                     }
+
+                    // if a default is set, store it
+                    if (    $fieldData['default'] !== null
+                        &&  $fieldData['default'] !== ''
+                    ) {
+
+                        $default = "'" . $fieldData['default'] . "'";
+
+                        if (array_key_exists($attributeName, $this->model['casts'])) {
+
+                            switch ($this->model['casts'][ $attributeName ]) {
+
+                                case 'boolean':
+                                    $default = ($fieldData['default'] == '1' || $fieldData['default'] == 'true') ? 'true' : 'false';
+                                    break;
+
+                                case 'integer':
+                                case 'float':
+                                    $default = $fieldData['default'];
+                                    break;
+
+                                // default omitted on purpose
+                            }
+                        }
+
+                        $this->model['defaults'][ $attributeName ] = $default;
+                    }
+
                     break;
 
                 case FieldType::TYPE_RANGE:
