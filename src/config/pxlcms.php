@@ -294,6 +294,7 @@ return [
 
                 'scope_active_fqn'        => "Czim\\PxlCms\\Models\\Scopes\\OnlyActive",
                 'scope_position_fqn'      => "Czim\\PxlCms\\Models\\Scopes\\PositionOrdered",
+                'scope_cmsordered_fqn'    => "Czim\\PxlCms\\Models\\Scopes\\CmsOrdered",
             ],
 
             // How to handle default/global scopes for models

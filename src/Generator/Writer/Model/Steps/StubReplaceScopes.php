@@ -8,7 +8,8 @@ class StubReplaceScopes extends AbstractProcessStep
 
     protected function process()
     {
-        $this->stubPregReplace('# *{{SCOPES}}\n?#i', $this->getScopesReplace());
+        $this->stubPregReplace('# *{{SCOPES}}\n?#i', $this->getScopesReplace())
+             ->stubPregReplace('# *{{CMSORDEREDCONFIG}}\n?#i', $this->getCmsOrderedConfigReplace());
     }
 
 
@@ -29,10 +30,30 @@ class StubReplaceScopes extends AbstractProcessStep
         }
 
         if ($this->useScopePosition()) {
-            $scopes['position_order'] = [
-                'name'   => $this->prefixScopeToName(config('pxlcms.generator.models.scopes.position_order_method', 'ordered')),
-                'return' => "\$query->orderBy(\$this->cmsPositionColumn)",
-            ];
+
+            if (count($this->data['ordered_by'])) {
+
+                $orderParts = "";
+
+                foreach ($this->data['ordered_by'] as $orderPart => $direction) {
+                    $orderParts .= "->orderBy(\$this->getTable() . '."
+                                 . $orderPart . "'"
+                                 . (strtolower($direction) !== 'asc' ? ", 'desc'" : null)
+                                 . ")";
+                }
+
+                $scopes['cms_order'] = [
+                    'name'   => $this->prefixScopeToName(config('pxlcms.generator.models.scopes.position_order_method', 'ordered')),
+                    'return' => "\$query" . $orderParts,
+                ];
+
+            } else {
+
+                $scopes['position_order'] = [
+                    'name'   => $this->prefixScopeToName(config('pxlcms.generator.models.scopes.position_order_method', 'ordered')),
+                    'return' => "\$query->orderBy(\$this->getTable() . '.' . \$this->cmsPositionColumn)",
+                ];
+            }
         }
 
 
@@ -53,6 +74,46 @@ class StubReplaceScopes extends AbstractProcessStep
                       . $this->tab() . "}\n"
                       . "\n";
         }
+
+        return $replace;
+    }
+
+    /**
+     * Returns the replace required depending on whether the CMS module has
+     * automatic sorting for defined columns
+     *
+     * @return string
+     */
+    protected function getCmsOrderedConfigReplace()
+    {
+        $orderColumns = $this->data['ordered_by'] ?: [];
+
+        if ( ! count($orderColumns)) return '';
+
+        // we only need to set a config if the scope method is global
+        if (config('pxlcms.generator.models.scopes.position_order') !== CmsModelWriter::SCOPE_GLOBAL) return '';
+
+
+        // align assignment signs by longest attribute
+        $longestLength = 0;
+
+        foreach ($orderColumns as $attribute => $direction) {
+
+            if (strlen($attribute) > $longestLength) {
+                $longestLength = strlen($attribute);
+            }
+        }
+
+        $replace = $this->tab() . "protected \$cmsOrderBy = [\n";
+
+        foreach ($orderColumns as $attribute => $direction) {
+
+            $replace .= $this->tab(2)
+                . "'" . str_pad($attribute . "'", $longestLength + 1)
+                . " => '" . $direction . "',\n";
+        }
+
+        $replace .= $this->tab() . "];\n\n";
 
         return $replace;
     }
