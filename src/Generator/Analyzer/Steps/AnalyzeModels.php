@@ -73,7 +73,6 @@ class AnalyzeModels extends AbstractProcessStep
 
         // for each model we have built up, generated reversed relationships
         $this->generateReversedRelationships();
-
     }
 
     /**
@@ -100,6 +99,7 @@ class AnalyzeModels extends AbstractProcessStep
             'is_translated'         => false,
             'is_translation'        => false,
             'is_listified'          => false,
+            'ordered_by'            => [],
             'timestamps'            => null,
             // attributes
             'normal_fillable'       => [],
@@ -127,6 +127,9 @@ class AnalyzeModels extends AbstractProcessStep
             'scope_position'  => null,   // config determines
         ];
 
+        // process manual/automatic sorting of entries
+        $this->processModuleSorting();
+
         // set overrides in model data
         $this->prepareModelOverrides();
 
@@ -146,6 +149,49 @@ class AnalyzeModels extends AbstractProcessStep
         $this->module    = [];
         $this->model     = [];
         $this->overrides = [];
+    }
+
+    /**
+     * Determines and stores information about the sorting configuration
+     * found for entries of the module
+     */
+    protected function processModuleSorting()
+    {
+        $this->model['is_listified'] = false;
+        $this->model['ordered_by']   = [];
+
+        // if there can be only 1 entry, it makes no sense to listify or order in any case
+        if ($this->module['max_entries'] == 1) {
+            return;
+        }
+
+        // if manually sorted, use listify and do not set sorting columns
+        if ($this->module['sort_entries_manually']) {
+            $this->model['is_listified'] = true;
+            return;
+        }
+
+        // if automatically sorted, check and extract the sorting columns
+        // listify is disabled by default, but may be overridden (might be useful some day)
+        $this->model['is_listified'] = false;
+
+        $sorting = trim(strtolower($this->module['sort_entries_by']));
+
+        if (empty($sorting)) return;
+
+        foreach (explode(',', $sorting) as $sortClauseString) {
+
+            if ( ! preg_match("#^\s*[`'](.*)[`']\s+(asc|desc)\s*$#i", $sortClauseString, $matches)) {
+                $this->context->log(
+                    "Could not interpret sorting clause '{$sortClauseString}' for module #{$this->moduleId}",
+                    Generator::LOG_LEVEL_ERROR
+                );
+                continue;
+            }
+
+            // store direction per column as key
+            $this->model['ordered_by'][ $matches[1] ] = $matches[2];
+        }
     }
 
     /**
@@ -186,7 +232,7 @@ class AnalyzeModels extends AbstractProcessStep
         // force listified?
         $listified = array_key_exists('listify', $this->overrides)
                    ?    (bool) $this->overrides['listify']
-                   :    ($this->module['max_entries'] != 1);
+                   :    $this->model['is_listified'];
 
 
         // override hidden attributes?

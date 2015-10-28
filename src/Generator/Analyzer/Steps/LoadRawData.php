@@ -64,6 +64,7 @@ class LoadRawData extends AbstractProcessStep
             foreach ([  'name', 'max_entries', 'is_custom',
                          'allow_create', 'allow_update', 'allow_delete',
                          'client_cat_control', 'max_cat_depth',
+                         'sort_entries_manually', 'sort_entries_by',
                          'section_id',
                          'override_table_name',
                      ] as $key

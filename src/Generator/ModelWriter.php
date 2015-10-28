@@ -185,6 +185,7 @@ class ModelWriter
             'is_translated'         => false,
             'is_translation'        => true,    // only true if it is a Translation model itself
             'is_listified'          => false,
+            'order_by'              => [],
             // attributes
             'normal_fillable'       => $model['translated_attributes'],
             'translated_fillable'   => [],
