@@ -571,21 +571,23 @@ return [
 
                     // Configuration per relationship of the model (references)
                     // Use camelCase notation for the names
-                    // todo: implement this
                     "relationships" => [
-
 
                         "yourRelationName" => [
                             // Force a different name for the relation
                             // Use camelCase notation, do not use a conflicting/existing attribute name
                             'name' => "overrideName",
+                            // Force a different name for the reverse of this relationship.
+                            "reverse_name" => "overrideReverseName",
                             // Do not create reverse relationships for this relation
                             "prevent_reverse" => true,
-                        ]
+                        ],
 
-                    ]
+                    ],
                 ],
-
+                
+            ],
+        ],
 
         /*
         |--------------------------------------------------------------------------

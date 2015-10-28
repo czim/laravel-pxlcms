@@ -136,6 +136,9 @@ class AnalyzeModels extends AbstractProcessStep
         // add module fields as attribute data
         $this->processModuleFields();
 
+        // override relationship data found while processing fields
+        $this->applyOverridesForRelationships();
+
         // save completely built up model to context
         $this->context->output['models'][ $moduleId ] = $this->model;
     }
@@ -341,7 +344,7 @@ class AnalyzeModels extends AbstractProcessStep
                         'count'    => $fieldData['value_count'],    // 0 for no limit
                         'field'    => $fieldId,
                         'negative' => false,
-                        'special'    => CmsModel::RELATION_TYPE_MODEL,
+                        'special'  => CmsModel::RELATION_TYPE_MODEL,
                     ];
                     break;
 
@@ -494,7 +497,6 @@ class AnalyzeModels extends AbstractProcessStep
             }
         }
 
-
         // enable timestamps?
         if (    config('pxlcms.generator.models.enable_timestamps_on_models_with_suitable_attributes')
             &&  in_array('created_at', $this->model['dates'])
@@ -502,6 +504,65 @@ class AnalyzeModels extends AbstractProcessStep
         ) {
             $this->model['timestamps'] = true;
         }
+    }
+
+    /**
+     * Applies overrides set in the config for analyzed relationships
+     */
+    protected function applyOverridesForRelationships()
+    {
+        $overrides = array_get($this->overrides, 'relationships');
+
+        if (empty($overrides)) return;
+
+        $removeRelations = [];
+
+        foreach ($overrides as $overrideName => $override) {
+
+            // find the relationship
+            foreach (['normal', 'image', 'file', 'checkbox'] as $type) {
+
+                foreach ($this->model['relationships'][ $type ] as $name => &$relationData) {
+
+                    if ($name === $overrideName) {
+
+                        // apply overrides and change the model data
+
+                        $newName        = array_get($override, 'name');
+                        $preventReverse = array_get($override, 'prevent_reverse', false);
+                        $reverseName    = array_get($override, 'reverse_name', false);
+
+                        if ($preventReverse) {
+                            $relationData['prevent_reverse'] = true;
+                        }
+
+                        if ( ! empty($reverseName)) {
+                            $relationData['reverse_name'] = $reverseName;
+                        }
+
+                        if ( ! empty($newName)) {
+
+                            $this->model['relationships'][ $type ][ $newName ] = $relationData;
+
+                            $removeRelations[] = $type . '.' . $overrideName;
+                            $removeRelations = array_diff($removeRelations, [ $newName ]);
+                        }
+
+
+                        $this->context->log(
+                            "Override applied for relationship {$overrideName} on module {$this->moduleId}."
+                        );
+
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        unset($relationData);
+
+        // remove now 'moved' relationships
+        array_forget($this->model['relationships'], $removeRelations);
     }
 
 
@@ -519,6 +580,15 @@ class AnalyzeModels extends AbstractProcessStep
                 if ($relationship['negative']) {
                     $this->context->log(
                         "Skipped negative relationship for reversing (model: {$modelFromKey} to "
+                        . "{$relationship['model']}, field: {$relationship['field']})"
+                    );
+                    continue;
+                }
+
+                // also skip any relationship we've overridden not to reverse
+                if (array_get($relationship, 'prevent_reverse')) {
+                    $this->context->log(
+                        "Skipped relationship for reversing due to override (model: {$modelFromKey} to "
                         . "{$relationship['model']}, field: {$relationship['field']})"
                     );
                     continue;
@@ -606,8 +676,12 @@ class AnalyzeModels extends AbstractProcessStep
                 }
 
 
+                if (array_get($relationship, 'reverse_name')) {
+                    // hard override is applied without any checks
 
-                if ($selfReference || $partOfMultiple) {
+                    $reverseName = $relationship['reverse_name'];
+
+                } elseif ($selfReference || $partOfMultiple) {
                     // self-referencing is an exception, since using the model name won't be useful
                     // part of multiple belongsto is an exception, to avoid duplicates
 
