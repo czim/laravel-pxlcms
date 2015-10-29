@@ -10,7 +10,8 @@ class StubReplaceAttributeData extends AbstractProcessStep
              ->stubPregReplace('# *{{TRANSLATED}}\n?#i', $this->getTranslatedReplace())
              ->stubPregReplace('# *{{HIDDEN}}\n?#i', $this->getHiddenReplace())
              ->stubPregReplace('# *{{CASTS}}\n?#i', $this->getCastsReplace())
-             ->stubPregReplace('# *{{DATES}}\n?#i', $this->getDatesReplace());
+             ->stubPregReplace('# *{{DATES}}\n?#i', $this->getDatesReplace())
+             ->stubPregReplace('# *{{DEFAULTS}}\n?#i', $this->getDefaultsReplace());
     }
 
 
@@ -106,6 +107,43 @@ class StubReplaceAttributeData extends AbstractProcessStep
         if ( ! count($attributes)) return '';
 
         return $this->getAttributePropertySection('dates', $attributes);
+    }
+
+    /**
+     * Returns the replacement for the default attributes placeholder
+     *
+     * @return string
+     */
+    protected function getDefaultsReplace()
+    {
+        if ( ! config('pxlcms.models.include_defaults')) return '';
+
+        $attributes = $this->data['defaults'] ?: [];
+
+        if ( ! count($attributes)) return '';
+
+        // align assignment signs by longest attribute
+        $longestLength = 0;
+
+        foreach ($attributes as $attribute => $default) {
+
+            if (strlen($attribute) > $longestLength) {
+                $longestLength = strlen($attribute);
+            }
+        }
+
+        $replace = $this->tab() . "protected \$attributes = [\n";
+
+        foreach ($attributes as $attribute => $default) {
+
+            $replace .= $this->tab(2)
+                . "'" . str_pad($attribute . "'", $longestLength + 1)
+                . " => " . $default . ",\n";
+        }
+
+        $replace .= $this->tab() . "];\n\n";
+
+        return $replace;
     }
 
 

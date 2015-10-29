@@ -9,6 +9,7 @@ class {{MODEL_CLASSNAME}} extends {{EXTENDS}} {{IMPLEMENTS}}
     {{TABLE}}
     {{TIMESTAMPS}}
 
+    {{DEFAULTS}}
     {{FILLABLE}}
     {{TRANSLATED}}
     {{HIDDEN}}

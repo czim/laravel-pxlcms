@@ -387,6 +387,8 @@ return [
                 'e_user_id',
             ],
 
+            // Whether to add default $attributes values for the model based on CMS Field defaults
+            'include_defaults' => true,
 
             // If slugs-functionality is enabled, this describes how the models should be analyzed
             'slugs' => [
