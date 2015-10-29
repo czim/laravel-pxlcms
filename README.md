@@ -133,6 +133,12 @@ The following options are available:
 
 ## To Do
 
+- low prio: defaults based on 'options' field column
+    - and perhaps auto_update for a timestamp replacement?
+            use consts on the model to set the updated at timestamp attribute
+            const UPDATED_AT = 'date_modified';
+
+
 ### Generator
 
 - detect typical cms_m#_languages table
