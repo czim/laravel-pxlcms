@@ -33,6 +33,8 @@ class LoadRawData extends AbstractProcessStep
              ->loadModules()
              ->loadFields()
              ->loadResizes();
+
+        $this->parseFieldOptionsJson();
     }
 
 
@@ -121,7 +123,7 @@ class LoadRawData extends AbstractProcessStep
                          'name', 'display_name',
                          'value_count', 'refers_to_module',
                          'multilingual', 'options',
-                         'default',
+                         'default', 'options',
                      ] as $key
             ) {
                 $this->data->rawData['fields'][ $fieldId ][ $key ] = $fieldArray[ $key ];
@@ -263,6 +265,23 @@ class LoadRawData extends AbstractProcessStep
     // ------------------------------------------------------------------------------
     //      Extra
     // ------------------------------------------------------------------------------
+
+    /**
+     * Parses json to array for fields with 'options' set
+     */
+    protected function parseFieldOptionsJson()
+    {
+        foreach ($this->data->rawData['fields'] as $fieldId => &$fieldData) {
+
+            $optionsJson = trim( $fieldData['options'] );
+
+            if (empty($optionsJson)) continue;
+
+            $fieldData['options'] = json_decode($optionsJson, true);
+        }
+
+        unset($fieldData);
+    }
 
     /**
      * @return $this
