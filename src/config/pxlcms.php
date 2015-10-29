@@ -21,10 +21,10 @@ return [
         'base_internal' => 'public',
 
         // Relative path to images from laravel/server root
-        'images' => 'cms_images',
+        'images' => 'cms_img',
 
         // Relative path to file uploads from laravel/server root
-        'files'  => 'cms_files',
+        'files'  => 'cms/uploads',
     ],
 
 
