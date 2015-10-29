@@ -63,7 +63,14 @@ class RepositoryWriter
         $countWritten             = 0;
         $countAlreadyExist        = 0;
 
-        foreach ($this->data['models'] as $model) {
+        foreach ($this->data['models'] as $modelId => $model) {
+
+            // determine whether we should write a repository for this model
+            if (    ! config('pxlcms.generator.repositories.create_for_all_models')
+                &&  ! in_array($modelId, config('pxlcms.generator.repositories.create_for_models', []))
+            ) {
+                continue;
+            }
 
             try {
 
