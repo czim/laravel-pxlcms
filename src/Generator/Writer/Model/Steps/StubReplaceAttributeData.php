@@ -116,7 +116,7 @@ class StubReplaceAttributeData extends AbstractProcessStep
      */
     protected function getDefaultsReplace()
     {
-        if ( ! config('pxlcms.models.include_defaults')) return '';
+        if ( ! config('pxlcms.generator.models.include_defaults')) return '';
 
         $attributes = $this->data['defaults'] ?: [];
 
