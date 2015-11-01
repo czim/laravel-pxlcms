@@ -27,6 +27,14 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
      */
     protected $overrides = [];
 
+    /**
+     * For non-candidate-based mode, the models that were chosen/set up by the
+     * user so far (so we can skip them in the next interaction loop iteration).
+     *
+     * @var array
+     */
+    protected $modelsDone = [];
+
 
     protected function process()
     {
@@ -41,6 +49,8 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
             return;
         }
 
+
+
         // analyze which models might be candidates for sluggable
         // note that it will have to keep track of whether it is a translated slug source
         $candidates = $this->findSluggableCandidateModels();
@@ -52,8 +62,17 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
 
         if ($this->isInteractive()) {
 
-            foreach ($candidates as $moduleId => $candidate) {
-                $this->updateModelDataInteractively($moduleId, $candidate);
+            if (config('pxlcms.generator.slugs.candidate_based')) {
+
+                foreach ($candidates as $moduleId => $candidate) {
+                    $this->updateModelDataInteractively($moduleId, $candidate);
+                }
+
+            } else {
+                // not candidate-based means: asking the user which models to set up sluggable for
+                // remember them and keep asking until the user chooses 'done/skip'
+
+                $this->doIterativeUserSelectionSetup();
             }
 
         } else {
@@ -63,6 +82,7 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
                 $this->updateModelDataAutomatically($moduleId, $candidate);
             }
         }
+
     }
 
 
@@ -71,17 +91,21 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
      *
      * @param int   $moduleId
      * @param array $candidate
+     * @param bool  $askToSetup
      */
-    protected function updateModelDataInteractively($moduleId, array $candidate)
+    protected function updateModelDataInteractively($moduleId, array $candidate, $askToSetup = true)
     {
         $moduleName = array_get($this->context->output, 'models.' . $moduleId . '.name', 'Unknown');
 
-        if ( ! $this->context->command->confirm(
-            "Module #{$moduleId} ('{$moduleName}') looks like it could be set up with Sluggify. Do so?"
-        )) {
-            return;
+        if ($askToSetup) {
+            if ( ! $this->context->command->confirm(
+                "Module #{$moduleId} ('{$moduleName}') looks like it could be set up with Sluggify. Do so?"
+            )) {
+                return;
+            }
+        } else {
+            $this->context->command->info("Setting up Sluggable for module #{$moduleId} ('{$moduleName}')");
         }
-
 
         // if a model has one sluggable column, ask a y/n for using it
         if ($candidate['slug_column']) {
@@ -231,6 +255,89 @@ class AnalyzeSluggableInteractive extends AbstractProcessStep
             . " target: " . ($candidate['slug_column'] ? "'" . $candidate['slug_column'] . "'" : '(CMS slugs table)'),
             Generator::LOG_LEVEL_INFO
         );
+    }
+
+    /**
+     * Runs through an iterative process wherein the user interactively selects available
+     * models to set up
+     */
+    protected function doIterativeUserSelectionSetup()
+    {
+
+        do {
+            $modelChoices = $this->getIterativeUserSelectionModeChoices();
+
+            if (empty($modelChoices)) return;
+
+            $choice = $this->context->command->choice(
+                "Choose a model to set up Sluggable for",
+                array_merge($modelChoices, [ 'stop' ])
+            );
+
+            if ($choice == 'stop') return;
+
+            if ( ! preg_match('#^(\d+):#', $choice, $matches)) return;
+
+            $moduleId = (int) $matches[1];
+
+            $candidate = $this->createCandidateArrayForIterativeUserSelection($moduleId);
+
+            $this->updateModelDataInteractively($moduleId, $candidate, false);
+
+        } while ( ! empty($choice));
+    }
+
+    /**
+     * Returns the choices for the iterative user model setup selection process,
+     * leaving out the ones already handled
+     */
+    protected function getIterativeUserSelectionModeChoices()
+    {
+        $choices = [];
+
+        foreach ($this->context->output['models'] as $id => $model) {
+            if (in_array($id, $this->modelsDone)) continue;
+
+            $choices[] = $id . ': ' . $model['name'];
+        }
+
+        ksort($choices);
+
+        return $choices;
+    }
+
+    /**
+     * Creates candidate array for handling sluggable interactive process for the user selection approach
+     *
+     * @param int $moduleId
+     * @return array
+     */
+    protected function createCandidateArrayForIterativeUserSelection($moduleId)
+    {
+        $candidate = [
+            'translated'              => null,
+            'slug_column'             => null,
+            'slug_sources_normal'     => $this->context->output['models'][ $moduleId ]['normal_attributes'],
+            'slug_sources_translated' => $this->context->output['models'][ $moduleId ]['translated_attributes'],
+        ];
+
+        if ( ! count($candidate['slug_sources_translated'])) {
+
+            $candidate['translated'] = false;
+
+        } elseif ( ! count($candidate['slug_sources_normal'])) {
+
+            $candidate['translated'] = true;
+
+        } else {
+            // ask the user
+            $candidate['translated'] = $this->context->command->choice(
+                    "Should the slug source be a translated attribute or not?",
+                    [ 'normal model attribute', 'translated attribute' ]
+                ) == 'translated attribute';
+        }
+
+        return $candidate;
     }
 
     /**

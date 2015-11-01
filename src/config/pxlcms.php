@@ -399,6 +399,10 @@ return [
                 // Whether slug handling is always interactive (overrides artisan command -i flag)
                 'interactive' => true,
 
+                // Whether interactive mode should go by what are procedurally considered 'candidates' for
+                // Sluggable. If this is false, the user gets to decide without the Generator's suggestions.
+                'candidate_based' => false,
+
                 // Which attributes/columns, if present, to consider candidates for sluggable source
                 // the order determines which one to pick first (if not using interactive command)
                 'slug_source_columns' => [
