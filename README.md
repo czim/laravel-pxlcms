@@ -45,7 +45,7 @@ There are a few caveats:
 - Foreign keys in CMS tables have the name of the property. They are named 'category', for instance, not 'category_id'.
   - This means that using `$model->category` on an unloaded relationship will **not** trigger the magic property since the attribute is present.
     You will get the ID integer instead.
-    To get around this, simply call the relation method itself (ie. `$model->category->first()`).  
+    To get around this, simply call the relation method itself (ie. `$model->category()->first()`).  
 - By default, all models are globally scoped to only include *active* records (`e_active = true`).
   - If you want to include inactive records, use the `withInactive()` scope (ie. something like `ModelName::withInactive()->get()`).
   - This depends on your pxlcms config settings, the behaviour may be changed. 
