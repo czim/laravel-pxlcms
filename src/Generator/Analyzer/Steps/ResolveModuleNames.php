@@ -85,7 +85,7 @@ class ResolveModuleNames extends AbstractProcessStep
 
         // did we fail? shoudn't happen, but you never know...
         if ($safeguard < 1) {
-            throw new Exception("Failed to resolve duplicate names for modules: " . print_r($duplicates));
+            throw new Exception("Failed to resolve duplicate names for modules: " . print_r($duplicates, true));
         }
 
 
