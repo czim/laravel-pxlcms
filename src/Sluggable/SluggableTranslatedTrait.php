@@ -1,10 +1,6 @@
 <?php
 namespace Czim\PxlCms\Sluggable;
 
-use Cviebrock\EloquentSluggable\SluggableInterface;
-use Dimsav\Translatable\Translatable;
-use Illuminate\Database\Eloquent\Builder;
-
 /**
  * To be used on a parent of a translation model that has the SluggableTrait.
  * This will redirect standard Sluggable operations to the translation model,
@@ -23,7 +19,7 @@ trait SluggableTranslatedTrait
      */
     public static function findBySlug($slug, $locale = null)
     {
-        /** @var Translatable $model */
+        /** @var \Dimsav\Translatable\Translatable $model */
         $model = (new static);
 
         /** @var SluggableTrait $translationModel */
@@ -40,9 +36,9 @@ trait SluggableTranslatedTrait
     /**
      * Scopes query for slug on translated attribute
      *
-     * @param Builder $query
-     * @param string  $slug
-     * @param string  $locale
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string                                $slug
+     * @param string                                $locale
      * @return $this|null
      */
     public function scopeWhereSlug($query, $slug, $locale = null)
@@ -60,8 +56,8 @@ trait SluggableTranslatedTrait
      */
     public function getSlug()
     {
-        /** @var Translatable $this */
-        /** @var SluggableInterface $translation */
+        /** @var \Dimsav\Translatable\Translatable $this */
+        /** @var \Cviebrock\EloquentSluggable\SluggableInterface $translation */
         $translation = $this->getTranslation();
 
         if (empty($translation)) return null;
@@ -77,8 +73,8 @@ trait SluggableTranslatedTrait
      */
     public function sluggify($force = false)
     {
-        /** @var Translatable $this */
-        /** @var SluggableInterface $translation */
+        /** @var \Dimsav\Translatable\Translatable $this */
+        /** @var \Cviebrock\EloquentSluggable\SluggableInterface $translation */
         $translation = $this->getTranslation();
 
         if ( ! empty($translation)) {
