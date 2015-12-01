@@ -315,6 +315,16 @@ class CmsModel extends Model
             }
         }
 
+        // If the relation name is the same (casing aside) as the foreign key attribute,
+        // we must make sure that the foreign key property is at least a key in the
+        // attributes array. If it is not, there will be recursive lookup problems
+        // where the attribute is never resolved and 'property does not exist' exceptions occur.
+        if (    snake_case($relation) == $foreignKey
+            &&  ! array_key_exists($foreignKey, $this->attributes)
+        ) {
+            $this->attributes[ $foreignKey ] = null;
+        }
+
         $belongsTo = parent::belongsTo($related, $foreignKey, $otherKey, $relation);
 
         // category relation must be filtered by module id
