@@ -194,12 +194,27 @@ trait SluggableTrait
         $existing = DB::table(static::$slugsTable)
             ->select([ 'id', static::$slugsColumn . ' as slug' ])
             ->where(static::$slugsModuleKey, $this->getModuleNumber())
-            ->where(static::$slugsEntryKey, $entryId)
-            ->where(static::$slugsLanguageKey, $languageId)
-            ->limit(1)
-            ->first();
+            ->where(static::$slugsEntryKey, $entryId);
 
-        if ( ! count($existing)) return null;
+        // if language is null, we need to take into account that some weird
+        // cms hook setups will use '0' or '' (and do not have nullable language columns)
+        if (is_null($languageId)) {
+
+            $existing = $existing->where(function($query) {
+                return $query->whereNull(static::$slugsLanguageKey)
+                    ->orWhere(static::$slugsLanguageKey, 0)
+                    ->orWhere(static::$slugsLanguageKey, '');
+            });
+
+        } else {
+
+            $existing = $existing->where(static::$slugsLanguageKey, $languageId);
+        }
+
+        $existing = $existing->limit(1)
+                             ->first();
+
+        if (empty($existing)) return null;
 
         return $existing;
     }
