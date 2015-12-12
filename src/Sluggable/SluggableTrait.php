@@ -116,7 +116,8 @@ trait SluggableTrait
             }
         );
 
-        return $scope->where(static::$slugsTable . '.' . static::$slugsColumn, $slug);
+        return $scope->where(static::$slugsTable . '.' . static::$slugsColumn, $slug)
+                     ->select($this->getTable() . '.*');
     }
 
 
