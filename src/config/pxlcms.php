@@ -165,6 +165,9 @@ return [
     // Set to 0 to disable caching
     'cache' => [
 
+        // CMS Languages
+        'languages' => 60,
+
         // Resizes for Images (looked up for images by fieldId)
         'resizes' => 60,
 

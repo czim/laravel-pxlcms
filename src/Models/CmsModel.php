@@ -626,7 +626,7 @@ class CmsModel extends Model
         $languageModel = static::$cmsLanguageModel;
 
         $language = $languageModel::where(config('pxlcms.translatable.locale_code_column'), $locale)
-            ->remember((config('pxlcms.cache.languages-ttl')))
+            ->remember((config('pxlcms.cache.languages', 15)))
             ->first();
 
         if (empty($language)) return null;
