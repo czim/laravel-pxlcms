@@ -44,7 +44,7 @@ trait SluggableTranslatedTrait
     public function scopeWhereSlug($query, $slug, $locale = null)
     {
         return $query->whereHas('translations', function ($query) use ($slug, $locale) {
-            return $query->whereSlug($slug, $locale);
+            return $query->whereSlug($slug, $locale, true);
         });
     }
 

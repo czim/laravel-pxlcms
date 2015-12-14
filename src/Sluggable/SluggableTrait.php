@@ -84,10 +84,11 @@ trait SluggableTrait
      *
      * @param Builder $scope
      * @param string  $slug
-     * @param string  $locale    if not set, matches for any locale
+     * @param string  $locale       if not set, matches for any locale
+     * @param bool    $forHasQuery  if true, the scope is part of a has relation subquery
      * @return mixed
      */
-    public function scopeWhereSlug($scope, $slug, $locale = null)
+    public function scopeWhereSlug($scope, $slug, $locale = null, $forHasQuery = false)
     {
         /** @var CmsModel|SluggableTrait $model */
         $model = new static;
@@ -117,7 +118,7 @@ trait SluggableTrait
         );
 
         return $scope->where(static::$slugsTable . '.' . static::$slugsColumn, $slug)
-                     ->select($this->getTable() . '.*');
+                     ->select($this->getTable() . '.' . ($forHasQuery ? 'id' : '*'));
     }
 
 
