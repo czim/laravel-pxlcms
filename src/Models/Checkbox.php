@@ -17,6 +17,7 @@ class Checkbox extends CmsModel
     public $timestamps = false;
 
     protected $fillable = [
+        'field_id',
         'choice',
     ];
 
