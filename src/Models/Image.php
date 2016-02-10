@@ -2,7 +2,6 @@
 namespace Czim\PxlCms\Models;
 
 use Czim\PxlCms\Helpers\Paths;
-use Illuminate\Database\Eloquent\Model;
 use Lookitsatravis\Listify\Listify;
 use Watson\Rememberable\Rememberable;
 
@@ -16,7 +15,7 @@ use Watson\Rememberable\Rememberable;
  * @property-read string $localPath
  * @property-read array  $resizes
  */
-class Image extends Model
+class Image extends CmsModel
 {
     use Listify,
         Rememberable;
