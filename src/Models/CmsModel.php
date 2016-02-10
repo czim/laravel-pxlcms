@@ -368,12 +368,22 @@ class CmsModel extends Model
             $table = $this->getCmsJoiningTable();
         }
 
-        $belongsToMany = parent::belongsToMany($related, $table, $foreignKey, $otherKey);
-
         $fieldId = $this->getCmsReferenceFieldId($relation);
         if (empty($fieldId)) {
             throw new InvalidArgumentException("No 'field' id configured for relation/reference: '{$relation}'!");
         }
+
+        // originally, it was possible to just get the parent's BelongsToMany instance, but
+        // to avoid problems when saving on the relationship, we need a specialized extension
+        // of the relation class for the CMS.
+        //$belongsToMany = parent::belongsToMany($related, $table, $foreignKey, $otherKey);
+
+        /** @var Model $instance */
+        $instance = new $related;
+
+        $query = $instance->newQuery();
+
+        $belongsToMany = new BelongsToMany($query, $this, $table, $foreignKey, $otherKey, $relation, $fieldId);
 
         // add constraints
         $belongsToMany->wherePivot(config('pxlcms.relations.references.keys.field', 'from_field_id'), $fieldId);
