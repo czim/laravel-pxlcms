@@ -2,6 +2,8 @@
 namespace Czim\PxlCms\Models;
 
 use Czim\PxlCms\Helpers\Paths;
+use Czim\PxlCms\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -14,6 +16,7 @@ use InvalidArgumentException;
  * Based on Eloquent, but with overrides and adaptations for accessing
  * PXL CMS database content.
  *
+ * @property int     $cmsModule
  * @property boolean $e_active
  * @property int     $e_position
  * @property int     $e_category_id
@@ -325,6 +328,7 @@ class CmsModel extends Model
             $this->attributes[ $foreignKey ] = null;
         }
 
+        /** @var Builder $belongsTo */
         $belongsTo = parent::belongsTo($related, $foreignKey, $otherKey, $relation);
 
         // category relation must be filtered by module id
@@ -414,6 +418,7 @@ class CmsModel extends Model
 
         $fieldId = $this->getCmsReferenceFieldId($relation);
 
+        /** @var Builder $hasMany */
         $hasMany = parent::hasMany($related, $foreignKey, $localKey)
             ->where($fieldKey, $fieldId);
 
@@ -452,6 +457,7 @@ class CmsModel extends Model
 
         $fieldId = $this->getCmsReferenceFieldId($relation);
 
+        /** @var Builder $hasOne */
         $hasOne = parent::hasOne($related, $foreignKey, $localKey)
             ->where($fieldKey, $fieldId);
 
@@ -573,11 +579,13 @@ class CmsModel extends Model
 
     /**
      * @param int $fieldId
+     * @return \Illuminate\Database\Eloquent\Collection|static[]
      */
     protected function getResizesForFieldId($fieldId)
     {
         $resizeModel = static::$cmsResizeModel;
 
+        /** @var Builder|\Watson\Rememberable\Query\Builder $resizes */
         $resizes = $resizeModel::where('field_id', (int) $fieldId);
 
         if ($cacheTime = config('pxlcms.cache.resizes')) {
@@ -623,6 +631,7 @@ class CmsModel extends Model
     {
         $locale = $this->normalizeLocale($locale);
 
+        /** @var Model $languageModel */
         $languageModel = static::$cmsLanguageModel;
 
         $language = $languageModel::where(config('pxlcms.translatable.locale_code_column'), $locale)
@@ -642,6 +651,7 @@ class CmsModel extends Model
      */
     public function lookupLocaleForLanguageId($languageId)
     {
+        /** @var Model $languageModel */
         $languageModel = static::$cmsLanguageModel;
 
         $language = $languageModel::find($languageId);
