@@ -9,6 +9,13 @@ class BelongsToMany extends EloquentBelongsToMany
 {
 
     /**
+     * The column name for the from field id
+     *
+     * @var string
+     */
+    protected static $fromFieldKey;
+
+    /**
      * The from_field_id in the cms_m_references table
      *
      * @var int|null
@@ -38,6 +45,10 @@ class BelongsToMany extends EloquentBelongsToMany
     ) {
         $this->fromFieldId = $fromFieldId;
 
+        if ( ! static::$fromFieldKey) {
+            static::$fromFieldKey = config('pxlcms.relations.references.keys.field', 'from_field_id');
+        }
+
         parent::__construct($query, $parent, $table, $foreignKey, $otherKey, $relationName);
     }
 
@@ -56,7 +67,7 @@ class BelongsToMany extends EloquentBelongsToMany
     public function save(Model $model, array $joining = [], $touch = true)
     {
         if (empty($joining) && $this->fromFieldId) {
-            $joining = [ 'from_field_id' => $this->fromFieldId ];
+            $joining = [ static::$fromFieldKey => $this->fromFieldId ];
         }
 
         return parent::save($model, $joining, $touch);
@@ -76,7 +87,7 @@ class BelongsToMany extends EloquentBelongsToMany
     protected function attacher($key, $value, $attributes, $timed)
     {
         if (empty($attributes)) {
-            $attributes = [ 'from_field_id' => $this->fromFieldId ];
+            $attributes = [ static::$fromFieldKey => $this->fromFieldId ];
         }
 
         return parent::attacher($key, $value, $attributes, $timed);
