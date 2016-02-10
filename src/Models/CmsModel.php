@@ -3,6 +3,8 @@ namespace Czim\PxlCms\Models;
 
 use Czim\PxlCms\Helpers\Paths;
 use Czim\PxlCms\Relations\BelongsToMany;
+use Czim\PxlCms\Relations\HasMany;
+use Czim\PxlCms\Relations\HasOne;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -429,8 +431,24 @@ class CmsModel extends Model
         $fieldId = $this->getCmsReferenceFieldId($relation);
 
         /** @var Builder $hasMany */
-        $hasMany = parent::hasMany($related, $foreignKey, $localKey)
-            ->where($fieldKey, $fieldId);
+        if (    $specialType === static::RELATION_TYPE_CHECKBOX
+            ||  $specialType === static::RELATION_TYPE_FILE
+            ||  $specialType === static::RELATION_TYPE_IMAGE
+        ) {
+            /** @var Model $instance */
+            $instance = new $related;
+
+            $localKey = $localKey ?: $this->getKeyName();
+
+            $hasMany = new HasMany($instance->newQuery(), $this, $instance->getTable().'.'.$foreignKey, $localKey);
+
+        } else {
+
+            $hasMany = parent::hasMany($related, $foreignKey, $localKey);
+        }
+
+        // add field key for wheres
+        $hasMany->where($fieldKey, $fieldId);
 
         // limit to selected locale, if translated
         if ($this->getCmsSpecialRelationTranslated($relation)) {
@@ -467,9 +485,32 @@ class CmsModel extends Model
 
         $fieldId = $this->getCmsReferenceFieldId($relation);
 
+        // create the correct hasOne, for special relations that must save field_id values
         /** @var Builder $hasOne */
-        $hasOne = parent::hasOne($related, $foreignKey, $localKey)
-            ->where($fieldKey, $fieldId);
+        if (    $specialType === static::RELATION_TYPE_CHECKBOX
+            ||  $specialType === static::RELATION_TYPE_FILE
+            ||  $specialType === static::RELATION_TYPE_IMAGE
+        ) {
+            /** @var Model $instance */
+            $instance = new $related;
+
+            $localKey = $localKey ?: $this->getKeyName();
+
+            $hasOne = new HasOne(
+                $instance->newQuery(),
+                $this,
+                $instance->getTable() . '.' . $foreignKey,
+                $localKey,
+                $fieldId
+            );
+
+        } else {
+
+            $hasOne = parent::hasOne($related, $foreignKey, $localKey);
+        }
+
+        // add field key for wheres
+        $hasOne->where($fieldKey, $fieldId);
 
         // limit to selected locale, if translated
         if ($this->getCmsSpecialRelationTranslated($relation)) {
