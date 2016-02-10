@@ -2,7 +2,6 @@
 namespace Czim\PxlCms\Models;
 
 use Czim\PxlCms\Helpers\Paths;
-use Illuminate\Database\Eloquent\Model;
 use Lookitsatravis\Listify\Listify;
 use Watson\Rememberable\Rememberable;
 
@@ -14,7 +13,7 @@ use Watson\Rememberable\Rememberable;
  * @property-read string $url
  * @property-read string $localPath
  */
-class File extends Model
+class File extends CmsModel
 {
     use Listify,
         Rememberable;
