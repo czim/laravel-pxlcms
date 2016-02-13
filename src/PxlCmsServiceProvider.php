@@ -44,7 +44,7 @@ class PxlCmsServiceProvider extends ServiceProvider
      */
     protected function registerPxlCmsGenerate()
     {
-        $this->app->bindShared('pxlcms.generate', function($app)
+        $this->app->singleton('pxlcms.generate', function($app)
         {
             return new Commands\GenerateCommand;
         });
