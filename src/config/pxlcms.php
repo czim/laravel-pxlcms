@@ -504,6 +504,32 @@ return [
 
         /*
         |--------------------------------------------------------------------------
+        | Protected names
+        |--------------------------------------------------------------------------
+        |
+        | Some names can or should not be used as class names, add them here.
+        |
+        */
+
+        'reserved' => [
+            'class',
+            'closure',
+            'directory',
+            'errorexception',
+            'exception',
+            'general',
+            'global',
+            'parent',
+            'private',
+            'protected',
+            'public',
+            'self',
+            'static',
+            'stdclass',
+        ],
+
+        /*
+        |--------------------------------------------------------------------------
         | Overriding Automatically Generated Content
         |--------------------------------------------------------------------------
         |
