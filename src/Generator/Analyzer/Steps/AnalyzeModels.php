@@ -140,6 +140,9 @@ class AnalyzeModels extends AbstractProcessStep
         // override relationship data found while processing fields
         $this->applyOverridesForRelationships();
 
+        // make sure we do not use a reserved class name
+        $this->checkForReservedClassName($this->model['name']);
+
         // save completely built up model to context
         $this->context->output['models'][ $moduleId ] = $this->model;
     }
@@ -807,6 +810,20 @@ class AnalyzeModels extends AbstractProcessStep
         });
 
         return $resizes;
+    }
+
+    /**
+     * Checks whether a given name is on the reserved list
+     *
+     * @param string $name
+     */
+    protected function checkForReservedClassName($name)
+    {
+        $name = trim(strtolower($name));
+
+        if (in_array($name, config('pxlcms.generator.reserved', []))) {
+            throw new \InvalidArgumentException("Cannot use {$name} as a module name, it is reserved!");
+        }
     }
 
     /**
