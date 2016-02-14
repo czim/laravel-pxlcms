@@ -148,7 +148,13 @@ class CheckTables extends AbstractProcessStep
      */
     protected function loadTableList()
     {
-        $tables = DB::select('SHOW TABLES');
+        if ($this->getDatabaseDriver() === 'sqlite') {
+            $statement = "SELECT name FROM sqlite_master WHERE type='table';";
+        } else {
+            $statement = 'SHOW TABLES';
+        }
+
+        $tables = DB::select($statement);
 
         $this->tables = [];
 
@@ -166,7 +172,13 @@ class CheckTables extends AbstractProcessStep
      */
     protected function loadColumnListForTable($table)
     {
-        $columnResults = DB::select("SHOW columns FROM `{$table}`");
+        if ($this->getDatabaseDriver() === 'sqlite') {
+            $statement = "PRAGMA table_info(`{$table}`)";
+        } else {
+            $statement = "SHOW columns FROM `{$table}`";
+        }
+
+        $columnResults = DB::select($statement);
         $columns       = [];
 
         foreach ($columnResults as $columnObject) {
@@ -176,4 +188,13 @@ class CheckTables extends AbstractProcessStep
 
         return $columns;
     }
+
+    /**
+     * @return string
+     */
+    protected function getDatabaseDriver()
+    {
+        return config('database.connections.' . config('database.default') . '.driver');
+    }
+
 }
