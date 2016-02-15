@@ -271,6 +271,25 @@ class Queries extends SqliteQueries implements QueriesInterface
               `e_user_id` smallint(5) unsigned NOT NULL,
               PRIMARY KEY (`id`)
             )',
+            'CREATE TABLE `cms_m40_news` (
+              `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+              `date` int(13) DEFAULT NULL,
+              `author` tinytext CHARACTER SET utf8 NOT NULL,
+              `e_active` tinyint(1) NOT NULL DEFAULT \'1\',
+              `e_position` int(11) unsigned NOT NULL,
+              `e_category_id` mediumint(8) unsigned DEFAULT NULL,
+              `e_user_id` smallint(5) unsigned NOT NULL,
+              PRIMARY KEY (`id`)
+            )',
+            'CREATE TABLE `cms_m40_news_ml` (
+              `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+              `entry_id` int(10) unsigned NOT NULL,
+              `language_id` mediumint(8) unsigned NOT NULL,
+              `name` tinytext CHARACTER SET utf8 NOT NULL,
+              `content` text CHARACTER SET utf8 NOT NULL,
+              PRIMARY KEY (`id`)
+            )',
+
         ];
     }
 

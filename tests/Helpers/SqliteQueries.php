@@ -242,6 +242,7 @@ class SqliteQueries implements QueriesInterface
 
             'CREATE TABLE `cms_m22_pages` (
               `id` integer primary key autoincrement,
+              `news` integer DEFAULT NULL,
               `e_active` tinyint(1) NOT NULL DEFAULT \'1\',
               `e_position` int(11) NOT NULL,
               `e_category_id` mediumint(8) DEFAULT NULL,
@@ -257,6 +258,22 @@ class SqliteQueries implements QueriesInterface
               `content` text,
               `seo_title` tinytext,
               `seo_description` tinytext not null
+            )',
+            'CREATE TABLE `cms_m40_news` (
+              `id` integer primary key autoincrement,
+              `date` int(13) DEFAULT NULL,
+              `author` tinytext,
+              `e_active` tinyint(1) NOT NULL DEFAULT \'1\',
+              `e_position` int(11) NOT NULL,
+              `e_category_id` mediumint(8) DEFAULT NULL,
+              `e_user_id` smallint(5) NOT NULL
+            )',
+            'CREATE TABLE `cms_m40_news_ml` (
+              `id` integer primary key autoincrement,
+              `entry_id` int(10) NOT NULL,
+              `language_id` mediumint(8) NOT NULL,
+              `name` tinytext,
+              `content` text
             )',
         ];
     }
@@ -344,8 +361,10 @@ class SqliteQueries implements QueriesInterface
 
             "INSERT INTO `cms_modules` (`id`, `section_id`, `name`, `introduction`, `position`, `max_entries`, `client_cat_control`, `max_cat_depth`, `sort_entries_manually`, `sort_entries_by`, `is_custom`, `custom_path`, `admin_only`, `icon_image`, `allow_create`, `allow_update`, `allow_delete`, `xml_access`, `custom_rendering`, `view_own_entries_only`, `searchable`, `allow_column_sorting`, `simulate_categories_for`, `hide_from_menu`, `csv_export`, `related_items_filter`, `search_referenced_identifiers`, `override_table_name`)
             VALUES
-            (1, 7, 'Slugs', '', 0, 0, 0, 0, 1, '', 0, '', 0, 'pi.gif', 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ''),
-            (22, 9, 'Pages', '', 6, 0, 0, 0, 1, '', 0, '', 0, 'book.gif', 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL)",
+                (1, 7, 'Slugs', '', 0, 0, 0, 0, 1, '', 0, '', 0, 'pi.gif', 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ''),
+                (22, 9, 'Pages', '', 6, 0, 0, 0, 1, '', 0, '', 0, 'book.gif', 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL),
+                (40, 16, 'News', '', 21, 0, 0, 0, 1, '', 0, '', 0, 'calendar.gif', 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL)
+            ",
 
             /*
              * Fields
@@ -360,7 +379,31 @@ class SqliteQueries implements QueriesInterface
                 (102, 22, 10, 0, 'Show In Menu', '', 0, 3, 0, NULL, '', 0, 4200, 570, 120, 0, 2, '', NULL, ''),
                 (101, 22, 18, 0, 'Content', '', 0, 2, 1, NULL, '', 0, 4050, 570, 120, 1, 1, '', NULL, ''),
                 (100, 22, 1, 0, 'Name', '', 0, 1, 1, NULL, '', 0, 3900, 570, 120, 1, 1, '', NULL, ''),
-                (99, 22, 1, 0, 'Title', '', 1, 0, 1, NULL, '', 0, 3750, 570, 120, 1, 1, '', NULL, '');
+                (99, 22, 1, 0, 'Title', '', 1, 0, 1, NULL, '', 0, 3750, 570, 120, 1, 1, '', NULL, ''),
+                (98, 22, 16, 0, 'News', '', 0, 5, 0, 40, '', 0, 4000, 570, 120, 1, 1, '', NULL, '')
+            ",
+
+
+            // slugs
+
+            "INSERT INTO `cms_fields` (`id`, `module_id`, `field_type_id`, `indexed`, `name`, `display_name`, `identifier`, `position`, `value_count`, `refers_to_module`, `help_text`, `render_x`, `render_y`, `render_dx`, `render_dy`, `multilingual`, `tab_id`, `custom_html`, `default`, `options`)
+            VALUES
+                (1, 1, 1, 0, 'Ref Module ID', '', 1, 1, 1, NULL, '', 0, 0, 0, 0, 0, 0, '', '', ''),
+                (2, 1, 1, 0, 'Entry ID', '', 1, 2, 1, NULL, '', 0, 0, 0, 0, 0, 0, '', '', ''),
+                (3, 1, 1, 0, 'Language ID', '', 1, 3, 1, NULL, '', 0, 0, 0, 0, 0, 0, '', '', ''),
+                (4, 1, 1, 0, 'Slug', '', 1, 4, 1, NULL, '', 0, 0, 0, 0, 0, 0, '', '', '')
+            ",
+
+            // news
+
+            "INSERT INTO `cms_fields` (`id`, `module_id`, `field_type_id`, `indexed`, `name`, `display_name`, `identifier`, `position`, `value_count`, `refers_to_module`, `help_text`, `render_x`, `render_y`, `render_dx`, `render_dy`, `multilingual`, `tab_id`, `custom_html`, `default`, `options`)
+            VALUES
+                (178, 40, 1, 0, 'Name', '', 1, 0, 1, NULL, '', 0, 15450, 570, 120, 1, 0, '', NULL, ''),
+                (181, 40, 29, 0, 'Date', '', 1, 1, 1, NULL, '', 0, 15900, 570, 120, 0, 0, '', NULL, '{\\\"include_time\\\":true,\\\"editable\\\":false,\\\"auto_update\\\":\\\"create\\\",\\\"default\\\":\\\"now\\\"}'),
+                (180, 40, 18, 0, 'Content', '', 0, 3, 1, NULL, '', 0, 15750, 570, 120, 1, 0, '', NULL, ''),
+                (182, 40, 6, 0, 'Image', '', 0, 2, 1, NULL, '', 0, 16050, 570, 120, 0, 0, '', NULL, ''),
+                (183, 40, 1, 0, 'Author', '', 1, 4, 1, NULL, '', 0, 16200, 570, 120, 0, 0, '', NULL, ''),
+                (185, 40, 17, 0, 'Relevant News', '', 0, 31, 0, 40, '', 0, 16350, 570, 120, 0, 0, '', NULL, '');
             ",
 
         ];
