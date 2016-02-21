@@ -39,6 +39,7 @@
     },
     "autoload-dev": {
         "psr-4": {
+            "Generated\\": "tests/Fixture/Generated",
             "Czim\\PxlCms\\Test\\": "tests"
         }
     },
