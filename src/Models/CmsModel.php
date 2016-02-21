@@ -574,6 +574,54 @@ class CmsModel extends Model
         return [ $foreignKey, $secondaryKey ];
     }
 
+    /**
+     * Returns value for either foreign key or eager loaded contents of relation,
+     * depending on what is expected
+     *
+     * This should not break calls to the belongsTo relation method, including after
+     * using the load() method to eager load the relation's contents
+     *
+     * @param string $key
+     * @return mixed
+     */
+    public function getBelongsToRelationAttributeValue($key)
+    {
+        if ($this->relationLoaded($key)) {
+
+            // check to make sure we don't break eager loading and internal
+            // lookups for the foreign key
+            $self = __FUNCTION__;
+
+            $caller = array_first(debug_backtrace(false), function ($key, $trace) use ($self) {
+                $caller = $trace['function'];
+
+                // skip first two (since that includes the Model's generated method)
+                if ($key < 2) {
+                    return false;
+                }
+
+                if ($trace['class'] === 'Illuminate\Database\Eloquent\Relations\BelongsTo') {
+                    return false;
+                }
+
+                return $caller != $self
+                    && $caller != 'mutateAttribute'
+                    && $caller != 'getAttributeValue'
+                    && $caller != 'getAttribute'
+                    && $caller != '__get';
+            });
+
+            if (    $caller['class'] !== 'Illuminate\Database\Eloquent\Model'
+                &&  $caller['class'] !== 'Illuminate\Database\Eloquent\Builder'
+                &&  $caller['class'] !== 'Illuminate\Database\Eloquent\Relations\Relation'
+            ) {
+                return $this->relations[$key];
+            }
+        }
+
+        return $this->attributes[$key];
+    }
+
 
     // ------------------------------------------------------------------------------
     //      Images

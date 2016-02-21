@@ -28,10 +28,7 @@ class StubReplaceAccessorsAndMutators extends AbstractProcessStep
 
             $attributeName = snake_case($name);
 
-            $content = $this->tab(2) . "if (isset(\$this->relations['{$attributeName}'])) {\n"
-                     . $this->tab(3) . "return \$this->relations['{$attributeName}'];\n"
-                     . $this->tab(2) . "}\n"
-                     . $this->tab(2) . "return \$this->attributes['{$attributeName}'];\n";
+            $content = $this->tab(2) . "return \$this->getBelongsToRelationAttributeValue('{$name}');\n";
 
             $accessors[ $name ] = [
                 'content' => $content,
