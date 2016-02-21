@@ -2,6 +2,7 @@
 
 [![Latest Version on Packagist][ico-version]][link-packagist]
 [![Software License][ico-license]](LICENSE.md)
+[![Build Status](https://travis-ci.org/czim/laravel-pxlcms.svg?branch=master)](https://travis-ci.org/czim/laravel-pxlcms)
 [![Latest Stable Version](http://img.shields.io/packagist/v/czim/laravel-pxlcms.svg)](https://packagist.org/packages/czim/laravel-pxlcms)
 
 PXL CMS Adapter for Laravel.
