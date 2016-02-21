@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Collection;
 
 class PxlCmsAdapterTest extends TestCase
 {
-    const GENERATED_CONTENT = __DIR__ . DIRECTORY_SEPARATOR . 'Generated';
-
 
     /**
      * @test
@@ -51,7 +49,7 @@ class PxlCmsAdapterTest extends TestCase
 
             $this->assertTrue($files->exists($file), "model file should exist");
 
-            $pregeneratedFile = static::GENERATED_CONTENT
+            $pregeneratedFile = $this->getGeneratedContentPath()
                               . DIRECTORY_SEPARATOR . 'Models'
                               . DIRECTORY_SEPARATOR . $model . '.php';
 
@@ -303,6 +301,16 @@ class PxlCmsAdapterTest extends TestCase
     protected function clearGenerated()
     {
         $this->app['files']->deleteDirectory($this->generatedPath);
+    }
+
+    /**
+     * Returns path to generated content
+     *
+     * @return string
+     */
+    protected function getGeneratedContentPath()
+    {
+        return __DIR__ . DIRECTORY_SEPARATOR . 'Generated';
     }
 
 }
