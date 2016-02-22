@@ -2,6 +2,10 @@
 namespace Czim\PxlCms\Test;
 
 use Czim\PxlCms\Generator\Generator;
+use Czim\PxlCms\Models\Checkbox;
+use Czim\PxlCms\Models\Image;
+use Generated\Models\News;
+use Generated\Models\Page;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -68,11 +72,11 @@ class PxlCmsAdapterTest extends TestCase
     {
         $this->seedDatabaseCmsContent();
 
-        $records = \Generated\Models\Page::all();
+        $records = Page::all();
 
         // 2 active, 3 with inactive
         $this->assertCount(2, $records);
-        $this->assertEquals(3, \Generated\Models\Page::withInactive()->count());
+        $this->assertEquals(3, Page::withInactive()->count());
 
         // check the order, by position, 3 should be first
         $this->assertEquals(3, $records->first()->id, "Position 1 page is not first");
@@ -98,9 +102,9 @@ class PxlCmsAdapterTest extends TestCase
      */
     function it_generates_models_that_can_save_data()
     {
-        $page = new \Generated\Models\Page();
+        $page = new Page();
 
-        $this->assertEquals(0, \Generated\Models\Page::count(), "Should be no models before creating");
+        $this->assertEquals(0, Page::count(), "Should be no models before creating");
 
         // basic attributes
         $page->e_user_id = 0;
@@ -133,10 +137,10 @@ class PxlCmsAdapterTest extends TestCase
         ]);
 
         // check if newly created model is returned correctly
-        $this->assertEquals(1, \Generated\Models\Page::count(), "Should be one new model after creating");
+        $this->assertEquals(1, Page::count(), "Should be one new model after creating");
 
-        /** @var \Generated\Models\Page $page */
-        $page = \Generated\Models\Page::find(1);
+        /** @var Page $page */
+        $page =Page::find(1);
 
         $this->assertInstanceOf('Generated\\Models\\Page', $page);
 
@@ -156,14 +160,14 @@ class PxlCmsAdapterTest extends TestCase
     {
         $this->seedDatabaseCmsContent();
 
-        /** @var \Generated\Models\Page $page */
-        $page = \Generated\Models\Page::withInactive()->with('news')->find(2);
+        /** @varPage $page */
+        $page = Page::withInactive()->with('news')->find(2);
 
         $this->assertInstanceOf('Generated\\Models\\Page', $page, "setup model not found");
         $this->assertEmpty($page->news, "should not have news relation yet");
 
         // create and associate belongsto item
-        $news = new \Generated\Models\News();
+        $news = new News();
 
         $news->content   = "new news test";
         $news->author    = "test author";
@@ -202,19 +206,19 @@ class PxlCmsAdapterTest extends TestCase
     {
         $this->seedDatabaseCmsContent();
 
-        /** @var \Generated\Models\News $news */
-        $news = \Generated\Models\News::find(2);
+        /** @var News $news */
+        $news = News::find(2);
 
         $this->assertInstanceOf('Generated\\Models\\News', $news, "setup model not found");
         $this->assertEmpty($news->relevantNews);
 
         // attach two new relevant news items
-        $relatedNewsA = new \Generated\Models\News();
+        $relatedNewsA = new News();
         $relatedNewsA->content   = "content A";
         $relatedNewsA->author    = "author A";
         $relatedNewsA->e_user_id = 0;
 
-        $relatedNewsB = new \Generated\Models\News();
+        $relatedNewsB = new News();
         $relatedNewsB->content   = "content B";
         $relatedNewsB->author    = "author B";
         $relatedNewsB->e_user_id = 0;
@@ -277,7 +281,45 @@ class PxlCmsAdapterTest extends TestCase
      */
     function it_generates_models_that_can_save_related_images()
     {
+        $this->seedDatabaseCmsContent();
 
+        // note that this does not take care of the upload itself, just the database record
+
+        /** @var News $news */
+        $news = News::find(1);
+
+        $this->assertEmpty($news->image()->get(), "setup situation should not have any images");
+
+        $image = new Image();
+
+        $image->file        = "test_file_name.png";
+        $image->extension   = ".png";
+        $image->caption     = "caption test";
+        $image->language_id = 0;
+        $image->uploaded    = \Carbon\Carbon::now();
+
+        $news->image()->save($image);
+
+        unset($image);
+
+        /** @var Image $image */
+        $image = $news->image()->first();
+
+        $this->assertInstanceOf('Czim\\PxlCms\\Models\\Image', $image, "image not retrievable through eloquent");
+
+        $this->seeInDatabase('cms_m_images', [
+            'entry_id'    => 1,
+            'field_id'    => 182,
+            'language_id' => 0,
+            'file'        => 'test_file_name.png',
+            'extension'   => '.png',
+            'caption'     => 'caption test',
+        ]);
+
+        $this->assertEquals('http://localhost/cms_img/test_file_name.png', $image->url);
+
+        // uploaded date should be set correctly
+        $this->assertEquals(date('Y-m-d'), $image->uploaded->format('Y-m-d'), "uploaded date not set correctly");
     }
 
     /**
@@ -285,7 +327,28 @@ class PxlCmsAdapterTest extends TestCase
      */
     function it_generates_models_that_can_save_related_checkboxes()
     {
+        $this->seedDatabaseCmsContent();
 
+        /** @var Page $page */
+        $page = Page::find(1);
+
+        $checkbox = new Checkbox();
+        $checkbox->choice = "checkbox test";
+
+        $page->showInMenu()->save($checkbox);
+
+        unset($checkbox);
+
+        /** @var Checkbox $checkbox */
+        $checkbox = $page->showInMenu()->first();
+
+        $this->assertInstanceOf('Czim\\PxlCms\\Models\\Checkbox', $checkbox, "checkbox not retrievable through eloquent");
+
+        $this->seeInDatabase('cms_m_checkboxes', [
+            'entry_id' => 1,
+            'field_id' => 102,
+            'choice'   => 'checkbox test',
+        ]);
     }
 
 
