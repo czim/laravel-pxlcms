@@ -440,7 +440,13 @@ class CmsModel extends Model
 
             $localKey = $localKey ?: $this->getKeyName();
 
-            $hasMany = new HasMany($instance->newQuery(), $this, $instance->getTable().'.'.$foreignKey, $localKey);
+            $hasMany = new HasMany(
+                $instance->newQuery(),
+                $this, $instance->getTable() . '.' . $foreignKey,
+                $localKey,
+                $fieldId,
+                $specialType
+            );
 
         } else {
 
@@ -501,7 +507,8 @@ class CmsModel extends Model
                 $this,
                 $instance->getTable() . '.' . $foreignKey,
                 $localKey,
-                $fieldId
+                $fieldId,
+                $specialType
             );
 
         } else {
