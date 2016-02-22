@@ -8,12 +8,14 @@ use Watson\Rememberable\Rememberable;
 /**
  * Can use Listify out of the box because images uses 'position' column
  *
- * @property string $file
- * @property string $caption
- * @property string $extension
- * @property-read string $url
- * @property-read string $localPath
- * @property-read array  $resizes
+ * @property string         $file
+ * @property string         $caption
+ * @property string         $extension
+ * @property integer        $language_id
+ * @property \Carbon\Carbon $uploaded
+ * @property-read string    $url
+ * @property-read string    $localPath
+ * @property-read array     $resizes
  */
 class Image extends CmsModel
 {

@@ -10,6 +10,7 @@ use Watson\Rememberable\Rememberable;
  *
  * @property string $file
  * @property string $extension
+ * @property \Carbon\Carbon $uploaded
  * @property-read string $url
  * @property-read string $localPath
  */
