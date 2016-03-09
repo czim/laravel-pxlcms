@@ -5,6 +5,7 @@ use Czim\PxlCms\Helpers\Paths;
 use Czim\PxlCms\Relations\BelongsToMany;
 use Czim\PxlCms\Relations\HasMany;
 use Czim\PxlCms\Relations\HasOne;
+use DateTime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
@@ -142,6 +143,46 @@ class CmsModel extends Model
      * @var array
      */
     protected $cmsOrderBy = [];
+
+
+    // ------------------------------------------------------------------------------
+    //      Date adjustments for Unix Timestamp storage
+    // ------------------------------------------------------------------------------
+
+
+    /**
+     * Return a timestamp as DateTime object.
+     *
+     * @inheritdoc
+     */
+    protected function asDateTime($value)
+    {
+        if (0 === $value || null === $value) {
+            return null;
+        }
+
+        return parent::asDateTime($value);
+    }
+
+    /**
+     * Convert the model's attributes to an array.
+     *
+     * @inheritdoc
+     */
+    public function attributesToArray()
+    {
+        // unset date values that are 0, so they don't cause problems with serializeDate()
+        foreach ($this->getDates() as $key) {
+            if ( ! isset($this->attributes[$key])) continue;
+
+            // 0 should be considered 'unset' aswell
+            if (0 === $this->attributes[$key]) {
+                $this->attributes[$key] = null;
+            }
+        }
+
+        return parent::attributesToArray();
+    }
 
 
     // ------------------------------------------------------------------------------
