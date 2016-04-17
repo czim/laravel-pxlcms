@@ -3,6 +3,7 @@ namespace Czim\PxlCms\Generator\Analyzer;
 
 use Czim\DataObject\Contracts\DataObjectInterface;
 use Czim\Processor\Contexts\AbstractProcessContext;
+use Czim\Processor\Contracts\ProcessorInterface;
 use Czim\PxlCms\Generator\FieldType;
 use Czim\PxlCms\Generator\Generator;
 use Illuminate\Console\Command;
@@ -57,10 +58,11 @@ class AnalyzerContext extends AbstractProcessContext
     /**
      * @param DataObjectInterface $data
      * @param array|null          $settings
+     * @param ProcessorInterface  $processor
      */
-    public function __construct(DataObjectInterface $data, array $settings = null)
+    public function __construct(DataObjectInterface $data, array $settings = null, ProcessorInterface $processor = null)
     {
-        parent::__construct($data, $settings);
+        parent::__construct($data, $settings, $processor);
 
         $this->fieldType = new FieldType();
     }

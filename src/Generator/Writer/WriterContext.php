@@ -3,6 +3,7 @@ namespace Czim\PxlCms\Generator\Writer;
 
 use Czim\DataObject\Contracts\DataObjectInterface;
 use Czim\Processor\Contexts\AbstractProcessContext;
+use Czim\Processor\Contracts\ProcessorInterface;
 use Czim\PxlCms\Generator\Generator;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
@@ -31,10 +32,11 @@ abstract class WriterContext extends AbstractProcessContext
     /**
      * @param DataObjectInterface $data
      * @param array|null          $settings
+     * @param ProcessorInterface  $processor
      */
-    public function __construct(DataObjectInterface $data, array $settings = null)
+    public function __construct(DataObjectInterface $data, array $settings = null, ProcessorInterface $processor = null)
     {
-        parent::__construct($data, $settings);
+        parent::__construct($data, $settings, $processor);
 
         $this->files   = app(Filesystem::class);
         $this->laravel = app(Application::class);
