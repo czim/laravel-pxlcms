@@ -648,7 +648,7 @@ class CmsModel extends Model
                     return false;
                 }
 
-                if ($trace['class'] === 'Illuminate\Database\Eloquent\Relations\BelongsTo') {
+                if (array_get($trace, 'class') === 'Illuminate\Database\Eloquent\Relations\BelongsTo') {
                     return false;
                 }
 
@@ -659,7 +659,8 @@ class CmsModel extends Model
                     && $caller != '__get';
             });
 
-            if (    $caller['class'] !== 'Illuminate\Database\Eloquent\Model'
+            if (    array_key_exists('class', $caller)
+                &&  $caller['class'] !== 'Illuminate\Database\Eloquent\Model'
                 &&  $caller['class'] !== 'Illuminate\Database\Eloquent\Builder'
                 &&  $caller['class'] !== 'Illuminate\Database\Eloquent\Relations\Relation'
             ) {
