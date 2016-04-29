@@ -659,10 +659,11 @@ class CmsModel extends Model
                     && $caller != '__get';
             });
 
-            if (    array_key_exists('class', $caller)
-                &&  $caller['class'] !== 'Illuminate\Database\Eloquent\Model'
-                &&  $caller['class'] !== 'Illuminate\Database\Eloquent\Builder'
-                &&  $caller['class'] !== 'Illuminate\Database\Eloquent\Relations\Relation'
+            if (    ! array_key_exists('class', $caller)
+                ||  (   $caller['class'] !== 'Illuminate\Database\Eloquent\Model'
+                    &&  $caller['class'] !== 'Illuminate\Database\Eloquent\Builder'
+                    &&  $caller['class'] !== 'Illuminate\Database\Eloquent\Relations\Relation'
+                    )
             ) {
                 return $this->relations[$key];
             }
