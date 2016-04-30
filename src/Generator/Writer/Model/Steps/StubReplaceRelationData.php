@@ -81,46 +81,7 @@ class StubReplaceRelationData extends AbstractProcessStep
      */
     protected function getRelationsConfigReplace()
     {
-        // only for many to many relationships
-        $relationships = [];
-
-        foreach ($this->data['relationships']['normal'] as $name => $relationship) {
-            if ($relationship['type'] != Generator::RELATIONSHIP_BELONGS_TO_MANY) continue;
-
-            $relationship['reverse'] = true;
-            $relationships[ $name ]  = $relationship;
-        }
-
-        foreach ($this->data['relationships']['reverse'] as $name => $relationship) {
-            if ($relationship['type'] != Generator::RELATIONSHIP_BELONGS_TO_MANY) continue;
-
-            $relationship['reverse'] = false;
-            $relationships[ $name ]  = $relationship;
-        }
-
-        foreach ($this->data['relationships']['image'] as $name => $relationship) {
-            $relationship['special']       = CmsModel::RELATION_TYPE_IMAGE;
-            $relationship['specialString'] = 'self::RELATION_TYPE_IMAGE';
-            $relationships[ $name ] = $relationship;
-        }
-
-        foreach ($this->data['relationships']['file'] as $name => $relationship) {
-            $relationship['special']       = CmsModel::RELATION_TYPE_FILE;
-            $relationship['specialString'] = 'self::RELATION_TYPE_FILE';
-            $relationships[ $name ] = $relationship;
-        }
-
-        foreach ($this->data['relationships']['checkbox'] as $name => $relationship) {
-            $relationship['special']       = CmsModel::RELATION_TYPE_CHECKBOX;
-            $relationship['specialString'] = 'self::RELATION_TYPE_CHECKBOX';
-            $relationships[ $name ] = $relationship;
-        }
-
-        foreach ($this->data['relationships']['category'] as $name => $relationship) {
-            $relationship['special']       = CmsModel::RELATION_TYPE_CATEGORY;
-            $relationship['specialString'] = 'self::RELATION_TYPE_CATEGORY';
-            $relationships[ $name ] = $relationship;
-        }
+        $relationships = $this->collectRelationshipDataForConfig();
 
         if ( ! count($relationships)) return '';
 
@@ -165,6 +126,54 @@ class StubReplaceRelationData extends AbstractProcessStep
         return $replace;
     }
 
+    /**
+     * @return array
+     */
+    protected function collectRelationshipDataForConfig()
+    {
+        $relationships = [];
+
+        foreach ($this->data['relationships']['normal'] as $name => $relationship) {
+            if ($relationship['type'] != Generator::RELATIONSHIP_BELONGS_TO_MANY) continue;
+
+            $relationship['reverse'] = true;
+            $relationships[ $name ]  = $relationship;
+        }
+
+        foreach ($this->data['relationships']['reverse'] as $name => $relationship) {
+            if ($relationship['type'] != Generator::RELATIONSHIP_BELONGS_TO_MANY) continue;
+
+            $relationship['reverse'] = false;
+            $relationships[ $name ]  = $relationship;
+        }
+
+        foreach ($this->data['relationships']['image'] as $name => $relationship) {
+            $relationship['special']       = CmsModel::RELATION_TYPE_IMAGE;
+            $relationship['specialString'] = 'self::RELATION_TYPE_IMAGE';
+            $relationships[ $name ] = $relationship;
+        }
+
+        foreach ($this->data['relationships']['file'] as $name => $relationship) {
+            $relationship['special']       = CmsModel::RELATION_TYPE_FILE;
+            $relationship['specialString'] = 'self::RELATION_TYPE_FILE';
+            $relationships[ $name ] = $relationship;
+        }
+
+        foreach ($this->data['relationships']['checkbox'] as $name => $relationship) {
+            $relationship['special']       = CmsModel::RELATION_TYPE_CHECKBOX;
+            $relationship['specialString'] = 'self::RELATION_TYPE_CHECKBOX';
+            $relationships[ $name ] = $relationship;
+        }
+
+        foreach ($this->data['relationships']['category'] as $name => $relationship) {
+            $relationship['special']       = CmsModel::RELATION_TYPE_CATEGORY;
+            $relationship['specialString'] = 'self::RELATION_TYPE_CATEGORY';
+            $relationships[ $name ] = $relationship;
+        }
+
+        return $relationships;
+    }
+
 
     /**
      * Returns the replacement for the relationships placeholder
@@ -173,47 +182,113 @@ class StubReplaceRelationData extends AbstractProcessStep
      */
     protected function getRelationshipsReplace()
     {
-        $relationships = array_merge(
-            $this->data['relationships']['normal'],
-            $this->data['relationships']['reverse']
-        );
-
-        $totalCount = count($relationships)
-                    + count( $this->data['relationships']['image'] )
-                    + count( $this->data['relationships']['file'] )
-                    + count( $this->data['relationships']['checkbox'] )
-                    + count( $this->data['relationships']['category'] );
+        $totalCount = $this->getTotalRelevantRelationshipCount();
 
         if ( ! $totalCount) return '';
 
-
-        $replace = "\n" . $this->tab() . "/*\n"
-                 . $this->tab() . " * Relationships\n"
-                 . $this->tab() . " */\n\n";
+        $replace = "\n" . $this->getRelationshipsIntro();
 
 
-        /*
-         * Normal and Reversed relationships
-         */
+        $replace .= $this->getReplaceForNormalRelationships()
+                  . $this->getReplaceForSpecialRelationships();
+
+        return $replace;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getCombinedRelationships()
+    {
+        return array_merge(
+            $this->data['relationships']['normal'],
+            $this->data['relationships']['reverse']
+        );
+    }
+
+    /**
+     * Returns the number of relationships to be considered
+     * for building up the stub replacement.
+     *
+     * @return mixed
+     */
+    protected function getTotalRelevantRelationshipCount()
+    {
+        return count($this->getCombinedRelationships())
+             + count( $this->data['relationships']['image'] )
+             + count( $this->data['relationships']['file'] )
+             + count( $this->data['relationships']['checkbox'] )
+             + count( $this->data['relationships']['category'] );
+    }
+
+    /**
+     * @return string
+     */
+    protected function getRelationshipsIntro()
+    {
+        return $this->tab() . "/*\n"
+             . $this->tab() . " * Relationships\n"
+             . $this->tab() . " */\n\n";
+    }
+
+    /**
+     * @return string
+     */
+    protected function getReplaceForNormalRelationships()
+    {
+        $replace = '';
+
+        $relationships = $this->getCombinedRelationships();
 
         foreach ($relationships as $name => $relationship) {
 
             $relatedClassName = studly_case($this->data['related_models'][ $relationship['model'] ]['name']);
 
-            $relationParameters = '';
+            $data = array_merge(
+                $relationship,
+                [
+                    'related_class'       => $relatedClassName,
+                ]
+            );
 
-            if ($relationKey = array_get($relationship, 'key')) {
-                $relationParameters = ", '{$relationKey}'";
-            }
-
-            $replace .= $this->tab() . "public function {$name}()\n"
-                      . $this->tab() . "{\n"
-                      . $this->tab(2) . "return \$this->{$relationship['type']}({$relatedClassName}::class"
-                      . $relationParameters
-                      . ");\n"
-                      . $this->tab() . "}\n"
-                      . "\n";
+            $replace .= $this->buildReplaceForRelationship($name, $data);
         }
+
+        return $replace;
+    }
+
+    /**
+     * @param string $name
+     * @param array  $data
+     * @return string
+     */
+    protected function buildReplaceForRelationship($name, array $data)
+    {
+        $parameters         = array_get($data, 'parameters', '');
+        $relationMethod     = array_get($data, 'type');
+        $relationModel      = array_get($data, 'related_class');
+
+        $relationParameters = '';
+        if ($relationKey = array_get($data, 'key')) {
+            $relationParameters = ", '{$relationKey}'";
+        }
+
+        return $this->tab() . "public function {$name}({$parameters})\n"
+             . $this->tab() . "{\n"
+             . $this->tab(2) . "return \$this->{$relationMethod}"
+             . "({$relationModel}::class"
+             . $relationParameters
+             . ");\n"
+             . $this->tab() . "}\n"
+             . "\n";
+    }
+
+    /**
+     * @return string
+     */
+    protected function getReplaceForSpecialRelationships()
+    {
+        $replace = '';
 
         /*
          * Images
@@ -261,6 +336,7 @@ class StubReplaceRelationData extends AbstractProcessStep
 
         return $replace;
     }
+
 
 
     // ------------------------------------------------------------------------------
