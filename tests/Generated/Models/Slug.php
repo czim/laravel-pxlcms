@@ -9,6 +9,8 @@ use Lookitsatravis\Listify\Listify;
 use Watson\Rememberable\Rememberable;
 
 /**
+ * Class Slug
+ *
  * @property string $ref_module_id
  * @property string $entry_id
  * @property string $language_id

@@ -11,6 +11,8 @@ use Lookitsatravis\Listify\Listify;
 use Watson\Rememberable\Rememberable;
 
 /**
+ * Class Page
+ *
  * @property string $title
  * @property string $name
  * @property string $content

@@ -11,6 +11,8 @@ use Lookitsatravis\Listify\Listify;
 use Watson\Rememberable\Rememberable;
 
 /**
+ * Class News
+ *
  * @property \Carbon\Carbon $date
  * @property string $author
  * @property string $name

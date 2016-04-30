@@ -5,6 +5,8 @@ use Czim\PxlCms\Models\CmsModel;
 use Watson\Rememberable\Rememberable;
 
 /**
+ * Class NewsTranslation
+ *
  * @property string $name
  * @property string $content
  */
