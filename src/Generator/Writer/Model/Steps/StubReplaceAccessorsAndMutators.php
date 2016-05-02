@@ -33,7 +33,13 @@ class StubReplaceAccessorsAndMutators extends AbstractProcessStep
                 $parameterString = implode(', ', $parameters);
             }
 
-            $replace .= $this->tab() . "public function get" . studly_case($name) . "Attribute({$parameterString})\n"
+            $methodSignature = "public function "
+                             . (array_get($accessor, 'mutator') ? 'set' : 'get')
+                             . studly_case($name)
+                             . "Attribute"
+                             . "({$parameterString})";
+
+            $replace .= $this->tab() . $methodSignature . "\n"
                       . $this->tab() . "{\n"
                       . $accessor['content']
                       . $this->tab() . "}\n"
