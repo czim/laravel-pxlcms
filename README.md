@@ -161,7 +161,7 @@ The following options are available:
    1. It would be magic
    2. It would conflict with normal Eloquent usage
    3. It would be inefficient (would needs checks for EVERY access operation on the model)
-
+- CMS-configured ordering on translated columns. For this, you'll have to construct your own preferred approach (with custom joins, f.i.). Ordering on a model for any column present on the table will work fine by default.
 
 ## Credits
 
