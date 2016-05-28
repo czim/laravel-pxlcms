@@ -88,7 +88,19 @@ class StubReplaceScopes extends AbstractProcessStep
     {
         $orderColumns = $this->data['ordered_by'] ?: [];
 
+
+        // for now, ignore the ordering if the column to order on is translated
+        $translatedOrderColumns = array_intersect(array_keys($orderColumns
+        ), $this->data['translated_attributes']);
+
+        if (count($translatedOrderColumns)) {
+            foreach ($translatedOrderColumns as $column) {
+                unset($orderColumns[ $column ]);
+            }
+        }
+
         if ( ! count($orderColumns)) return '';
+        
 
         // we only need to set a config if the scope method is global
         if (config('pxlcms.generator.models.scopes.position_order') !== CmsModelWriter::SCOPE_GLOBAL) return '';
