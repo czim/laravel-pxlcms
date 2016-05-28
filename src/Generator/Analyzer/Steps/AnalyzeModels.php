@@ -414,6 +414,7 @@ class AnalyzeModels extends AbstractProcessStep
                 case FieldType::TYPE_CUSTOM_HIDDEN:
                 case FieldType::TYPE_CUSTOM:
                 case FieldType::TYPE_SLIDER:
+                case FieldType::TYPE_LOCATION:
 
                     switch ($fieldData['field_type_id']) {
 
@@ -435,6 +436,10 @@ class AnalyzeModels extends AbstractProcessStep
                             if ( ! array_key_exists($attributeName, $overrideCasts)) {
                                 $this->model['dates'][] = $attributeName;
                             }
+                            break;
+
+                        case FieldType::TYPE_LOCATION:
+                            $this->model['casts'][ $attributeName ] = 'array';
                             break;
 
                         // default omitted on purpose
@@ -479,7 +484,6 @@ class AnalyzeModels extends AbstractProcessStep
                     break;
 
                 case FieldType::TYPE_RANGE:
-                case FieldType::TYPE_LOCATION:
                 default:
                     throw new Exception(
                         "Unknown/unhandled field type {$fieldData['field_type_id']} "
