@@ -11,6 +11,7 @@ use Watson\Rememberable\Rememberable;
 /**
  * Class Slug
  *
+ * @property integer $id
  * @property string $ref_module_id
  * @property string $entry_id
  * @property string $language_id

@@ -7,6 +7,7 @@ use Watson\Rememberable\Rememberable;
 /**
  * Class NewsTranslation
  *
+ * @property integer $id
  * @property string $name
  * @property string $content
  */

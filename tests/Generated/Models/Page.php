@@ -13,6 +13,7 @@ use Watson\Rememberable\Rememberable;
 /**
  * Class Page
  *
+ * @property integer $id
  * @property string $title
  * @property string $name
  * @property string $content

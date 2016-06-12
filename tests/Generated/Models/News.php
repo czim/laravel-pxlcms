@@ -13,6 +13,7 @@ use Watson\Rememberable\Rememberable;
 /**
  * Class News
  *
+ * @property integer $id
  * @property \Carbon\Carbon $date
  * @property string $author
  * @property string $name
