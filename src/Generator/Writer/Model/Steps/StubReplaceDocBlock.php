@@ -119,6 +119,13 @@ class StubReplaceDocBlock extends AbstractProcessStep
 
         $rows = [];
 
+        // always add the ID column
+        $rows[] = [
+            'tag'  => 'property',
+            'type' => 'integer',
+            'name' => '$id',
+        ];
+
         foreach ($this->combinedAttributes as $attribute) {
 
             // in some CMSes, column names pop up that start with a digit
