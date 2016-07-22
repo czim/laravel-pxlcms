@@ -144,6 +144,20 @@ class CmsModel extends Model
      */
     protected $cmsOrderBy = [];
 
+    /**
+     * The column in which the created timestamp is stored.
+     *
+     * @var string
+     */
+    protected $createdAtColumn = 'created_at';
+
+    /**
+     * The column in which the updated timestamp is stored.
+     *
+     * @var string
+     */
+    protected $updatedAtColumn = 'updated_at';
+
 
     // ------------------------------------------------------------------------------
     //      Date adjustments for Unix Timestamp storage
@@ -672,6 +686,73 @@ class CmsModel extends Model
         return $this->attributes[$key];
     }
 
+    // ------------------------------------------------------------------------------
+    //      Timestamps
+    // ------------------------------------------------------------------------------
+
+    /**
+     * Update the creation and update timestamps.
+     *
+     * @return void
+     */
+    protected function updateTimestamps()
+    {
+        $time = $this->freshTimestamp();
+
+        if (! $this->isDirty($this->updatedAtColumn)) {
+            $this->setUpdatedAt($time);
+        }
+
+        if (! $this->exists && ! $this->isDirty($this->createdAtColumn)) {
+            $this->setCreatedAt($time);
+        }
+    }
+
+    /**
+     * Set the value of the "created at" attribute.
+     *
+     * @param  mixed  $value
+     * @return $this
+     */
+    public function setCreatedAt($value)
+    {
+        $this->{$this->createdAtColumn} = $value;
+
+        return $this;
+    }
+
+    /**
+     * Set the value of the "updated at" attribute.
+     *
+     * @param  mixed  $value
+     * @return $this
+     */
+    public function setUpdatedAt($value)
+    {
+        $this->{$this->updatedAtColumn} = $value;
+
+        return $this;
+    }
+
+    /**
+     * Get the name of the "created at" column.
+     *
+     * @return string
+     */
+    public function getCreatedAtColumn()
+    {
+        return $this->createdAtColumn;
+    }
+
+    /**
+     * Get the name of the "updated at" column.
+     *
+     * @return string
+     */
+    public function getUpdatedAtColumn()
+    {
+        return $this->updatedAtColumn;
+    }
 
     // ------------------------------------------------------------------------------
     //      Images
