@@ -648,7 +648,10 @@ class CmsModel extends Model
      */
     public function getBelongsToRelationAttributeValue($key)
     {
-        if ($this->relationLoaded($key)) {
+        $relationKey  = camel_case($key);
+        $attributeKey = snake_case($key);
+
+        if ($this->relationLoaded($relationKey)) {
 
             // check to make sure we don't break eager loading and internal
             // lookups for the foreign key
@@ -679,11 +682,11 @@ class CmsModel extends Model
                     &&  $caller['class'] !== 'Illuminate\Database\Eloquent\Relations\Relation'
                     )
             ) {
-                return $this->relations[$key];
+                return $this->relations[$relationKey];
             }
         }
 
-        return $this->attributes[$key];
+        return $this->attributes[$attributeKey];
     }
 
     // ------------------------------------------------------------------------------
