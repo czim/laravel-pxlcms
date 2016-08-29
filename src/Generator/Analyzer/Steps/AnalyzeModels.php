@@ -646,7 +646,7 @@ class AnalyzeModels extends AbstractProcessStep
                 //
                 // Too tricky to determine automatically, so force a foreign key parameter
                 // if required.
-                if ($relationship['type'] !== GENERATOR::RELATIONSHIP_BELONGS_TO_MANY) {
+                if ($relationship['type'] !== Generator::RELATIONSHIP_BELONGS_TO_MANY) {
 
                     if (array_get($relationship, 'key')) {
 
@@ -661,23 +661,23 @@ class AnalyzeModels extends AbstractProcessStep
                 // determine type and one/many (count) for reverse relationship
                 switch ($relationship['type']) {
 
-                    case GENERATOR::RELATIONSHIP_HAS_ONE:
-                    case GENERATOR::RELATIONSHIP_HAS_MANY:
-                        $reverseType = GENERATOR::RELATIONSHIP_BELONGS_TO;
+                    case Generator::RELATIONSHIP_HAS_ONE:
+                    case Generator::RELATIONSHIP_HAS_MANY:
+                        $reverseType = Generator::RELATIONSHIP_BELONGS_TO;
                         break;
 
-                    case GENERATOR::RELATIONSHIP_BELONGS_TO:
+                    case Generator::RELATIONSHIP_BELONGS_TO:
                         // for single-entry modules, a hasOne will do
                         if ($this->data->rawData['modules'][ $modelFromKey ]['max_entries'] == 1) {
-                            $reverseType  = GENERATOR::RELATIONSHIP_HAS_ONE;
+                            $reverseType  = Generator::RELATIONSHIP_HAS_ONE;
                             $reverseCount = 1;
                         } else {
-                            $reverseType = GENERATOR::RELATIONSHIP_HAS_MANY;
+                            $reverseType = Generator::RELATIONSHIP_HAS_MANY;
                         }
                         break;
 
-                    case GENERATOR::RELATIONSHIP_BELONGS_TO_MANY:
-                        $reverseType = GENERATOR::RELATIONSHIP_BELONGS_TO_MANY;
+                    case Generator::RELATIONSHIP_BELONGS_TO_MANY:
+                        $reverseType = Generator::RELATIONSHIP_BELONGS_TO_MANY;
                         break;
 
                     // default omitted on purpose
