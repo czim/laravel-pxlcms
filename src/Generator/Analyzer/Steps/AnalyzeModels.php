@@ -93,7 +93,7 @@ class AnalyzeModels extends AbstractProcessStep
         // set default model data
         $this->model = [
             'module'                => $moduleId,
-            'name'                  => $this->module['name'],
+            'name'                  => $this->normalizeModelName($this->module['name']),
             'table'                 => null,
             'cached'                => config('pxlcms.generator.models.enable_rememberable_cache'),
             'is_translated'         => false,
@@ -159,6 +159,22 @@ class AnalyzeModels extends AbstractProcessStep
     }
 
     /**
+     * @param string $name
+     * @return string
+     */
+    protected function normalizeModelName($name)
+    {
+        $name = trim($name);
+
+        // if the name begins with a digit, prefix it with a general string
+        if (preg_match('#^\d+#', $name)) {
+            $name = 'model ' . $name;
+        }
+
+        return $name;
+    }
+
+    /**
      * Determines and stores information about the sorting configuration
      * found for entries of the module
      */
@@ -215,7 +231,7 @@ class AnalyzeModels extends AbstractProcessStep
 
         } else {
 
-            $name = array_get($this->module, 'prefixed_name') ?: $this->module['name'];
+            $name = array_get($this->module, 'prefixed_name') ?: $this->model['name'];
 
             if (config('pxlcms.generator.models.model_name.singularize_model_names')) {
 
