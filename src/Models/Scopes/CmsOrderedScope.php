@@ -4,9 +4,9 @@ namespace Czim\PxlCms\Models\Scopes;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Scope;
+use Illuminate\Database\Eloquent\ScopeInterface;
 
-class CmsOrderedScope implements Scope
+class CmsOrderedScope implements ScopeInterface
 {
 
     /**
