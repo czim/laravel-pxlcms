@@ -371,7 +371,7 @@ return [
             //'singularize_single_relationships' => true,
 
             // Whether to add foreign key attribute names to the $hidden property
-            'hide_foreign_key_attributes' => true,
+            'hide_foreign_key_attributes' => false,
 
             // Whether to use rememberable trait on models generated
             'enable_rememberable_cache' => true,
