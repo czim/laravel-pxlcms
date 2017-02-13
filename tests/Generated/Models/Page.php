@@ -49,14 +49,6 @@ class Page extends CmsModel
         'seo_description',
     ];
 
-    protected $hidden = [
-        'news',
-        'e_active',
-        'e_position',
-        'e_category_id',
-        'e_user_id',
-    ];
-
     protected $relationsConfig = [
         'showInMenu' => [
             'field' => 102,
