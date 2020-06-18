@@ -597,7 +597,7 @@ class CmsModel extends Model
     {
         $self = __FUNCTION__;
 
-        $caller = Arr::first(debug_backtrace(false), function ($key, $trace) use ($self) {
+        $caller = Arr::first(debug_backtrace(false), function ($trace) use ($self) {
             $caller = $trace['function'];
 
             return ! in_array($caller, CmsModel::$hasRelationMethods) && $caller != $self;
@@ -657,7 +657,7 @@ class CmsModel extends Model
             // lookups for the foreign key
             $self = __FUNCTION__;
 
-            $caller = array_first(debug_backtrace(false), function ($key, $trace) use ($self) {
+            $caller = Arr::first(debug_backtrace(false), function ($trace, $key) use ($self) {
                 $caller = $trace['function'];
 
                 // skip first two (since that includes the Model's generated method)
@@ -837,7 +837,7 @@ class CmsModel extends Model
     {
         $self = __FUNCTION__;
 
-        $caller = Arr::first(debug_backtrace(false), function ($key, $trace) use ($self) {
+        $caller = Arr::first(debug_backtrace(false), function ($trace) use ($self) {
             $caller = $trace['function'];
 
             return ! in_array($caller, ['getImagesWithResizes']) && $caller != $self;

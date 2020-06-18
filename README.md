@@ -13,6 +13,7 @@ PXL CMS Adapter for Laravel.
 :---------|:--------
  5.1.x    | 1.1.x
  5.2.x    | 1.2.x
+ 5.3.x    | 1.3.x
 
 ## Install
 

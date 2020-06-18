@@ -290,10 +290,7 @@ trait SluggableTrait
             $existing->where(static::$slugsLanguageKey, $this->storeSlugForLanguageId());
         }
 
-        $list = $existing->lists(static::$slugsColumn, static::$slugsEntryKey);
-
-        // Laravel 5.0/5.1 check
-        return $list instanceof Collection ? $list->all() : $list;
+        return $existing->pluck(static::$slugsColumn, static::$slugsEntryKey)->all();
     }
 
     /**
