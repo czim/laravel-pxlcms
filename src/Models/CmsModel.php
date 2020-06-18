@@ -45,7 +45,7 @@ class CmsModel extends Model
 
     /**
      * Disable timestamps for CMS models by default
-     * 
+     *
      * @var bool
      */
     public $timestamps = false;

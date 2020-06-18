@@ -9,7 +9,7 @@ PXL CMS Adapter for Laravel.
 
 ## Version Compatibility
 
- Laravel  | Package 
+ Laravel  | Package
 :---------|:--------
  5.1.x    | 1.1.x
  5.2.x    | 1.2.x
@@ -47,16 +47,16 @@ $ php artisan vendor:publish
 ## Using Models
 
 Generated Models work, for the most part, exactly like normal Eloquent Models.
-This includes relationships, updating, eager loading and so forth. 
+This includes relationships, updating, eager loading and so forth.
 There are a few caveats:
 
 - Foreign keys in CMS tables have the name of the property. They are named 'category', for instance, not 'category_id'.
   - This means that using `$model->category` on an unloaded relationship will **not** trigger the magic property since the attribute is present.
     You will get the ID integer instead.
-    To get around this, simply call the relation method itself (ie. `$model->category()->first()`).  
+    To get around this, simply call the relation method itself (ie. `$model->category()->first()`).
 - By default, all models are globally scoped to only include *active* records (`e_active = true`).
   - If you want to include inactive records, use the `withInactive()` scope (ie. something like `ModelName::withInactive()->get()`).
-  - This depends on your pxlcms config settings, the behaviour may be changed. 
+  - This depends on your pxlcms config settings, the behaviour may be changed.
 - By default, all models are ordered by their *position* (`e_position asc`).
   - If you want to prevent this, use the `unordered()` scope (ie. something like `ModelName::unordered()->first()`).
   - This depends on your pxlcms config settings, the behaviour may be changed.
@@ -74,26 +74,26 @@ See the configuration file for ways to change or disable the above.
 
 
 ## Images and Uploads
- 
+
  Image and File fields are set up as special relationships on the generated model.
  If you use the magic property for the relationship on the model, like so:
-  
+
  ```php
    // For a model with a relationship: images() to the CMS Image model
    $model->images
  ```
- 
+
 ... then the image results will be enriched with information about resizes and the external URLs to the images or files.
 
 ```php
    $image = $model->images->first();
-   
-   // This will return the external URL to the (base) image 
+
+   // This will return the external URL to the (base) image
    $image->url
-   
+
    // This will return the local path to the file
    $image->localPath
-   
+
    // This will list all resizes with appended prefixes and full URLs
    $image->resizes
 ```
@@ -119,12 +119,12 @@ A modified version of the [Sluggable](https://github.com/cviebrock/eloquent-slug
 This works mostly like the original Sluggify, with some exceptions:
 
 - Slugs may be stored in the `cms_slugs` table (which can be defined in the generator config).
-  If so, the change is transparent when using Sluggable methods. 
+  If so, the change is transparent when using Sluggable methods.
 - Route model binding should work just find, look it up in the Sluggable documentation.
 - The `findBy` method is now expanded with an optional `locale` parameter, wich limits slug searches to a specific locale/language: `findBy($slug, $locale = null)`.
   Likewise, the `whereSlug` scope has an optional `locale` parameter.
 - Translation models should be made Sluggable for multilingual slugs.
-  The translation's parent model will still implement the `SluggableInterface` and delegate the relevant calls to the translation model. 
+  The translation's parent model will still implement the `SluggableInterface` and delegate the relevant calls to the translation model.
 
 
 ## Running the Generator

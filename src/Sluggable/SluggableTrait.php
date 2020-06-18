@@ -261,7 +261,7 @@ trait SluggableTrait
      *
      * @param string $likeSlug          if set, only returns slugs that are like the string
      * @param bool   $limitToLanguage   if true, only returns matches within the language
-     * @return null|object
+     * @return null|object[]
      */
     protected function getAllSlugsForModuleFromCmsTable($likeSlug = null, $limitToLanguage = true)
     {
@@ -286,7 +286,6 @@ trait SluggableTrait
         }
 
         if ($limitToLanguage) {
-
             $existing->where(static::$slugsLanguageKey, $this->storeSlugForLanguageId());
         }
 
